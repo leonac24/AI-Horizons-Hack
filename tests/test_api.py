@@ -132,6 +132,11 @@ def test_route_limits_are_taken_from_config_not_retyped():
     assert param(wb, "target_ami_pct")["maximum"] == api.target_ami_pct_max
     assert param(wb, "typology")["maxLength"] == api.id_param_max_chars
 
+    fmt = get_config().parcel_id_format
+    pid = param(wb, "parcel_id")
+    assert (pid["pattern"], pid["minLength"], pid["maxLength"]) == (
+        fmt.pattern, fmt.min_chars, fmt.max_chars)
+
 
 def test_analysis_cache_size_is_the_configured_one():
     """Check the cache is actually the size config says.

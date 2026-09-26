@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -205,6 +206,37 @@ class Assumption(_Model):
         return Range(value=self.value, low=self.low, high=self.high)
 
 
+# --- city.yaml ---------------------------------------------------------------
+class ParcelIdFormat(_Model):
+    """What a parcel id is allowed to look like in this city.
+
+    In Pittsburgh a parcel id is an Allegheny County PIN: capital letters and
+    digits only, always within a set length. The API checks an id from a URL
+    against this BEFORE it looks anything up. Two things fall out of that:
+
+    1. A junk id gets a "422 Bad Request" straight away and costs us nothing.
+    2. An id can never contain a slash or a dot, so nobody can smuggle
+       something like "../../secrets.txt" through a URL and reach a real file.
+
+    A different city would number its parcels differently, so this lives in
+    city.yaml. Swapping cities is a config edit, not a code edit.
+    """
+
+    pattern: str
+    min_chars: int = Field(gt=0)
+    max_chars: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _usable(self) -> ParcelIdFormat:
+        if self.max_chars < self.min_chars:
+            raise ValueError(f"max_chars ({self.max_chars}) < min_chars ({self.min_chars})")
+        try:
+            re.compile(self.pattern)
+        except re.error as e:
+            raise ValueError(f"pattern {self.pattern!r} is not a valid regex: {e}") from e
+        return self
+
+
 # --- sources.yaml --------------------------------------------------------------
 class Source(_Model):
     name: str
@@ -337,14 +369,23 @@ class Config(_Model):
             errors.append(f"zoning.code.source {self.zoning.code.source!r} not in sources.yaml")
 
         # Most of city.yaml is only ever read by the offline pipeline, so we let
-        # that file hold whatever keys it wants without checking them. This one
-        # is different: the running server uses it on live requests to record
-        # which dataset a number came from. Check it here, at startup, so a typo
-        # crashes the app immediately with a message naming the bad key, instead
-        # of causing a confusing 500 error later on.
-        if self.parcels.get("assessments_source") not in self.sources.sources:
+        # that file hold whatever keys it wants without checking them. These two
+        # are different: the running server uses them on live requests. One
+        # checks every parcel id that arrives in a URL, the other records which
+        # dataset a number came from.
+        #
+        # So we check them here, at startup. A typo then crashes the app
+        # immediately with a message naming the bad key, instead of causing a
+        # confusing 500 error later on whichever request first needed it.
+        parcels = self.parcels
+        try:
+            ParcelIdFormat(pattern=parcels.get("id_pattern"), min_chars=parcels.get("id_min_chars"),
+                           max_chars=parcels.get("id_max_chars"))
+        except (ValidationError, ValueError) as e:
+            errors.append(f"city.parcels id format is unusable: {e}")
+        if parcels.get("assessments_source") not in self.sources.sources:
             errors.append(f"city.parcels.assessments_source "
-                          f"{self.parcels.get('assessments_source')!r} not in sources.yaml")
+                          f"{parcels.get('assessments_source')!r} not in sources.yaml")
         if errors:
             raise ValueError("config cross-reference errors:\n  - " + "\n  - ".join(errors))
         return self
@@ -377,6 +418,16 @@ class Config(_Model):
     def parcels(self) -> dict[str, Any]:
         """The `parcels` block of city.yaml: id format, dataset names, columns."""
         return self._city("parcels")
+
+    @property
+    def parcel_id_format(self) -> ParcelIdFormat:
+        """Already checked at startup by `_cross_refs`, so this is safe to call
+        inside a request: it will not blow up halfway through serving someone."""
+        if self.__dict__.get("_parcel_id_format") is None:
+            p = self.parcels
+            self.__dict__["_parcel_id_format"] = ParcelIdFormat(
+                pattern=p["id_pattern"], min_chars=p["id_min_chars"], max_chars=p["id_max_chars"])
+        return self.__dict__["_parcel_id_format"]
 
     @property
     def assessment_source(self) -> str:
