@@ -42,14 +42,41 @@ class UncertaintySettings(_Model):
 
 
 class ApiSettings(_Model):
-    """Ceilings for a public, unauthenticated API. See docs/BACKEND.md."""
+    """The biggest values the API will accept from whoever is calling it.
 
+    Anyone on the internet can call this API. So every number a caller controls
+    needs a cap: how long a search box string can be, how many results to hand
+    back, how many homes to model. All of those caps are listed right here
+    instead of being typed into the route functions further down, which means
+    you can see them all at once and change one without editing any Python.
+
+    Three numbers are deliberately NOT in here, because nobody would ever sit
+    down and tune them:
+      - how many characters of the ETag hash we keep (32),
+      - how many IP addresses the rate limiter remembers before it forgets,
+      - the "60" in the rate limiter's 60-second window. That 60 is just what
+        the word "minute" means in `explain_requests_per_minute`.
+    Putting those in config would suggest a reviewer has a decision to make
+    about them. They don't.
+    """
+
+    search_query_min_chars: int = Field(gt=0)
     search_query_max_chars: int = Field(gt=0)
     search_limit_max: int = Field(gt=0)
+    id_param_max_chars: int = Field(gt=0)
     explain_max_weights: int = Field(gt=0)
     explain_max_ranking: int = Field(gt=0)
     explain_requests_per_minute: int = Field(gt=0)
     analysis_cache_entries: int = Field(gt=0)
+    cache_max_age_seconds: int = Field(ge=0)
+    work_backwards_max_units: int = Field(gt=0)
+    target_ami_pct_max: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> ApiSettings:
+        if self.search_query_max_chars < self.search_query_min_chars:
+            raise ValueError("api.search_query_max_chars < search_query_min_chars")
+        return self
 
 
 class ExplanationSettings(_Model):

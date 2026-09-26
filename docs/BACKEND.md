@@ -102,7 +102,7 @@ day one.
 
 **What we do instead: conditional requests.** `/api/config` and
 `/api/analysis/{id}` return a strong `ETag` over the response body plus
-`Cache-Control: public, max-age=60`. A client that sends `If-None-Match` gets
+`Cache-Control: public, max-age=<api.cache_max_age_seconds>`. A client that sends `If-None-Match` gets
 `304` and no recomputation. That is the cheap, standard, correct way to make
 repeated reads free.
 
@@ -114,7 +114,8 @@ Three layers, each with a stated invalidation trigger:
 
 1. **`@lru_cache` on `get_config()` and `_index()`** — process lifetime. Config
    changes require a restart. Acceptable: config is deployed, not edited live.
-2. **`@lru_cache(maxsize=512)` on `_analysis_cached(parcel_id, config_hash)`** —
+2. **`@lru_cache` on `_analysis_cached(parcel_id, config_hash)`**, sized by
+   `app.yaml: api.analysis_cache_entries` —
    the config hash is *in the key*, so editing any YAML in `data/config/`
    invalidates every cached analysis automatically. This is the single most
    important line in the caching story: there is no way to change an assumption
@@ -137,18 +138,34 @@ a computation is constrained in the signature, so a malformed request costs a
 - `parcel_id` — `^[A-Z0-9]+$`, 4–32 chars. County PINs are uppercase
   alphanumeric. This also makes path traversal unrepresentable rather than
   merely handled.
-- `q` — 2–64 chars. `limit` — 1–50, then clamped again against
-  `app.yaml: api.search_limit_max`. The signature stops a hostile caller; the
-  config bound stops *us* from raising the ceiling by accident.
-- `units` — 1–500. `target_ami_pct` — 0–200.
-- `typology` — must exist in `typologies.yaml`, else `400`.
+- `q` — bounded by `app.yaml: api.search_query_min_chars` /
+  `search_query_max_chars`. `limit` — 1..`api.search_limit_max`.
+- `units` — 1..`api.work_backwards_max_units`.
+  `target_ami_pct` — >0..`api.target_ami_pct_max`.
+- `typology` — at most `api.id_param_max_chars`, then must exist in
+  `typologies.yaml`, else `400`.
 - `/api/explain` — `weights` and `ranking` are size-capped, then filtered to
   known criterion and typology ids, and weights are bounded and coerced to
   float. Unknown keys are dropped, not echoed. **Caller-supplied strings must
   never reach an LLM prompt unfiltered.**
 
-**Limits live in `data/config/app.yaml`, not in code.** Same rule as every other
-number in this project: if it is a knob, it is reviewable in config.
+**Limits live in `data/config/app.yaml`, not in code — and that is now
+enforced.** The route signatures read the config values directly; nothing is
+retyped. `tests/test_api.py::test_route_limits_are_taken_from_config_not_retyped`
+asserts the published OpenAPI schema matches config field by field, so raising a
+ceiling in YAML either takes effect or fails the build. It cannot silently do
+nothing.
+
+This paragraph used to claim the same thing while `units` and `target_ami_pct`
+were literals in `server/app.py`, and while `q` / `limit` were declared in both
+places — agreeing on the day they were written and free to drift after. The old
+double bound was described as defence in depth, but it only ever worked
+downwards: config could lower the ceiling and never raise it.
+
+**Deliberately still literals**, because they are implementation details with no
+policy meaning: the ETag digest length, the rate limiter's key-table bound, and
+the limiter's 60-second window (that one is the *unit* of
+`explain_requests_per_minute`, not an independent knob).
 
 ---
 
@@ -379,7 +396,7 @@ done; echo
 
 ## 12. Testing
 
-`uv run pytest` — 46 tests, no network, no LLM calls.
+`uv run pytest` — 50 tests, no network, no LLM calls.
 
 What each group is actually protecting:
 
@@ -393,7 +410,8 @@ What each group is actually protecting:
   quoted in code.
 - **Coverage** — random real parcels across the city all return complete
   responses.
-- **API** — limits, 304s, header presence, path-leak prevention, idempotence.
+- **API** — limits, 304s, header presence, path-leak prevention, idempotence,
+  and that every route bound is the config value rather than a copy of it.
 - **Explanation grounding** — ungrounded model output is rejected.
 
 **The test that matters most is the no-hardcoding one.** It is the only thing

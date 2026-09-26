@@ -100,3 +100,52 @@ def test_routes_answer_with_and_without_the_api_prefix():
     """Hosts differ on whether the function sees the rewritten path."""
     assert client.get("/api/health").status_code == 200
     assert client.get("/health").status_code == 200
+
+
+def test_route_limits_are_taken_from_config_not_retyped():
+    """The limits the API enforces must BE the config values, not copies of them.
+
+    Why this test exists: without it, "the limits live in app.yaml" is just a
+    promise someone made in a doc. Nothing stops a future person from typing a
+    number straight into a route function. It would match the config file on the
+    day they wrote it, nobody would notice, and the two would quietly drift
+    apart from then on.
+
+    Rather than grepping the Python source (fragile, easy to fool), we ask the
+    API itself. FastAPI publishes the limits it actually enforces at
+    /api/openapi.json. We compare that published list against config, one field
+    at a time. If they ever disagree, this test fails.
+    """
+    api = get_config().app.api
+    schema = client.get("/api/openapi.json").json()
+
+    def param(path: str, name: str) -> dict:
+        op = schema["paths"][path]["get"]
+        p = next(x for x in op["parameters"] if x["name"] == name)
+        return p["schema"]
+
+    assert param("/api/parcels/search", "q")["minLength"] == api.search_query_min_chars
+    assert param("/api/parcels/search", "q")["maxLength"] == api.search_query_max_chars
+    assert param("/api/parcels/search", "limit")["maximum"] == api.search_limit_max
+    wb = "/api/work-backwards/{parcel_id}"
+    assert param(wb, "units")["maximum"] == api.work_backwards_max_units
+    assert param(wb, "target_ami_pct")["maximum"] == api.target_ami_pct_max
+    assert param(wb, "typology")["maxLength"] == api.id_param_max_chars
+
+
+def test_analysis_cache_size_is_the_configured_one():
+    """Check the cache is actually the size config says.
+
+    This one is here because of a real bug: `analysis_cache_entries` sat in
+    app.yaml, got fully validated on startup... and then nothing ever read it.
+    The real cache size was a number typed into the code. Editing the config
+    value did nothing at all.
+    """
+    from server.app import _analysis_cached
+
+    assert _analysis_cached.cache_info().maxsize == get_config().app.api.analysis_cache_entries
+
+
+def test_cache_control_uses_the_configured_lifetime():
+    r = client.get("/api/config")
+    assert r.headers["cache-control"] == f"public, max-age={get_config().app.api.cache_max_age_seconds}"

@@ -32,6 +32,15 @@ app = FastAPI(
 )
 PARCELS_FILE = ROOT / "data" / "processed" / "parcels.json"
 
+# Load the config once, right now, when Python first imports this file - not
+# inside each route function. It has to happen here because FastAPI reads the
+# limit numbers below while it is building the route definitions, which happens
+# at import time.
+#
+# Useful side effect: if the config is broken, the app now refuses to start and
+# says why, instead of starting fine and then failing on some later request.
+_API = get_config().app.api
+
 # Every route is declared on this router so the whole API can be mounted at more
 # than one prefix. Hosts differ in whether they hand the function the original
 # path or the rewritten one, and a 404 caused by a prefix mismatch is an
@@ -113,7 +122,7 @@ def _conditional(request: Request, response: Response, payload: object) -> bool:
     """
     tag = _etag(payload)
     response.headers["ETag"] = tag
-    response.headers["Cache-Control"] = "public, max-age=60"
+    response.headers["Cache-Control"] = f"public, max-age={_API.cache_max_age_seconds}"
     return request.headers.get("if-none-match") == tag
 
 
@@ -133,7 +142,7 @@ def _parcel(parcel_id: str) -> dict:
     return p
 
 
-@lru_cache(maxsize=512)
+@lru_cache(maxsize=_API.analysis_cache_entries)
 def _analysis_cached(parcel_id: str, config_hash: str) -> Analysis:
     return analyze(get_config(), _parcel(parcel_id))
 
@@ -177,12 +186,15 @@ def suggested() -> list[dict]:
 
 
 @api.get("/parcels/search", summary="Prefix search on parcel id, substring on address")
-def search(q: str = Query(min_length=2, max_length=64), limit: int = Query(20, ge=1, le=50)) -> list[dict]:
-    cfg = get_config().app.api
-    # Bounded by config as well as by the signature: the signature stops a hostile
-    # caller, the config bound stops us from raising the ceiling by accident.
-    limit = min(limit, cfg.search_limit_max)
-    ql = q.strip().upper().replace("-", "")[: cfg.search_query_max_chars]
+def search(q: str = Query(min_length=_API.search_query_min_chars, max_length=_API.search_query_max_chars),
+           limit: int = Query(20, ge=1, le=_API.search_limit_max)) -> list[dict]:
+    # Both limits above come from config, and that is the only place they are
+    # checked. There used to be a second check down here against the same config
+    # values. That looks safer, but it wasn't: the numbers up in the function
+    # signature were a separate hand-typed copy. So raising the limit in the
+    # YAML file did nothing at all - the signature still rejected at the old
+    # number, before this code ever ran.
+    ql = q.strip().upper().replace("-", "")
     out: list[dict] = []
     for p in _index()["parcels"].values():
         if p["id"].startswith(ql) or ql in (p.get("address") or "").upper():
@@ -236,9 +248,10 @@ def explain_route(req: ExplainRequest, request: Request) -> dict:
 
 
 @api.get("/work-backwards/{parcel_id}", summary="What would have to change to hit a target")
-def work_backwards_route(parcel_id: str = PARCEL_ID, typology: str = Query(max_length=64),
-                         units: int = Query(ge=1, le=500),
-                         target_ami_pct: float = Query(gt=0, le=200)) -> dict:
+def work_backwards_route(parcel_id: str = PARCEL_ID,
+                         typology: str = Query(max_length=_API.id_param_max_chars),
+                         units: int = Query(ge=1, le=_API.work_backwards_max_units),
+                         target_ami_pct: float = Query(gt=0, le=_API.target_ami_pct_max)) -> dict:
     cfg = get_config()
     if typology not in {t.id for t in cfg.typologies}:
         raise HTTPException(400, "unknown typology")
