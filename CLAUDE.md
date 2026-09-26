@@ -7,10 +7,17 @@ Working name: **Lotline** (rename in `data/config/app.yaml`).
 
 ## 0. What this is
 
-A decision-support tool for **the City of Pittsburgh**. Pick any vacant lot in the
-city and compare what could be built there: who each option houses, what it costs,
-what it emits, what the zoning allows, and how the ranking changes depending on
-whose priorities you use.
+A decision-support tool for vacant land in **the City of Pittsburgh**. Pick any
+vacant lot in the city and compare what could be built there: who each option
+houses, what it costs, what it emits, what the zoning allows, and how the ranking
+changes depending on whose priorities you use.
+
+**Primary user:** a community development corporation (CDC) project lead in early
+predevelopment. They have a real parcel in mind and must decide which housing
+concepts deserve architect, lender, and community review before paying for
+design. Lotline presents evidence and tradeoffs; the CDC adds local knowledge and
+makes the decision. **Secondary audiences:** City Planning, the URA, and residents
+who want to see the tradeoffs and value judgments behind a proposal.
 
 It is built for Pittsburgh's actual conditions: hillside lots and landslide risk,
 combined sewer overflows, a large inventory of vacant and publicly held land,
@@ -25,6 +32,35 @@ of City Planning."
 **Core principle: evidence and values are separate layers.** The evidence layer
 computes metrics with ranges and provenance. The values layer (weights) is
 user-controlled. No weight ever enters an evidence metric.
+
+**Hard requirements come before weights.** A scenario that fails a verified legal
+requirement (e.g., the use is prohibited in the district) is excluded from ranking,
+not scored low — no weighting can make an illegal option rank first. Excluded
+scenarios are still shown, with the citation. Unreviewed rules never exclude
+anything; they show "Needs planner review."
+
+---
+
+## 0.1 Product decisions
+
+The grill session in `.grill/cdc-housing-scenario-comparison.md` is the record of
+*why*. Outcomes that bind the build:
+
+- **Compatibility, not prescription.** Lotline says how well options fit a parcel;
+  it never says what a neighborhood needs or what must be built.
+- **Physical feasibility is screening only** — a plausible unit range, not a
+  buildable design.
+- **Resident affordability and project feasibility stay separate** metrics; they
+  answer different questions and must not cancel inside one number.
+- **No causal displacement claim.** Report the share of new homes priced above
+  what nearby renters can pay, plus vulnerability context — never a count of
+  households displaced.
+- **Proximity is not capacity.** Being near a sewer, school, or stop is not
+  evidence of spare capacity; unmeasured capacity stays explicitly unknown.
+- **Always name a provisional first place**, shown with its robustness (SMAA),
+  excluded criteria, and unsupported weight.
+- **The ranking must be understandable without AI prose.** The tradeoff receipt
+  is the explanation; generated text is an optional layer on top.
 
 ---
 
@@ -141,7 +177,7 @@ Too many parcels to precompute everything, so split the work:
 - **Server (per clicked parcel):** zoning check for each typology, affordability, households, commute, carbon, scoring inputs. Cache by `(parcel_id, config_hash)`. Target < 1.5 s click to full view.
 - **Browser:** SMAA, weights, ranking flip.
 - **Map:** load parcels by viewport from the server; centroids when zoomed out, polygons when zoomed in. PMTiles fine if tippecanoe installs easily — ask first.
-- **Commute:** precompute a PRT travel-time matrix from access cells (block groups or grid) to destination types; add each parcel's walk-to-stop leg with a slope penalty. Pittsburgh's hills make a straight-line walk estimate misleading.
+- **Commute (deferred until the core comparison is solid):** precompute a PRT travel-time matrix from access cells (block groups or grid) to destination types; add each parcel's walk-to-stop leg with a slope penalty. Pittsburgh's hills make a straight-line walk estimate misleading.
 - **Zoning:** extract rules for every district in the Zoning Code that permits any residential use. Review first the districts containing the most vacant parcels. A lot whose district isn't reviewed still loads, flagged "Needs planner review."
 
 ---
@@ -163,6 +199,10 @@ interface Metric {
   note?: string;
 }
 ```
+
+Zoning statuses in `zoning.yaml` carry a semantic `role` (`permitted`,
+`discretionary`, `variance`, `prohibited`, `unreviewed`). Code asks for a role,
+never a status id.
 
 Visual code: **solid** = observed · **dashed** = modeled · **outlined** =
 assumption · **hatched + tag** = placeholder. Weights and stakeholder profiles use a
@@ -186,8 +226,9 @@ weights. Every sentence cites metric IDs, shown as chips. Server rejects sentenc
 citing unknown IDs or numbers not in the input, falling back to a template. Frame
 as tradeoffs, never "you should build."
 
-**Stretch: advocates + referee.** Two calls argue for scenario A vs. B; a third
-labels each claim data-backed / value-dependent / unsupported.
+**Deferred: advocates + referee.** Two calls argue for scenario A vs. B; a third
+labels each claim data-backed / value-dependent / unsupported. Not before the core
+comparison is reliable.
 
 ---
 
@@ -195,10 +236,12 @@ labels each claim data-backed / value-dependent / unsupported.
 
 - **Affordability:** rent/price needed to cover development cost per typology (Pittsburgh cost assumptions with ranges), compared against Pittsburgh-area income tiers.
 - **Households:** each illustrative household checked against each scenario ("Could this household afford it?").
-- **Commute:** from §6, to the household's destination type (e.g., Downtown, Oakland hospitals and universities).
-- **Carbon over time:** embodied (year 0) + operational (PA grid mix) + transportation; mark crossover years between scenarios.
+- **Commute (deferred):** from §6, to the household's destination type (e.g., Downtown, Oakland hospitals and universities).
+- **Local affordability gap:** share of a scenario's homes priced above what nearby renters can pay (tract income and rents). Not a displacement count.
+- **Access to opportunity:** site context, not a scored criterion, while it is a single lot-level index (it only scales with unit count and cancels against infrastructure load). When scored later, disaggregate by destination category and by walking, biking, and transit; driving is optional context with zero default weight.
+- **Carbon over time:** whole-life, **60-year** reference period (horizon in `assumptions.yaml`, never in labels). Embodied (year 0) + operational (PA grid mix, decarbonizing) + transportation. Report **per dwelling and per m²**; mark crossover years between scenarios. *(Code currently uses 30 years per household — migrate.)*
 - **Site constraints:** slope, landslide, flood, and CSO flags feed cost ranges and infrastructure notes; they never silently drop a scenario.
-- **Scoring:** normalize each criterion 0–1 across scenarios, respecting direction; weighted sum.
+- **Scoring:** drop scenarios that fail a hard requirement; normalize each remaining criterion 0–1 across scenarios, respecting direction; weighted sum.
 - **SMAA:** N weight vectors (N from config) from a seeded Dirichlet, uniform or centered on a stakeholder profile; metric values sampled within [low, high]. Rank-acceptability indices; < 200 ms in browser.
 - **Ranking flip:** smallest single-weight change that swaps two scenarios, as a sentence.
 - **Work backwards:** for a target typology and unit count, list each failed zoning rule (→ variance / special exception, with Title Nine citation), per-unit subsidy gap, and infrastructure flags.
@@ -217,7 +260,8 @@ Plain language ("Could this household afford it?"). Warm civic-document
 aesthetic — planning report, brick, hillsides, river light — not a dark dashboard.
 
 1. **Pick a lot** — citywide map, vacant lots highlighted. Address / parcel ID search, jump to neighborhood, filters (size, zoning, publicly held, flood, slope, transit access), suggested lots.
-2. **Compare** — scenario cards with tradeoff receipt, household rows, carbon line, zoning status with citations; weight sliders + stakeholder presets; SMAA bars; ranking-flip sentence; grounded explanation.
+2. **Compare** — all typologies from config by default; the user can pin **up to 3** for side-by-side comparison. Scenario cards with tradeoff receipt, household rows, carbon line, zoning status with citations; SMAA bars; ranking-flip sentence; optional grounded explanation. *(Next: editable scenarios — tenure, affordability mix, parking.)*
+   - **Weights are a 100-point budget** across the criteria, always summing to 100. Stakeholder presets are ways to fill the budget. **No ranking is shown until the user picks a preset or moves a point** — there is no neutral default.
 3. **Work backwards** — target → what would have to change.
 4. **What we don't know** — placeholders, unreviewed districts, data gaps. Linked from every screen.
 5. **Memo export** — one printable page for a community meeting or City Planning conversation.
@@ -233,6 +277,7 @@ aesthetic — planning report, brick, hillsides, river light — not a dark dash
 - `docs/METHODS.md` — each computation in plain language + formulas.
 - `docs/LIMITATIONS.md` — **required.** What it gets wrong, who could be harmed by misuse, data gaps, what we don't claim. Auto-append placeholder counts, unreviewed districts, and the share of vacant parcels covered by reviewed rules. City limits only.
 - `docs/AI_DISCLOSURE.md` — AI used to build it and AI inside it, with how outputs are checked.
+- `docs/BACKEND.md` — API principles: public read-only API, the evidence boundary, idempotency and ETags, input limits from config (enforced by tests), security posture. Change a rule there, say so in the commit.
 
 ---
 
@@ -242,4 +287,5 @@ aesthetic — planning report, brick, hillsides, river light — not a dark dash
 - About to type a Pittsburgh fact, ID, number, typology, color, or label into code? Put it in config instead; mention any literal you couldn't avoid.
 - Keep the app runnable at every commit. Small vertical slices.
 - Source slow or blocked? Use the placeholder path, label it, tell the team.
+- API limits, parcel-id format, and route bounds come from config (`app.yaml: api.*`, `city.yaml: parcels.id_*`); the client is never the source of truth for any number.
 - Tests and lint before committing. Messages: `area: what changed`.
