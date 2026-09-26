@@ -39,6 +39,16 @@ parcels:
     - VACANT COMMERCIAL LAND
     - VACANT INDUSTRIAL LAND
     - ">10 ACRES VACANT"
+  # Lot frontage and depth, parsed from the deed legal description, which in
+  # Allegheny County usually reads "LOT <frontage>X<depth>" in feet. The legal
+  # text itself is read only to parse this and is never stored. Parsed dims are
+  # accepted only when frontage x depth agrees with the assessed lot area within
+  # `area_tolerance`; otherwise the lot shape falls back to the placeholder
+  # `lot_depth_to_frontage_ratio` in assumptions.yaml.
+  lot_shape:
+    legal_field: LEGAL1
+    dims_pattern: '(\d+(?:\.\d+)?)\s*X\s*(\d+(?:\.\d+)?)'
+    area_tolerance: [0.6, 1.6]
   # Only these assessment fields are kept. Owner names and owner mailing
   # addresses (CHANGENOTICEADDRESS*) are never read into the pipeline.
   keep_fields:

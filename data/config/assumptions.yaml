@@ -184,6 +184,19 @@ assumptions:
     source: null
     rationale: Average light-duty fleet tailpipe emissions per mile, declining fleet ignored.
 
+  lot_depth_to_frontage_ratio:
+    value: 3.0
+    low: 2.0
+    high: 4.5
+    unit: depth / frontage
+    provenance: placeholder
+    source: null
+    rationale: >-
+      Only used to draw a lot whose legal description gives no usable dimensions
+      (about 29% of vacant parcels). Many older Pittsburgh lots are roughly
+      25-40 ft wide and 100-120 ft deep; a sourced value would come from parcel
+      boundary geometry.
+
   analysis_years:
     value: 30
     low: 30

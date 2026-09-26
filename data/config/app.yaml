@@ -33,6 +33,8 @@ api:
   # someone with a warm cache keeps seeing the old answer for this many seconds.
   cache_max_age_seconds: 60
   work_backwards_max_units: 500
+  # Most buildings a plan from the 3D lot view may contain.
+  plan_max_buildings: 60
   target_ami_pct_max: 200
 
 smaa:

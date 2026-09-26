@@ -4,6 +4,14 @@
 #
 # Form parameters are planning rules of thumb for a first pass
 # (provenance: assumption) — see assumptions.yaml for the cost/carbon numbers.
+#
+# `building` is one placeable building in the 3D lot view:
+#   footprint_ft  width (along the street) x depth, in feet
+#   homes         homes in one building (assumption)
+#   massing       which 3D shape to draw; the vocabulary lives in
+#                 web/src/three/typologyMeshes.ts and is about geometry, not policy
+#   body / roof   model colors
+#   max_in_a_row  how many to line up along the frontage for the "Place" preset
 typologies:
   - id: detached
     label: Detached house
@@ -14,6 +22,13 @@ typologies:
     stories: 2
     min_lot_sf_for_form: 2400
     tenure_default: owner
+    building:
+      footprint_ft: [26, 36]
+      homes: 1
+      massing: gable_house
+      body: "#e6d8bd"
+      roof: "#8c6d46"
+      max_in_a_row: 1
 
   - id: adu_pair
     label: House + backyard unit (ADU)
@@ -24,6 +39,13 @@ typologies:
     stories: 2
     min_lot_sf_for_form: 3200
     tenure_default: owner
+    building:
+      footprint_ft: [26, 64]
+      homes: 2
+      massing: house_with_rear_unit
+      body: "#efe2c6"
+      roof: "#b08850"
+      max_in_a_row: 1
 
   - id: two_unit
     label: Two-unit (duplex)
@@ -34,6 +56,13 @@ typologies:
     stories: 2.5
     min_lot_sf_for_form: 2400
     tenure_default: renter
+    building:
+      footprint_ft: [24, 46]
+      homes: 2
+      massing: gable_house_two_doors
+      body: "#dcc3a4"
+      roof: "#a4553a"
+      max_in_a_row: 1
 
   - id: rowhouse
     label: Rowhouses / townhouses
@@ -46,6 +75,13 @@ typologies:
     stories: 3
     min_lot_sf_for_form: 2400
     tenure_default: owner
+    building:
+      footprint_ft: [18, 38]
+      homes: 1
+      massing: flat_rowhouse
+      body: "#8e4a36"
+      roof: "#e8dcc6"
+      max_in_a_row: 6
 
   - id: small_multi
     label: Small apartment building (3–12)
@@ -58,6 +94,13 @@ typologies:
     min_lot_sf_for_form: 2400
     tenure_default: renter
     supports_senior: true
+    building:
+      footprint_ft: [44, 56]
+      homes: 9
+      massing: walkup
+      body: "#cfc6b6"
+      roof: "#4f6d7a"
+      max_in_a_row: 1
 
   - id: midrise
     label: Mid-rise apartments (13+)
@@ -70,3 +113,10 @@ typologies:
     min_lot_sf_for_form: 6000
     tenure_default: renter
     supports_senior: true
+    building:
+      footprint_ft: [64, 84]
+      homes: 32
+      massing: podium_midrise
+      body: "#b9bdb9"
+      roof: "#2f4858"
+      max_in_a_row: 1

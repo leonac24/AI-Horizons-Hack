@@ -1,5 +1,5 @@
 {
-  "config_hash": "42360f751a2e",
+  "config_hash": "36bacf684969",
   "sources": {
     "wprdc_assessments": {
       "provenance": "observed",
@@ -32,6 +32,7 @@
   },
   "counts": {
     "vacant_in_city": 22233,
+    "lot_dims_from_legal_description": 15718,
     "missing_location": 50,
     "flag_steep_slope": 5743,
     "flag_landslide": 5155,

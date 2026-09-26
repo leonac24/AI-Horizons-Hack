@@ -39,7 +39,8 @@ def build(cfg: Config) -> dict:
 
     # 1. Vacant parcels from assessments (no owner names / owner addresses fetched).
     keep = pc["keep_fields"]
-    fields = sorted({*keep, pc["municipality_field"], pc["vacant_use_field"]})
+    shape = pc["lot_shape"]
+    fields = sorted({*keep, pc["municipality_field"], pc["vacant_use_field"], shape["legal_field"]})
     assess = note(
         CkanDatastore(
             pc["assessments_source"], fields, {pc["vacant_use_field"]: pc["vacant_use_values"]}
@@ -50,9 +51,12 @@ def build(cfg: Config) -> dict:
     df = pd.DataFrame(assess.data)
     muni = re.compile(pc["municipality_pattern"])
     df = df[df[pc["municipality_field"]].fillna("").str.contains(muni)]
-    df = df[list(keep)].rename(columns=keep)
+    area_field = next(k for k, v in keep.items() if v == "lot_area_sf")
+    df = df.assign(**_lot_dims(df, shape, area_field)).drop(columns=[shape["legal_field"]])
+    df = df[[*keep, "frontage_ft", "depth_ft"]].rename(columns=keep)
     df = df.drop_duplicates("id")
     report["counts"]["vacant_in_city"] = len(df)
+    report["counts"]["lot_dims_from_legal_description"] = int(df["frontage_ft"].notna().sum())
 
     # 2. Location + census geography from parcel centroids.
     cf = pc["centroid_fields"]
@@ -103,7 +107,7 @@ def build(cfg: Config) -> dict:
         + " " + gdf["street"].fillna("")
     ).str.strip()
 
-    cols = ["id", "address", "zip", "lon", "lat", "lot_area_sf", "land_value_usd", "land_use", "owner_type",
+    cols = ["id", "address", "zip", "lon", "lat", "lot_area_sf", "frontage_ft", "depth_ft", "land_value_usd", "land_use", "owner_type",
             "public", "public_inventory_type", "public_status", "zoning", "zoning_label", "zoning_code_url",
             "neighborhood", "tract", "block_group", *city["hazards"].keys()]
     out = pd.DataFrame(gdf[[c for c in cols if c in gdf.columns]])
@@ -133,6 +137,17 @@ def build(cfg: Config) -> dict:
     (PROCESSED / "pipeline_report.json").write_text(json.dumps(report, indent=2))
     log.info("indexed %d vacant parcels; report: %s", len(records), json.dumps(report["counts"]))
     return report
+
+
+def _lot_dims(df: pd.DataFrame, shape: dict, area_field: str) -> dict[str, pd.Series]:
+    """Frontage/depth in feet from the legal description, kept only when their
+    product agrees with the assessed lot area."""
+    dims = df[shape["legal_field"]].fillna("").str.extract(shape["dims_pattern"]).astype(float)
+    front, depth = dims[0], dims[1]
+    area = pd.to_numeric(df[area_field], errors="coerce")
+    lo, hi = shape["area_tolerance"]
+    ok = (front > 0) & (depth > 0) & ((front * depth / area).between(lo, hi))
+    return {"frontage_ft": front.where(ok).round(1), "depth_ft": depth.where(ok).round(1)}
 
 
 def _points(records: list[dict], hazard_keys) -> dict:

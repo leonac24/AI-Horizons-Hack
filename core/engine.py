@@ -51,8 +51,20 @@ class Scenario(BaseModel):
     ineligible_reason: str | None = None
 
 
+class LotShape(BaseModel):
+    """Frontage and depth in feet, for drawing the lot. Observed when the deed
+    legal description gave dimensions that agree with the assessed area."""
+
+    frontage_ft: float
+    depth_ft: float
+    provenance: str
+    sourceIds: list[str]
+    note: str
+
+
 class Analysis(BaseModel):
     parcel: dict[str, Any]
+    lot_shape: LotShape
     config_hash: str
     site_context: list[Metric]
     scenarios: list[Scenario]
@@ -64,6 +76,21 @@ class Analysis(BaseModel):
 
 def _hazard_flags(cfg: Config, parcel: dict) -> dict[str, bool | None]:
     return {k: parcel.get(k) for k in cfg.hazards}
+
+
+def lot_shape(cfg: Config, parcel: dict) -> LotShape:
+    area = float(parcel.get("lot_area_sf") or 0)
+    front, depth = parcel.get("frontage_ft"), parcel.get("depth_ft")
+    if front and depth:
+        return LotShape(frontage_ft=float(front), depth_ft=float(depth), provenance="observed",
+                        sourceIds=[cfg.assessment_source],
+                        note="From the deed legal description; agrees with the assessed lot area.")
+    ratio = cfg.assumption("lot_depth_to_frontage_ratio")
+    front = math.sqrt(area / ratio.value) if area > 0 else 0.0
+    return LotShape(frontage_ft=round(front, 1), depth_ft=round(area / front, 1) if front else 0.0,
+                    provenance="placeholder", sourceIds=[s for s in [ratio.source] if s],
+                    note="No usable dimensions in the legal description; drawn from lot area and a "
+                         "placeholder depth-to-frontage ratio.")
 
 
 def plan_units(typ: Typology, lot_area_sf: float) -> tuple[int, bool]:
@@ -255,7 +282,8 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
 
     n_placeholder = sum(m.provenance == "placeholder" for m in site_context) + sum(
         m.provenance == "placeholder" for s in scenarios for m in s.metrics.values())
-    return Analysis(parcel=parcel, config_hash=cfg.hash, site_context=site_context, scenarios=scenarios,
+    return Analysis(parcel=parcel, lot_shape=lot_shape(cfg, parcel), config_hash=cfg.hash,
+                    site_context=site_context, scenarios=scenarios,
                     placeholder_count=n_placeholder,
                     rankable_typology_ids=[s.typology_id for s in scenarios if s.eligible],
                     excluded_typology_ids=[s.typology_id for s in scenarios if not s.eligible])
