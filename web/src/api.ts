@@ -3,6 +3,7 @@ import type {
   Config,
   Explanation,
   ParcelSummary,
+  PlanResult,
   Unknowns,
   WorkBackwardsResult,
 } from './types'
@@ -23,6 +24,16 @@ export const api = {
     get<WorkBackwardsResult>(
       `/api/work-backwards/${encodeURIComponent(id)}?typology=${encodeURIComponent(typology)}&units=${units}&target_ami_pct=${amiPct}`,
     ),
+  plan: async (id: string, counts: Record<string, number>, signal?: AbortSignal) => {
+    const r = await fetch(`/api/analysis/${encodeURIComponent(id)}/plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ placements: Object.entries(counts).map(([typology_id, count]) => ({ typology_id, count })) }),
+      signal,
+    })
+    if (!r.ok) throw new Error(`plan: ${r.status}`)
+    return (await r.json()) as PlanResult
+  },
   explain: async (parcelId: string, weights: Record<string, number>, ranking: string[]) => {
     const r = await fetch('/api/explain', {
       method: 'POST',

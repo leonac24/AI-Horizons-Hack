@@ -7,6 +7,11 @@
   tests. A person on the team decided each design question. Code was
   checked by the test suite (config validation, scoring math, zoning evaluation,
   a citywide coverage test, a no-hardcoding fixture) and by running the app.
+- The 3D simulator was built from a design handoff (an HTML/three.js
+  prototype) that the team supplied. Claude Code ported it to the repo's
+  React/TypeScript code. It replaced the prototype's placeholder model and
+  sample zoning rules with API data, because those were invented and are not
+  shipped.
 - Claude Code also looked up and checked the dataset endpoints listed in
   `sources.yaml`, calling the WPRDC CKAN API directly.
 

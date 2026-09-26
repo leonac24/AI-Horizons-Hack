@@ -2,6 +2,17 @@ id: pittsburgh
 name: City of Pittsburgh
 state_fips: "42"
 county_fips: "003"
+# 3D city view. Longitude/latitude map to scene units around `origin` using
+# `scale` (units per degree); the scene is a square of side 2 × `half_extent`.
+# Rivers are hand-traced centerlines for a stylized diorama, not survey data.
+scene:
+  origin: [-79.9959, 40.4406]
+  scale: [5000, 6500]
+  half_extent: 620
+  rivers:
+    - [[-80.0125, 40.442], [-79.99, 40.45], [-79.97, 40.462], [-79.945, 40.475], [-79.92, 40.482], [-79.88, 40.492]]
+    - [[-80.0125, 40.442], [-79.99, 40.434], [-79.965, 40.425], [-79.95, 40.414], [-79.935, 40.4], [-79.915, 40.395], [-79.885, 40.405]]
+    - [[-80.0125, 40.442], [-80.03, 40.452], [-80.05, 40.468], [-80.075, 40.48], [-80.1, 40.49]]
 map:
   center: [-79.9959, 40.4406]
   zoom: 11.5
@@ -78,8 +89,9 @@ zoning_layer:
   label_field: full_zoning_type
   code_link_field: municode
 
+# `lot_scene: hill` draws a hillside behind the lot in the 3D view.
 hazards:
-  steep_slope: { source: wprdc_steep_slope, label: "Slope 25% or greater" }
+  steep_slope: { source: wprdc_steep_slope, label: "Slope 25% or greater", lot_scene: hill }
   landslide: { source: wprdc_landslide_prone, label: "Landslide-prone area" }
   undermined: { source: wprdc_undermined, label: "Undermined area" }
 

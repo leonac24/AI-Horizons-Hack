@@ -23,13 +23,21 @@ assessment records) and compare six kinds of housing that could go there:
 
 ## What it does
 
-- **Pick a lot.** A citywide map of vacant parcels. Search by address or parcel
-  ID, jump to a neighborhood, filter by lot size, zoning, public ownership or
-  site hazard, or start from suggested lots spread across the city.
-- **Compare.** Scenario cards with a "tradeoff receipt" for each option:
-  - zoning status with Title Nine citations;
+- **Pick a lot.** A stylized 3D model of Pittsburgh with every vacant parcel
+  at its real location. Search by address or parcel ID, filter by lot size,
+  zoning, public ownership or site hazard, or start from suggested lots spread
+  across the city. Click a lot to fly into it.
+- **Build on it.** Drag housing types from the palette onto the lot. The pad
+  uses the lot's real frontage and depth from the deed legal description (71%
+  of vacant parcels; the rest are labeled placeholders). Buildings snap, rotate,
+  and turn red if they're off the lot or overlapping. Undo and redo are
+  supported, and a Before/After toggle shows the lot as it is today. Every
+  change re-evaluates "Your plan" on the server.
+- **Compare.** Your plan ranked next to each housing type's own option:
+  - zoning status with Title Nine citations; buildings whose use is prohibited
+    get a red outline, and the plan is excluded from the ranking;
   - "Could this household afford it?" for illustrative households;
-  - carbon over time, with crossover years.
+  - carbon over time, with a year slider and crossover years.
 - **Whose priorities?** Weight sliders and stakeholder presets. SMAA bars show
   how often each option ranks first once weights and uncertainty are sampled.
   A one-line "ranking flip" gives the smallest weight change that swaps the top
@@ -100,8 +108,8 @@ static files and serves `api/index.py` (FastAPI) as a Python function. Add
 
 - **Pipeline:** Python 3.14 (uv), pandas, GeoPandas, shapely, pyogrio, requests.
 - **Engine and API:** numpy, pydantic, PyYAML, FastAPI, google-genai.
-- **Web:** Vite, React 19, TypeScript (strict), MapLibre GL JS with the
-  OpenFreeMap basemap, Recharts.
+- **Web:** Vite, React 19, TypeScript (strict), three.js for the 3D city and
+  lot views, with Barlow and Chakra Petch fonts from Google Fonts.
 
 All Pittsburgh-specific facts live in `data/config/`. The code iterates over
 whatever that folder declares.

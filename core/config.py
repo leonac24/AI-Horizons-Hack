@@ -121,6 +121,7 @@ class Building(_Model):
 class Typology(_Model):
     id: str
     label: str
+    short_label: str
     color: str
     use_key: str
     unit_size_sf: float = Field(gt=0)
