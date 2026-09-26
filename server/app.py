@@ -1,13 +1,20 @@
-"""FastAPI app. Local: `uv run uvicorn server.app:app --reload`. Vercel: api/index.py."""
+"""FastAPI app. Local: `uv run uvicorn server.app:app --reload`. Vercel: api/index.py.
+
+This API is public, unauthenticated and read-only. Every endpoint is safe and
+idempotent; see docs/BACKEND.md for the contract, the limits and curl examples.
+"""
 
 from __future__ import annotations
 
+import hashlib
 import json
-from collections import Counter
+import logging
+import time
+from collections import Counter, deque
 from functools import lru_cache
 
-from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, FastAPI, HTTPException, Path, Query, Request, Response
+from pydantic import BaseModel, Field
 
 from core.config import ROOT, get_config
 from core.engine import Analysis, analyze, work_backwards
@@ -15,39 +22,147 @@ from core.zoning import load_rules
 from server.explain import explain
 from server.llm import get_provider
 
-app = FastAPI(title="Lotline API")
+log = logging.getLogger("lotline.api")
+
+app = FastAPI(
+    title="Lotline API",
+    summary="Read-only decision-support data for Pittsburgh vacant parcels.",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
+)
 PARCELS_FILE = ROOT / "data" / "processed" / "parcels.json"
+
+# Every route is declared on this router so the whole API can be mounted at more
+# than one prefix. Hosts differ in whether they hand the function the original
+# path or the rewritten one, and a 404 caused by a prefix mismatch is an
+# expensive thing to debug during a deploy. See docs/BACKEND.md.
+api = APIRouter()
+
+
+# --- cross-cutting ---------------------------------------------------------------
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    """Defence in depth for a JSON API. The API never returns HTML, so the cheapest
+    real win is stopping a browser from sniffing a response into something
+    executable, and keeping parcel ids out of Referer headers to third parties."""
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+    return response
+
+
+@app.exception_handler(Exception)
+async def unhandled(request: Request, exc: Exception) -> Response:
+    """Never let an exception string reach a client. Tracebacks leak file paths,
+    config keys and library versions; the client only needs to know we failed."""
+    log.exception("unhandled error on %s %s", request.method, request.url.path)
+    return Response(
+        content=json.dumps({"detail": "internal error"}),
+        status_code=500,
+        media_type="application/json",
+    )
+
+
+class _RateLimiter:
+    """Fixed-window limiter for the one endpoint that costs money per call.
+
+    In-process, so on a serverless host the ceiling is per warm instance rather
+    than global — this is a cost guardrail, not an access control. Anything
+    stronger needs shared state (see docs/BACKEND.md).
+    """
+
+    def __init__(self, per_minute: int) -> None:
+        self.per_minute = per_minute
+        self._hits: dict[str, deque[float]] = {}
+
+    def check(self, key: str, now: float | None = None) -> bool:
+        now = time.monotonic() if now is None else now
+        q = self._hits.setdefault(key, deque())
+        while q and now - q[0] > 60:
+            q.popleft()
+        if len(q) >= self.per_minute:
+            return False
+        q.append(now)
+        if len(self._hits) > 4096:  # bound memory against spoofed client ips
+            self._hits.clear()
+        return True
 
 
 @lru_cache(maxsize=1)
+def _explain_limiter() -> _RateLimiter:
+    return _RateLimiter(get_config().app.api.explain_requests_per_minute)
+
+
+def _client_key(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    return (fwd.split(",")[0].strip() or (request.client.host if request.client else "unknown"))[:64]
+
+
+def _etag(payload: object) -> str:
+    return '"' + hashlib.sha256(
+        json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()[:32] + '"'
+
+
+def _conditional(request: Request, response: Response, payload: object) -> bool:
+    """Set validators and report whether the client's copy is already current.
+
+    Analyses are pure functions of (parcel, config), so they are safely cacheable
+    and a repeat request should cost nothing.
+    """
+    tag = _etag(payload)
+    response.headers["ETag"] = tag
+    response.headers["Cache-Control"] = "public, max-age=60"
+    return request.headers.get("if-none-match") == tag
+
+
+# --- data ------------------------------------------------------------------------
+@lru_cache(maxsize=1)
 def _index() -> dict:
     if not PARCELS_FILE.exists():
+        log.warning("no parcel index at %s — serving an empty index", PARCELS_FILE)
         return {"parcels": {}, "suggested": []}
-    return json.loads(PARCELS_FILE.read_text())
+    return json.loads(PARCELS_FILE.read_text(encoding="utf-8"))
 
 
 def _parcel(parcel_id: str) -> dict:
     p = _index()["parcels"].get(parcel_id)
     if p is None:
-        raise HTTPException(404, f"no vacant parcel {parcel_id!r} in the index")
+        raise HTTPException(404, "no vacant parcel with that id in the index")
     return p
 
 
 @lru_cache(maxsize=512)
-def _analysis(parcel_id: str, config_hash: str) -> Analysis:
+def _analysis_cached(parcel_id: str, config_hash: str) -> Analysis:
     return analyze(get_config(), _parcel(parcel_id))
 
 
-@app.get("/api/health")
+def _analysis(parcel_id: str) -> Analysis:
+    return _analysis_cached(parcel_id, get_config().hash)
+
+
+# Parcel ids are county PINs: uppercase alphanumeric, fixed width. Constraining
+# the path parameter means a malformed id is a 422 at the edge rather than a
+# dictionary lookup on arbitrary user input.
+PARCEL_ID = Path(min_length=4, max_length=32, pattern=r"^[A-Z0-9]+$")
+ParcelId = Field(min_length=4, max_length=32, pattern=r"^[A-Z0-9]+$")
+
+
+# --- routes ----------------------------------------------------------------------
+@api.get("/health", summary="Liveness plus what this instance loaded")
 def health() -> dict:
     cfg = get_config()
     return {"ok": True, "config_hash": cfg.hash, "parcels": len(_index()["parcels"]),
             "llm": get_provider().name}
 
 
-@app.get("/api/config")
-def config() -> dict:
-    return get_config().public_json()
+@api.get("/config", summary="Labels, criteria, typologies and assumptions for the UI")
+def config(request: Request, response: Response) -> dict:
+    payload = get_config().public_json()
+    if _conditional(request, response, payload):
+        return Response(status_code=304)  # type: ignore[return-value]
+    return payload
 
 
 def _summary(p: dict) -> dict:
@@ -55,16 +170,20 @@ def _summary(p: dict) -> dict:
     return {k: p.get(k) for k in keys}
 
 
-@app.get("/api/parcels/suggested")
+@api.get("/parcels/suggested", summary="A geographically varied starting sample")
 def suggested() -> list[dict]:
     idx = _index()
     return [_summary(idx["parcels"][i]) for i in idx["suggested"] if i in idx["parcels"]]
 
 
-@app.get("/api/parcels/search")
-def search(q: str = Query(min_length=2), limit: int = 20) -> list[dict]:
-    ql = q.strip().upper().replace("-", "")
-    out = []
+@api.get("/parcels/search", summary="Prefix search on parcel id, substring on address")
+def search(q: str = Query(min_length=2, max_length=64), limit: int = Query(20, ge=1, le=50)) -> list[dict]:
+    cfg = get_config().app.api
+    # Bounded by config as well as by the signature: the signature stops a hostile
+    # caller, the config bound stops us from raising the ceiling by accident.
+    limit = min(limit, cfg.search_limit_max)
+    ql = q.strip().upper().replace("-", "")[: cfg.search_query_max_chars]
+    out: list[dict] = []
     for p in _index()["parcels"].values():
         if p["id"].startswith(ql) or ql in (p.get("address") or "").upper():
             out.append(_summary(p))
@@ -73,41 +192,60 @@ def search(q: str = Query(min_length=2), limit: int = 20) -> list[dict]:
     return out
 
 
-@app.get("/api/parcels/{parcel_id}")
-def parcel(parcel_id: str) -> dict:
+@api.get("/parcels/{parcel_id}", summary="One parcel's index record")
+def parcel(parcel_id: str = PARCEL_ID) -> dict:
     return _parcel(parcel_id)
 
 
-@app.get("/api/analysis/{parcel_id}")
-def analysis(parcel_id: str) -> Analysis:
-    return _analysis(parcel_id, get_config().hash)
+@api.get("/analysis/{parcel_id}", summary="Every typology scored on one parcel, with provenance")
+def analysis(request: Request, response: Response, parcel_id: str = PARCEL_ID) -> Analysis:
+    result = _analysis(parcel_id)
+    if _conditional(request, response, result.model_dump(mode="json")):
+        return Response(status_code=304)  # type: ignore[return-value]
+    return result
 
 
 class ExplainRequest(BaseModel):
-    parcel_id: str
-    weights: dict[str, float]
-    ranking: list[str]
+    """Weights and ranking are the caller's *values*. They are echoed into the
+    prompt but never trusted as evidence: the server recomputes every number.
+    """
+
+    parcel_id: str = ParcelId
+    weights: dict[str, float] = Field(default_factory=dict)
+    ranking: list[str] = Field(default_factory=list)
 
 
-@app.post("/api/explain")
-def explain_route(req: ExplainRequest) -> dict:
+@api.post("/explain", summary="Grounded prose over already-computed metrics")
+def explain_route(req: ExplainRequest, request: Request) -> dict:
     cfg = get_config()
-    a = _analysis(req.parcel_id, cfg.hash)  # recomputed server-side; client numbers are never trusted
-    known = {t.id for t in cfg.typologies}
-    ranking = [t for t in req.ranking if t in known]
-    return explain(cfg, get_provider(), a, req.weights, ranking)
+    limits = cfg.app.api
+    if len(req.weights) > limits.explain_max_weights or len(req.ranking) > limits.explain_max_ranking:
+        raise HTTPException(413, "too many weights or ranking entries")
+    if not _explain_limiter().check(_client_key(request)):
+        raise HTTPException(429, "too many explanation requests; try again shortly")
+
+    a = _analysis(req.parcel_id)  # recomputed server-side; client numbers are never trusted
+    known_criteria = {c.id for c in cfg.criteria}
+    known_typologies = {t.id for t in cfg.typologies}
+    # Drop unknown keys and non-finite weights rather than forwarding caller-supplied
+    # strings into an LLM prompt.
+    weights = {k: float(v) for k, v in req.weights.items()
+               if k in known_criteria and -1e6 < float(v) < 1e6}
+    ranking = [t for t in req.ranking if t in known_typologies]
+    return explain(cfg, get_provider(), a, weights, ranking)
 
 
-@app.get("/api/work-backwards/{parcel_id}")
-def work_backwards_route(parcel_id: str, typology: str, units: int = Query(ge=1),
+@api.get("/work-backwards/{parcel_id}", summary="What would have to change to hit a target")
+def work_backwards_route(parcel_id: str = PARCEL_ID, typology: str = Query(max_length=64),
+                         units: int = Query(ge=1, le=500),
                          target_ami_pct: float = Query(gt=0, le=200)) -> dict:
-    try:
-        return work_backwards(get_config(), _parcel(parcel_id), typology, units, target_ami_pct)
-    except KeyError as e:
-        raise HTTPException(400, str(e)) from e
+    cfg = get_config()
+    if typology not in {t.id for t in cfg.typologies}:
+        raise HTTPException(400, "unknown typology")
+    return work_backwards(cfg, _parcel(parcel_id), typology, units, target_ami_pct)
 
 
-@app.get("/api/unknowns")
+@api.get("/unknowns", summary="Placeholders, unverified sources and unreviewed districts")
 def unknowns() -> dict:
     """Everything the tool does not know yet — feeds the 'What we don't know' page."""
     cfg = get_config()
@@ -129,5 +267,12 @@ def unknowns() -> dict:
             {"district": d, "vacant_parcels": n} for d, n in by_district.most_common() if d not in reviewed],
         "vacant_parcels": total,
         "share_covered_by_reviewed_rules": round(covered / total, 4),
-        "pipeline": json.loads(report_path.read_text()) if report_path.exists() else None,
+        "pipeline": json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None,
     }
+
+
+app.include_router(api, prefix="/api")
+# Same routes without the prefix, so the app answers whether or not the platform
+# strips /api before invoking the function. Harmless locally, and it turns a
+# class of deploy failure into a non-event.
+app.include_router(api)

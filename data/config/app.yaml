@@ -6,6 +6,23 @@ disclaimer: >-
 placeholder_notice: >-
   Hatched values are placeholders: a real source has not been connected yet.
   They show how the tool works, not what is true about this lot.
+# Uncertainty draws inside the evidence engine (metric low/high bands).
+# Separate from `smaa` below, which resamples in the browser for rank
+# acceptability. Both live here so neither seed is a literal in code.
+uncertainty:
+  samples: 300
+  seed: 20260926
+
+# Server input limits. The API is public and unauthenticated; these are the
+# ceilings that keep a hostile caller from turning it into a bill or a stall.
+api:
+  search_query_max_chars: 64
+  search_limit_max: 50
+  explain_max_weights: 64
+  explain_max_ranking: 32
+  explain_requests_per_minute: 12
+  analysis_cache_entries: 512
+
 smaa:
   samples: 2000
   seed: 20260926

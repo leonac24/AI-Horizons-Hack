@@ -36,12 +36,28 @@ class Samples:
 
     Each call to `a()` records which assumptions (and their provenance/sources)
     a computation touched, so every metric reports honest provenance.
+
+    `n` and `seed` default to app.yaml `uncertainty`, so the draw count is a
+    reviewable config value rather than a literal buried in the engine. Pass them
+    explicitly only in tests.
     """
 
     cfg: Config
-    n: int = 300
-    seed: int = 7
+    n: int = -1
+    seed: int = -1
     _cache: dict[tuple, np.ndarray] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.n < 0:
+            self.n = self.cfg.app.uncertainty.samples
+        if self.seed < 0:
+            self.seed = self.cfg.app.uncertainty.seed
+
+    def stream(self, *parts: str) -> np.random.Generator:
+        """A generator seeded by this Samples' seed plus `parts`. Anything in the
+        engine that needs randomness goes through here, so there is exactly one
+        seed in the system and results stay reproducible."""
+        return np.random.default_rng([self.seed, *(_stable_hash(p) for p in parts)])
 
     def a(self, key: str, typology: str | None = None, used: Trace | None = None) -> np.ndarray:
         asm = self.cfg.assumption(key)

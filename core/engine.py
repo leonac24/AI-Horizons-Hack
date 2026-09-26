@@ -13,7 +13,7 @@ import numpy as np
 from pydantic import BaseModel
 
 from core.config import Config, Typology, UnitRange
-from core.metrics import Metric, Samples, Trace, to_metric
+from core.metrics import Metric, Samples, Trace, to_metric, weakest
 from core.zoning import ZoningResult, evaluate, load_rules
 
 OBSERVED_SOURCES = {"assessment": "wprdc_assessments", "centroid": "wprdc_parcel_centroids"}
@@ -45,6 +45,12 @@ class Scenario(BaseModel):
     zoning: ZoningResult
     households: list[HouseholdCheck]
     carbon: CarbonSeries
+    # Mirrors zoning.disqualified so a client never has to know which zoning
+    # statuses are hard stops. Disqualified scenarios are still returned in full —
+    # a CDC needs to see what it cannot do, and why — but they must be presented
+    # outside the ranking, not scored against it.
+    eligible: bool = True
+    ineligible_reason: str | None = None
 
 
 class Analysis(BaseModel):
@@ -53,10 +59,13 @@ class Analysis(BaseModel):
     site_context: list[Metric]
     scenarios: list[Scenario]
     placeholder_count: int
+    # Server-side answer to "what may be ranked". The browser scores only these.
+    rankable_typology_ids: list[str] = []
+    excluded_typology_ids: list[str] = []
 
 
 def _hazard_flags(cfg: Config, parcel: dict) -> dict[str, bool | None]:
-    return {k: parcel.get(k) for k in cfg.city.model_dump()["hazards"]}
+    return {k: parcel.get(k) for k in cfg.hazards}
 
 
 def plan_units(typ: Typology, lot_area_sf: float) -> tuple[int, bool]:
@@ -73,7 +82,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
     rules = load_rules(cfg)
     lot = float(parcel.get("lot_area_sf") or 0)
     flags = _hazard_flags(cfg, parcel)
-    hazards_cfg = cfg.city.model_dump()["hazards"]
+    hazards_cfg = cfg.hazards
 
     # --- Lot context (same for every scenario) ----------------------------------
     t_ctx = Trace()
@@ -149,7 +158,11 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
         afford_ratio = np.clip(income_local / income_needed, 0, 1)
         t_local = t_aff.merge(t_ctx).merge(t_burden)
         demand = units * burden * afford_ratio
-        displacement = units * burden * (1 - afford_ratio)
+        # A SHARE, not a count. Multiplying unit count by a tract cost-burden
+        # share by an affordability ratio and reporting the product in whole
+        # homes asserted a precision none of those three inputs has, and the old
+        # name ("displacement") asserted a causal claim on top of it.
+        share_above_local_rents = 1 - afford_ratio
 
         # Infrastructure load
         t_infra = t_sewer.merge(Trace({"observed"}, {hazards_cfg[f]["source"] for f in hazards_cfg if flags.get(f) is not None}))
@@ -157,8 +170,6 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
         t_infra.add(hw.provenance, hw.source)
         mult = 1 + sum((hw.by_key or {}).get(f, 0) for f in hazards_cfg if flags.get(f))
         infra = units * mult * sewer
-
-        opportunity = units * access
 
         # Carbon per household over the horizon
         t_c = Trace()
@@ -173,7 +184,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
         yr = np.arange(1, years + 1)[:, None]
         annual = (kwh * grid * (1 - decarb) ** (yr - 1) + vmt * kgpm) / 1000  # t/yr, shape (years, n+1)
         cumulative = np.vstack([emb[None, :], emb + np.cumsum(annual, axis=0)])
-        cprov = to_metric("x", "x", cumulative[-1], "t", t_c).provenance
+        cprov = weakest(t_c.prov(), "modeled")
         carbon = CarbonSeries(
             years=list(range(years + 1)),
             value=[round(float(r[0]), 2) for r in cumulative],
@@ -185,9 +196,15 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
         # Zoning path score
         zscore = cfg.assumption("zoning_status_score")
         zt = Trace({"assumption"})
-        if zres.status == "needs_review":
+        unreviewed_status = cfg.zoning.status_id("unreviewed")
+        if zres.status == unreviewed_status:
+            # Unknown approval path: the band spans every outcome the code allows.
+            # Drawn from the one seeded stream so the band is reproducible and a
+            # new assumption elsewhere cannot reshuffle it.
             vals = list((zscore.by_key or {}).values())
-            zarr = np.concatenate([[zscore.by_key["needs_review"]], np.random.default_rng(1).uniform(min(vals), max(vals), S.n)])
+            rng = S.stream("zoning_status_score", typ.id)
+            zarr = np.concatenate([[zscore.by_key[unreviewed_status]],
+                                   rng.uniform(min(vals), max(vals), S.n)])
             zmetric = to_metric("feasibility.zoning_score", "Zoning path score", zarr, "0–1", zt,
                                 note="District not reviewed — range covers every possible outcome.",
                                 provenance="placeholder")
@@ -207,14 +224,15 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
                 "affordability.monthly_cost", "Monthly cost to cover development + operations", monthly, "USD/mo", t_aff),
             "affordability.dev_cost_per_unit": to_metric(
                 "affordability.dev_cost_per_unit", "Development cost per home", per_unit, "USD", t_cost),
-            "displacement.pressure_units": to_metric(
-                "displacement.pressure_units", "Homes priced above what nearby renters can pay", displacement, "homes", t_local),
+            "affordability_gap.share_above_local_rents": to_metric(
+                "affordability_gap.share_above_local_rents",
+                "Share priced above what nearby renters can pay", share_above_local_rents * 100, "%", t_local,
+                note="A pressure indicator, not a count of displaced households. "
+                     "A causal estimate needs longitudinal data we do not have."),
             "infrastructure.load_index": to_metric(
                 "infrastructure.load_index", "Infrastructure load at this site", infra, "index", t_infra),
-            "opportunity.households_with_access": to_metric(
-                "opportunity.households_with_access", "Households gaining this lot's job access", opportunity, "households", t_access),
-            "carbon.per_household_30yr": to_metric(
-                "carbon.per_household_30yr", f"Carbon per household over {years} years", cumulative[-1], "tCO2e", t_c),
+            "carbon.per_household_horizon": to_metric(
+                "carbon.per_household_horizon", f"Carbon per household over {years} years", cumulative[-1], "tCO2e", t_c),
             "carbon.embodied_per_household": to_metric(
                 "carbon.embodied_per_household", "Upfront (embodied) carbon per household", emb, "tCO2e", t_c),
             "units.count": to_metric("units.count", "Homes", S.const(units), "homes", Trace({"modeled"})),
@@ -233,12 +251,16 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
                 note=None if hh.tenure == typ.tenure_default else f"Usually {typ.tenure_default}-occupied"))
 
         scenarios.append(Scenario(typology_id=typ.id, units=units, form_fits=form_fits, notes=notes,
-                                  metrics=metrics, zoning=zres, households=hh_checks, carbon=carbon))
+                                  metrics=metrics, zoning=zres, households=hh_checks, carbon=carbon,
+                                  eligible=not zres.disqualified,
+                                  ineligible_reason=zres.disqualified_reason))
 
     n_placeholder = sum(m.provenance == "placeholder" for m in site_context) + sum(
         m.provenance == "placeholder" for s in scenarios for m in s.metrics.values())
     return Analysis(parcel=parcel, config_hash=cfg.hash, site_context=site_context, scenarios=scenarios,
-                    placeholder_count=n_placeholder)
+                    placeholder_count=n_placeholder,
+                    rankable_typology_ids=[s.typology_id for s in scenarios if s.eligible],
+                    excluded_typology_ids=[s.typology_id for s in scenarios if not s.eligible])
 
 
 def work_backwards(cfg: Config, parcel: dict, typology_id: str, units: int, target_ami_pct: float) -> dict:
@@ -260,7 +282,7 @@ def work_backwards(cfg: Config, parcel: dict, typology_id: str, units: int, targ
     gap_monthly = {k: max(0.0, getattr(m, k) - affordable) for k in ("value", "low", "high")}
     subsidy = {k: round(v * 12 / cap) for k, v in gap_monthly.items()}
     failed = [c.model_dump() for c in z.checks if not c.passed]
-    infra = [f"{spec['label']}" for f, spec in cfg.city.model_dump()["hazards"].items() if parcel.get(f)]
+    infra = [spec["label"] for f, spec in cfg.hazards.items() if parcel.get(f)]
     return {
         "typology_id": typology_id,
         "units": units,

@@ -57,10 +57,30 @@ facts appear once, under "About this lot".
 | Serves local housing need | `homes × renter_cost_burden_share × min(1, tract_median_income / income_needed)` | higher better |
 | Zoning path | reviewed status → score (`zoning_status_score.by_key`); unreviewed → placeholder spanning all outcomes | higher better |
 | Income needed | `ami_needed_pct` | lower better |
-| Adds displacement pressure | `homes × renter_cost_burden_share × (1 − min(1, tract_median_income / income_needed))` | lower better |
+| Share priced above nearby renter incomes | `1 − min(1, tract_median_income / income_needed)` | lower better |
 | Strain on infrastructure | `homes × (1 + Σ hazard weights present) × sewer_stress_index` | lower better |
-| Households gaining job access | `homes × jobs_access_index` | higher better |
-| Carbon per household (30 yr) | see below | lower better |
+| Carbon per household | see below | lower better |
+
+Two changes on 2026-09-26, both to stop the criteria overstating what the
+evidence supports:
+
+**"Adds displacement pressure" became "Share priced above nearby renter
+incomes."** It was `homes × renter_cost_burden_share × (1 − affordability
+ratio)` — three uncertain inputs multiplied and reported as a count of whole
+homes — under a name that asserted a causal claim. Estimating households
+displaced needs longitudinal data and a validated causal method that we do not
+have for Pittsburgh parcels. It is now a share, and it is named for what it
+measures.
+
+**"Households gaining job access" was removed as a criterion.** It was
+`homes × jobs_access_index`, and `jobs_access_index` is a property of the lot,
+not of the housing type. Within a single lot it was therefore a positive
+constant times unit count — which, after min–max normalization, is exactly the
+negative of "Strain on infrastructure". The two cancelled, so only the
+*difference* between their two weights did any work, while both sliders appeared
+to the user to be independent. Transit access is still computed and shown as
+site context (`site.jobs_access`). If a future access measure varies by housing
+type, it belongs back in this table.
 
 ## Carbon over time (per household)
 

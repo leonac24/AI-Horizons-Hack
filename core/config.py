@@ -34,6 +34,24 @@ class SmaaSettings(_Model):
     profile_concentration: float = Field(gt=0)
 
 
+class UncertaintySettings(_Model):
+    """Draw count and seed for the evidence engine's low/high bands."""
+
+    samples: int = Field(gt=0)
+    seed: int
+
+
+class ApiSettings(_Model):
+    """Ceilings for a public, unauthenticated API. See docs/BACKEND.md."""
+
+    search_query_max_chars: int = Field(gt=0)
+    search_limit_max: int = Field(gt=0)
+    explain_max_weights: int = Field(gt=0)
+    explain_max_ranking: int = Field(gt=0)
+    explain_requests_per_minute: int = Field(gt=0)
+    analysis_cache_entries: int = Field(gt=0)
+
+
 class ExplanationSettings(_Model):
     max_sentences: int = Field(gt=0)
 
@@ -43,6 +61,8 @@ class AppConfig(_Model):
     tagline: str
     disclaimer: str
     placeholder_notice: str
+    uncertainty: UncertaintySettings
+    api: ApiSettings
     smaa: SmaaSettings
     explanation: ExplanationSettings
 
@@ -177,8 +197,16 @@ class SourcesConfig(_Model):
 
 
 # --- zoning.yaml ---------------------------------------------------------------
+StatusRole = Literal["permitted", "discretionary", "variance", "prohibited", "unreviewed"]
+
+# Roles the engine must be able to resolve to exactly one status id. Code asks
+# for a role; zoning.yaml decides which id plays it. No status id in code.
+_REQUIRED_ROLES: tuple[StatusRole, ...] = ("variance", "prohibited", "unreviewed")
+
+
 class ZoningStatus(_Model):
     label: str
+    role: StatusRole
 
 
 class DimensionalTarget(_Model):
@@ -207,6 +235,25 @@ class ZoningConfig(_Model):
     priority_file: str
     statuses: dict[str, ZoningStatus]
     extraction_targets: ExtractionTargets
+
+    @model_validator(mode="after")
+    def _roles_resolvable(self) -> ZoningConfig:
+        for role in _REQUIRED_ROLES:
+            ids = [i for i, s in self.statuses.items() if s.role == role]
+            if len(ids) != 1:
+                raise ValueError(
+                    f"zoning.statuses needs exactly one status with role {role!r}, found {ids}")
+        return self
+
+    def status_id(self, role: StatusRole) -> str:
+        """The status id playing `role`. Lets code branch on meaning, not on id."""
+        return next(i for i, s in self.statuses.items() if s.role == role)
+
+    def is_disqualifying(self, status_id: str) -> bool:
+        """A prohibited use is a hard stop: it is excluded from the ranking rather
+        than scored, so no amount of weight on other criteria can outrank it."""
+        s = self.statuses.get(status_id)
+        return s is not None and s.role == "prohibited"
 
 
 # --- everything ----------------------------------------------------------------
@@ -238,11 +285,21 @@ class Config(_Model):
             if any(w < 0 for w in p.weights.values()):
                 errors.append(f"stakeholder {p.id!r}: negative weight")
 
+        _unique("criterion metric_id", [c.metric_id for c in self.criteria], errors)
+
         use_keys = set(self.zoning.extraction_targets.use_keys)
         typ_ids = {t.id for t in self.typologies}
         for t in self.typologies:
             if t.use_key not in use_keys:
                 errors.append(f"typology {t.id!r}: use_key {t.use_key!r} not in zoning.yaml use_keys")
+
+        # Every approval path needs a score, or a reviewed district could return a
+        # status the engine cannot price.
+        zscore = self.assumptions.get("zoning_status_score")
+        if zscore is not None:
+            missing_scores = set(self.zoning.statuses) - set(zscore.by_key or {})
+            if missing_scores:
+                errors.append(f"assumptions.zoning_status_score.by_key missing {sorted(missing_scores)}")
         for aid, a in self.assumptions.items():
             if a.source and a.source not in self.sources.sources:
                 errors.append(f"assumption {aid!r}: unknown source {a.source!r}")
@@ -261,9 +318,29 @@ class Config(_Model):
         except KeyError:
             raise KeyError(f"assumptions.yaml has no {key!r}") from None
 
+    @property
+    def hazards(self) -> dict[str, Any]:
+        """Hazard flag specs from city.yaml, resolved once instead of per parcel."""
+        if self.__dict__.get("_hazards") is None:
+            self.__dict__["_hazards"] = dict(self.city.model_dump().get("hazards") or {})
+        return self.__dict__["_hazards"]
+
+    # Keys stripped from the browser payload: server-side filesystem layout the
+    # client has no use for. Not a secret, but publishing your on-disk paths
+    # narrows an attacker's guessing and there is no reason to hand it over.
+    _INTERNAL_ZONING_KEYS = ("rules_file", "priority_file")
+    _INTERNAL_CODE_KEYS = ("raw_text_dir",)
+
     def public_json(self) -> dict[str, Any]:
-        """What the browser gets: everything needed for labels, legends, sliders."""
-        return self.model_dump(mode="json")
+        """What the browser gets: everything needed for labels, legends and sliders,
+        and nothing about where files live on the server."""
+        data = self.model_dump(mode="json")
+        zoning = data.get("zoning") or {}
+        for k in self._INTERNAL_ZONING_KEYS:
+            zoning.pop(k, None)
+        for k in self._INTERNAL_CODE_KEYS:
+            (zoning.get("code") or {}).pop(k, None)
+        return data
 
 
 def _unique(kind: str, ids: list[str], errors: list[str]) -> None:
