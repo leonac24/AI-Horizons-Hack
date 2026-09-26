@@ -37,7 +37,7 @@ def sources_md(cfg) -> str:
 def limitations_auto(cfg) -> str:
     rules = load_rules(cfg)
     idx_path = ROOT / "data" / "processed" / "parcels.json"
-    parcels = json.loads(idx_path.read_text())["parcels"].values() if idx_path.exists() else []
+    parcels = json.loads(idx_path.read_text(encoding="utf-8"))["parcels"].values() if idx_path.exists() else []
     by_district = Counter(p.get("zoning") or "(no district)" for p in parcels)
     reviewed = {d for d, r in rules.items() if any(u.get("reviewed") for u in (r.get("uses") or {}).values())}
     total = sum(by_district.values()) or 1
@@ -62,11 +62,11 @@ def limitations_auto(cfg) -> str:
 def main() -> None:
     cfg = load_config()
     DOCS.mkdir(exist_ok=True)
-    (DOCS / "SOURCES.md").write_text(sources_md(cfg))
+    (DOCS / "SOURCES.md").write_text(sources_md(cfg), encoding="utf-8")
     lim = DOCS / "LIMITATIONS.md"
-    text = lim.read_text() if lim.exists() else f"# Limitations\n\n{START}\n{END}\n"
+    text = lim.read_text(encoding="utf-8") if lim.exists() else f"# Limitations\n\n{START}\n{END}\n"
     text = re.sub(re.escape(START) + ".*?" + re.escape(END), limitations_auto(cfg), text, flags=re.DOTALL)
-    lim.write_text(text)
+    lim.write_text(text, encoding="utf-8")
     print("wrote docs/SOURCES.md and updated docs/LIMITATIONS.md")
 
 

@@ -47,7 +47,7 @@ def test_unknown_hazard_is_not_silently_false(cfg, lot):
 @pytest.mark.skipif(not PARCELS.exists(), reason="run the pipeline first")
 def test_coverage_random_citywide_parcels(cfg):
     """Random vacant parcels across the city all return a complete response."""
-    parcels = list(json.loads(PARCELS.read_text())["parcels"].values())
+    parcels = list(json.loads(PARCELS.read_text(encoding="utf-8"))["parcels"].values())
     for p in random.Random(42).sample(parcels, 150):
         _complete(cfg, analyze(cfg, p))
 

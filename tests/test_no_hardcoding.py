@@ -40,11 +40,11 @@ def test_fake_typologies_work(config_copy, lot):
         y["typologies"] = [
             {"id": "zeta", "label": "Zeta", "short_label": "Z", "color": "#000000", "use_key": "multi_unit",
              "unit_size_sf": 900,
-             "stories": 3, "min_lot_sf_for_form": 1000, "tenure_default": "renter",
+             "stories": 3, "floor_height_ft": 11, "min_lot_sf_for_form": 1000, "tenure_default": "renter",
              "building": {"footprint_ft": [20, 50], "homes": 6, "massing": "walkup", "body": "#111111",
                           "roof": "#222222", "max_in_a_row": 3}},
             {"id": "omega", "label": "Omega", "short_label": "O", "color": "#ffffff", "use_key": "two_unit",
-             "unit_size_sf": 1000, "stories": 2,
+             "unit_size_sf": 1000, "stories": 2, "floor_height_ft": 10,
              "min_lot_sf_for_form": 1000, "tenure_default": "owner",
              "building": {"footprint_ft": [20, 40], "homes": 2, "massing": "gable_house", "body": "#333333",
                           "roof": "#444444", "max_in_a_row": 2}},

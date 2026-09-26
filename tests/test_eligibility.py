@@ -23,12 +23,12 @@ def test_prohibited_scenario_is_ineligible_and_excluded(config_copy, lot, monkey
     rules = tmp_path / "rules_review.yaml"
     rules.write_text(yaml.safe_dump({"districts": {lot["zoning"]: {"uses": {
         typ.use_key: {"status": prohibited, "reviewed": True,
-                      "code_section": "911.02", "quote": "not permitted"}}}}}))
+                      "code_section": "911.02", "quote": "not permitted"}}}}}), encoding="utf-8")
 
     import core.zoning as zoning_mod
-    monkeypatch.setattr(zoning_mod, "load_rules", lambda cfg: yaml.safe_load(rules.read_text())["districts"])
+    monkeypatch.setattr(zoning_mod, "load_rules", lambda cfg: yaml.safe_load(rules.read_text(encoding="utf-8"))["districts"])
     import core.engine as engine_mod
-    monkeypatch.setattr(engine_mod, "load_rules", lambda cfg: yaml.safe_load(rules.read_text())["districts"])
+    monkeypatch.setattr(engine_mod, "load_rules", lambda cfg: yaml.safe_load(rules.read_text(encoding="utf-8"))["districts"])
 
     a = analyze(load_config(d), lot)
     blocked = next(s for s in a.scenarios if s.typology_id == typ.id)
