@@ -23,6 +23,13 @@ parcels:
     FIPS_BLOCKGROUP: block_group
     CITY_NEIGHBORHOOD: neighborhood
   # Assessment rows inside city limits: MUNIDESC looks like "13th Ward - PITTSBURGH".
+  # What a parcel id looks like here. Allegheny County PINs are capital letters
+  # and digits only, within a set length. The API rejects any id in a URL that
+  # doesn't match, before looking anything up - which also means a URL can never
+  # contain a slash or dot and be used to reach a file on the server.
+  id_pattern: "^[A-Z0-9]+$"
+  id_min_chars: 4
+  id_max_chars: 32
   municipality_field: MUNIDESC
   municipality_pattern: "Ward - PITTSBURGH$"
   # What counts as "vacant" (decision 2026-09-26: vacant land use classes only).

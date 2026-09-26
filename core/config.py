@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -42,14 +43,41 @@ class UncertaintySettings(_Model):
 
 
 class ApiSettings(_Model):
-    """Ceilings for a public, unauthenticated API. See docs/BACKEND.md."""
+    """The biggest values the API will accept from whoever is calling it.
 
+    Anyone on the internet can call this API. So every number a caller controls
+    needs a cap: how long a search box string can be, how many results to hand
+    back, how many homes to model. All of those caps are listed right here
+    instead of being typed into the route functions further down, which means
+    you can see them all at once and change one without editing any Python.
+
+    Three numbers are deliberately NOT in here, because nobody would ever sit
+    down and tune them:
+      - how many characters of the ETag hash we keep (32),
+      - how many IP addresses the rate limiter remembers before it forgets,
+      - the "60" in the rate limiter's 60-second window. That 60 is just what
+        the word "minute" means in `explain_requests_per_minute`.
+    Putting those in config would suggest a reviewer has a decision to make
+    about them. They don't.
+    """
+
+    search_query_min_chars: int = Field(gt=0)
     search_query_max_chars: int = Field(gt=0)
     search_limit_max: int = Field(gt=0)
+    id_param_max_chars: int = Field(gt=0)
     explain_max_weights: int = Field(gt=0)
     explain_max_ranking: int = Field(gt=0)
     explain_requests_per_minute: int = Field(gt=0)
     analysis_cache_entries: int = Field(gt=0)
+    cache_max_age_seconds: int = Field(ge=0)
+    work_backwards_max_units: int = Field(gt=0)
+    target_ami_pct_max: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> ApiSettings:
+        if self.search_query_max_chars < self.search_query_min_chars:
+            raise ValueError("api.search_query_max_chars < search_query_min_chars")
+        return self
 
 
 class ExplanationSettings(_Model):
@@ -176,6 +204,37 @@ class Assumption(_Model):
         if self.by_typology and typology_id in self.by_typology:
             return self.by_typology[typology_id]
         return Range(value=self.value, low=self.low, high=self.high)
+
+
+# --- city.yaml ---------------------------------------------------------------
+class ParcelIdFormat(_Model):
+    """What a parcel id is allowed to look like in this city.
+
+    In Pittsburgh a parcel id is an Allegheny County PIN: capital letters and
+    digits only, always within a set length. The API checks an id from a URL
+    against this BEFORE it looks anything up. Two things fall out of that:
+
+    1. A junk id gets a "422 Bad Request" straight away and costs us nothing.
+    2. An id can never contain a slash or a dot, so nobody can smuggle
+       something like "../../secrets.txt" through a URL and reach a real file.
+
+    A different city would number its parcels differently, so this lives in
+    city.yaml. Swapping cities is a config edit, not a code edit.
+    """
+
+    pattern: str
+    min_chars: int = Field(gt=0)
+    max_chars: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _usable(self) -> ParcelIdFormat:
+        if self.max_chars < self.min_chars:
+            raise ValueError(f"max_chars ({self.max_chars}) < min_chars ({self.min_chars})")
+        try:
+            re.compile(self.pattern)
+        except re.error as e:
+            raise ValueError(f"pattern {self.pattern!r} is not a valid regex: {e}") from e
+        return self
 
 
 # --- sources.yaml --------------------------------------------------------------
@@ -310,14 +369,23 @@ class Config(_Model):
             errors.append(f"zoning.code.source {self.zoning.code.source!r} not in sources.yaml")
 
         # Most of city.yaml is only ever read by the offline pipeline, so we let
-        # that file hold whatever keys it wants without checking them. This one
-        # is different: the running server uses it on live requests to record
-        # which dataset a number came from. Check it here, at startup, so a typo
-        # crashes the app immediately with a message naming the bad key, instead
-        # of causing a confusing 500 error later on.
-        if self.parcels.get("assessments_source") not in self.sources.sources:
+        # that file hold whatever keys it wants without checking them. These two
+        # are different: the running server uses them on live requests. One
+        # checks every parcel id that arrives in a URL, the other records which
+        # dataset a number came from.
+        #
+        # So we check them here, at startup. A typo then crashes the app
+        # immediately with a message naming the bad key, instead of causing a
+        # confusing 500 error later on whichever request first needed it.
+        parcels = self.parcels
+        try:
+            ParcelIdFormat(pattern=parcels.get("id_pattern"), min_chars=parcels.get("id_min_chars"),
+                           max_chars=parcels.get("id_max_chars"))
+        except (ValidationError, ValueError) as e:
+            errors.append(f"city.parcels id format is unusable: {e}")
+        if parcels.get("assessments_source") not in self.sources.sources:
             errors.append(f"city.parcels.assessments_source "
-                          f"{self.parcels.get('assessments_source')!r} not in sources.yaml")
+                          f"{parcels.get('assessments_source')!r} not in sources.yaml")
         if errors:
             raise ValueError("config cross-reference errors:\n  - " + "\n  - ".join(errors))
         return self
@@ -350,6 +418,16 @@ class Config(_Model):
     def parcels(self) -> dict[str, Any]:
         """The `parcels` block of city.yaml: id format, dataset names, columns."""
         return self._city("parcels")
+
+    @property
+    def parcel_id_format(self) -> ParcelIdFormat:
+        """Already checked at startup by `_cross_refs`, so this is safe to call
+        inside a request: it will not blow up halfway through serving someone."""
+        if self.__dict__.get("_parcel_id_format") is None:
+            p = self.parcels
+            self.__dict__["_parcel_id_format"] = ParcelIdFormat(
+                pattern=p["id_pattern"], min_chars=p["id_min_chars"], max_chars=p["id_max_chars"])
+        return self.__dict__["_parcel_id_format"]
 
     @property
     def assessment_source(self) -> str:
