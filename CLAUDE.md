@@ -78,11 +78,14 @@ and chart series.
 
 ## 4. Stack
 
-- **Pipeline:** Python 3.11+, pandas, GeoPandas, shapely, numpy, pydantic, PyYAML. `pipeline/`.
-- **Backend:** FastAPI (`server/`) — serves data, computes per-parcel metrics on demand, proxies LLM calls.
-- **Frontend:** Vite + React + TypeScript (strict), MapLibre GL JS, Recharts. `web/`.
-- **LLM:** Anthropic API via official Python SDK; model from env `ANTHROPIC_MODEL`.
+- **Python:** 3.14 managed by `uv` (`uv sync`, `uv run ...`). Runtime deps in `[project]`; GeoPandas etc. only in the `pipeline` dependency group so the deployed function stays small.
+- **Pipeline:** pandas, GeoPandas, shapely, numpy, pydantic, PyYAML. `pipeline/`. Runs locally, never deployed.
+- **Shared engine:** `core/` — config loading, metrics, zoning evaluation, scoring/SMAA mirror. Imported by pipeline, server, and tests.
+- **Backend:** FastAPI (`server/`) — serves data, computes per-parcel metrics on demand, proxies LLM calls. No GeoPandas at runtime.
+- **Frontend:** Vite + React + TypeScript (strict), MapLibre GL JS (OpenFreeMap basemap, no key), Recharts. `web/`.
+- **LLM:** provider interface in `server/llm.py`; provider from env `LLM_PROVIDER` (`gemini` | `none`). Gemini free tier via `google-genai`; models from `LLM_MODEL` (runtime) and `ZONING_EXTRACT_MODEL` (offline). `none` → deterministic templates.
 - **SMAA:** TypeScript in the browser for live updates; mirrored in Python for tests.
+- **Hosting:** Vercel. Static web build + `api/index.py` (FastAPI) as a Python function; `/api/*` rewritten to it. Parcel points are a static file on the CDN (`web/public/data/`).
 
 Ask before adding any large dependency not listed here.
 
@@ -93,6 +96,8 @@ Ask before adding any large dependency not listed here.
 /data/raw            # gitignored if large; fetch steps in docs/SOURCES.md
 /data/processed      # parcel index and derived data the app reads
 /data/config         # all Pittsburgh facts and knobs
+/core                # shared engine (config, metrics, zoning, scoring)
+/api                 # Vercel function entry
 /server  /web  /docs
 ```
 

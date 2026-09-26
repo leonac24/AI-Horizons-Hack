@@ -1,0 +1,16 @@
+# Human-in-the-loop zoning rules. Produced by pipeline/zoning/extract.py, then
+# reviewed line by line by a teammate who sets `reviewed: true` per rule.
+# Only reviewed rules drive a definite zoning status in the app; everything
+# else shows "Needs planner review".
+#
+# Shape:
+# districts:
+#   <DISTRICT CODE>:
+#     uses:
+#       <use_key>: { status, code_section, quote, confidence, extracted_by, reviewed }
+#     dimensional:
+#       <rule_id>: { value, code_section, quote, confidence, extracted_by, reviewed }
+#
+# Empty on first pass: eCode360 blocked scripted retrieval (2026-09-26), and we
+# do not write rules from memory.
+districts: {}

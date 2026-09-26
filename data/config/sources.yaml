@@ -1,0 +1,186 @@
+# Dataset registry. `access` tells the pipeline how to fetch:
+#   ckan_datastore — WPRDC CKAN datastore_search on `resource_id`
+#   ckan_download  — WPRDC CKAN resource file (URL resolved via resource_show)
+#   manual         — no scripted access yet (see note)
+# `verified` = URL and fields checked by hand on the date given.
+ckan_api: https://data.wprdc.org/api/3/action
+
+sources:
+  wprdc_assessments:
+    name: Allegheny County Property Assessments
+    publisher: Allegheny County Office of Property Assessments via WPRDC
+    url: https://data.wprdc.org/dataset/property-assessments
+    access: ckan_datastore
+    resource_id: 9a1c60bd-f9f7-4aba-aeb7-af8c3aaa44e5
+    vintage: current extract (fetched at pipeline run)
+    license: see WPRDC dataset page
+    verified: "2026-09-26"
+    note: Assessed/fair-market values are not market prices. Owner name and owner mailing address fields are never fetched.
+
+  wprdc_parcel_centroids:
+    name: Parcel Centroids in Allegheny County with Geographic Identifiers
+    publisher: WPRDC
+    url: https://data.wprdc.org/dataset/parcel-centroids-in-allegheny-county-with-geographic-identifiers
+    access: ckan_datastore
+    resource_id: 3fab7152-3f11-4788-8372-4c33f86ea813
+    vintage: March 2025
+    license: Creative Commons CCZero
+    verified: "2026-09-26"
+    note: Point per parcel with census tract, block group and city neighborhood. Centroid may fall outside irregular parcels.
+
+  wprdc_city_owned:
+    name: City-Owned Properties
+    publisher: City of Pittsburgh via WPRDC
+    url: https://data.wprdc.org/dataset/city-owned-properties
+    access: ckan_datastore
+    resource_id: e1dcee82-9179-4306-8167-5891915b62a7
+    vintage: current extract (fetched at pipeline run)
+    license: see WPRDC dataset page
+    verified: "2026-09-26"
+    note: Ownership is not availability — check disposition status with the City / Land Bank.
+
+  wprdc_zoning:
+    name: Pittsburgh Zoning Districts
+    publisher: City of Pittsburgh via WPRDC
+    url: https://data.wprdc.org/dataset/zoning
+    access: ckan_download
+    resource_id: 6127f35e-f36b-4a53-80b3-f4409609e9df
+    vintage: current extract (fetched at pipeline run)
+    license: see WPRDC dataset page
+    verified: "2026-09-26"
+    note: Base districts only. Overlays (e.g., Riverfront, IPOD) are separate layers not yet joined.
+
+  wprdc_neighborhoods:
+    name: Pittsburgh Neighborhoods
+    publisher: City of Pittsburgh via WPRDC
+    url: https://data.wprdc.org/dataset/neighborhoods2
+    access: ckan_download
+    resource_id: 4af8e160-57e9-4ebf-a501-76ca1b42fc99
+    vintage: current extract
+    license: Creative Commons Attribution
+    verified: "2026-09-26"
+
+  wprdc_steep_slope:
+    name: Pittsburgh 25% or Greater Slope
+    publisher: City of Pittsburgh via WPRDC
+    url: https://data.wprdc.org/dataset/25-or-greater-slope
+    access: ckan_download
+    resource_id: 5ce91a56-0799-46ea-9585-13fa8db5979e
+    vintage: current extract
+    license: see WPRDC dataset page
+    verified: "2026-09-26"
+    note: Derived threshold layer, tested at the parcel centroid only.
+
+  wprdc_landslide_prone:
+    name: Pittsburgh Landslide Prone Areas
+    publisher: City of Pittsburgh via WPRDC
+    url: https://data.wprdc.org/dataset/landslide-prone-areas
+    access: ckan_download
+    resource_id: b5b45ac6-f8ef-4805-b4e4-fc7c63fb4075
+    vintage: current extract
+    license: see WPRDC dataset page
+    verified: "2026-09-26"
+    note: Screening layer; tested at the parcel centroid only.
+
+  wprdc_undermined:
+    name: Pittsburgh Undermined Areas
+    publisher: City of Pittsburgh via WPRDC
+    url: https://data.wprdc.org/dataset/undermined-areas
+    access: ckan_download
+    resource_id: e1d96015-818f-46fb-88dd-85c20eacb96c
+    vintage: current extract
+    license: see WPRDC dataset page
+    verified: "2026-09-26"
+    note: Historic mine maps are incomplete; never a safety determination.
+
+  pgh_zoning_code:
+    name: Pittsburgh Code of Ordinances, Title Nine — Zoning Code
+    publisher: City of Pittsburgh (hosted by General Code / eCode360)
+    url: https://ecode360.com/45474054
+    access: manual
+    vintage: as amended (retrieval date recorded per rule)
+    license: public law
+    verified: "2026-09-26"
+
+  hud_income_limits:
+    name: HUD Income Limits (Pittsburgh, PA HUD Metro FMR Area)
+    publisher: U.S. Department of Housing and Urban Development
+    url: https://www.huduser.gov/portal/datasets/il.html
+    access: manual
+    vintage: not yet retrieved
+    license: public domain
+    verified: false
+    note: huduser.gov blocked scripted requests on 2026-09-26.
+
+  hud_chas:
+    name: Comprehensive Housing Affordability Strategy (CHAS)
+    publisher: HUD
+    url: https://www.huduser.gov/portal/datasets/cp.html
+    access: manual
+    vintage: not yet retrieved
+    license: public domain
+    verified: false
+
+  acs_5yr:
+    name: American Community Survey 5-Year Estimates
+    publisher: U.S. Census Bureau
+    url: https://www.census.gov/data/developers/data-sets/acs-5year.html
+    access: manual
+    vintage: not yet retrieved
+    license: public domain
+    verified: false
+    note: The Census API now requires a (free) key — set CENSUS_API_KEY.
+
+  prt_gtfs:
+    name: Pittsburgh Regional Transit GTFS
+    publisher: Pittsburgh Regional Transit via WPRDC
+    url: https://data.wprdc.org/dataset/port-authority-of-allegheny-county-transit-data
+    access: manual
+    vintage: not yet retrieved
+    license: see WPRDC dataset page
+    verified: false
+
+  fema_nfhl:
+    name: FEMA National Flood Hazard Layer
+    publisher: FEMA
+    url: https://www.fema.gov/flood-maps/national-flood-hazard-layer
+    access: manual
+    vintage: not yet retrieved
+    license: public domain
+    verified: false
+
+  alcosan_cso:
+    name: ALCOSAN / PWSA combined sewer overflow data
+    publisher: ALCOSAN / PWSA
+    url: null
+    access: manual
+    vintage: not yet retrieved
+    license: unknown
+    verified: false
+
+  epa_egrid:
+    name: EPA eGRID
+    publisher: U.S. EPA
+    url: https://www.epa.gov/egrid
+    access: manual
+    vintage: not yet retrieved
+    license: public domain
+    verified: false
+
+  epa_smart_location:
+    name: EPA Smart Location Database
+    publisher: U.S. EPA
+    url: https://www.epa.gov/smartgrowth/smart-location-mapping
+    access: manual
+    vintage: not yet retrieved
+    license: public domain
+    verified: false
+
+  nrel_resstock:
+    name: ResStock
+    publisher: U.S. DOE / NREL
+    url: https://resstock.nrel.gov/
+    access: manual
+    vintage: not yet retrieved
+    license: public
+    verified: false

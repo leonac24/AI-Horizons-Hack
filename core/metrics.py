@@ -1,0 +1,102 @@
+"""Evidence-layer primitives. No weight ever enters anything in this module."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+import numpy as np
+from pydantic import BaseModel
+
+from core.config import Config, Provenance
+
+_RANK: dict[str, int] = {"observed": 0, "modeled": 1, "assumption": 2, "placeholder": 3}
+
+
+class Metric(BaseModel):
+    id: str
+    label: str
+    value: float
+    low: float
+    high: float
+    unit: str
+    provenance: Provenance
+    sourceIds: list[str]
+    note: str | None = None
+
+
+def weakest(*provs: str) -> Provenance:
+    """A metric is only as strong as its weakest input."""
+    return max(provs, key=lambda p: _RANK[p])  # type: ignore[return-value]
+
+
+@dataclass
+class Samples:
+    """Vectorized uncertainty: index 0 is the central estimate, 1..n are draws of
+    every assumption uniformly within [low, high] (seeded, so ranges are stable).
+
+    Each call to `a()` records which assumptions (and their provenance/sources)
+    a computation touched, so every metric reports honest provenance.
+    """
+
+    cfg: Config
+    n: int = 300
+    seed: int = 7
+    _cache: dict[tuple, np.ndarray] = field(default_factory=dict)
+
+    def a(self, key: str, typology: str | None = None, used: Trace | None = None) -> np.ndarray:
+        asm = self.cfg.assumption(key)
+        r = asm.for_typology(typology) if typology else asm
+        if used is not None:
+            used.add(asm.provenance, asm.source)
+        ck = (key, typology)
+        if ck not in self._cache:
+            # Stable per-assumption stream so adding a new assumption doesn't
+            # reshuffle the others.
+            rng = np.random.default_rng([self.seed, _stable_hash(key), _stable_hash(typology or "")])
+            draws = rng.uniform(r.low, r.high, self.n) if r.high > r.low else np.full(self.n, r.value)
+            self._cache[ck] = np.concatenate([[r.value], draws])
+        return self._cache[ck]
+
+    def const(self, x: float) -> np.ndarray:
+        return np.full(self.n + 1, float(x))
+
+
+@dataclass
+class Trace:
+    provenance: set[str] = field(default_factory=set)
+    sources: set[str] = field(default_factory=set)
+
+    def add(self, prov: str, source: str | None) -> None:
+        self.provenance.add(prov)
+        if source:
+            self.sources.add(source)
+
+    def merge(self, other: Trace) -> Trace:
+        return Trace(self.provenance | other.provenance, self.sources | other.sources)
+
+    def prov(self) -> Provenance:
+        return weakest(*(self.provenance or {"modeled"}))
+
+
+def to_metric(id: str, label: str, arr: np.ndarray, unit: str, trace: Trace,
+              note: str | None = None, provenance: Provenance | None = None) -> Metric:
+    central = float(arr[0])
+    draws = arr[1:] if arr.size > 1 else arr
+    lo, hi = np.percentile(draws, [5, 95]) if draws.size > 1 else (central, central)
+    prov = provenance or weakest(trace.prov(), "modeled")
+    return Metric(id=id, label=label, value=_r(central), low=_r(min(lo, central)), high=_r(max(hi, central)),
+                  unit=unit, provenance=prov, sourceIds=sorted(trace.sources), note=note)
+
+
+def _r(x: float) -> float:
+    x = float(x)
+    if abs(x) >= 100:
+        return round(x, 0)
+    return round(x, 3)
+
+
+def _stable_hash(s: str) -> int:
+    h = 2166136261
+    for ch in s.encode():
+        h = ((h ^ ch) * 16777619) & 0xFFFFFFFF
+    return h

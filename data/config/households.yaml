@@ -1,0 +1,48 @@
+# ILLUSTRATIVE households — synthetic, not real people. Incomes are expressed as
+# a share of the Pittsburgh-area median (see assumptions.yaml: ami_4person).
+illustrative: true
+households:
+  - id: aide
+    label: Home health aide
+    description: Renter, works shifts at Oakland hospitals
+    ami_pct: 30
+    size: 2
+    tenure: renter
+    destination: oakland
+
+  - id: retiree
+    label: Retired homeowner, downsizing
+    description: Fixed income; owns now, would rent something smaller in the same neighborhood
+    ami_pct: 50
+    size: 1
+    tenure: renter
+    destination: neighborhood
+
+  - id: grad_household
+    label: Grad student household
+    description: Two adults, studying and working in Oakland
+    ami_pct: 60
+    size: 2
+    tenure: renter
+    destination: oakland
+
+  - id: young_family
+    label: Young family
+    description: Two parents working Downtown, two kids
+    ami_pct: 80
+    size: 4
+    tenure: renter
+    destination: downtown
+
+  - id: nurse
+    label: Nurse, first-time buyer
+    description: Buying a first home
+    ami_pct: 120
+    size: 3
+    tenure: owner
+    destination: oakland
+
+destinations:
+  downtown: { label: Downtown, lon: -79.9959, lat: 40.4406 }
+  oakland: { label: Oakland (hospitals & universities), lon: -79.9573, lat: 40.4443 }
+  neighborhood: { label: Own neighborhood, lon: null, lat: null }

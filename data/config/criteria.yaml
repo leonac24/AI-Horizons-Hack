@@ -1,0 +1,61 @@
+# Scoring criteria. Every criterion is scenario-dependent (it can change the
+# ranking between housing types on the same lot). Lot-level context that is
+# identical across scenarios is shown separately as "site context".
+#
+# direction: higher_is_better | lower_is_better
+criteria:
+  - id: demand_fit
+    metric_id: demand.units_serving_need
+    label: Serves local housing need
+    question: How many new homes land at the income levels this area is short on?
+    direction: higher_is_better
+    group: equity
+    default_weight: 1
+
+  - id: feasibility
+    metric_id: feasibility.zoning_score
+    label: Zoning path
+    question: How hard is the approval path under the Zoning Code?
+    direction: higher_is_better
+    group: feasibility
+    default_weight: 1
+
+  - id: affordability
+    metric_id: affordability.ami_needed_pct
+    label: Income needed to afford a home
+    question: What share of area median income does a household need to afford one of these homes without subsidy?
+    direction: lower_is_better
+    group: equity
+    default_weight: 1
+
+  - id: displacement
+    metric_id: displacement.pressure_units
+    label: Adds displacement pressure
+    question: How many new homes are priced above what current renters nearby can pay?
+    direction: lower_is_better
+    group: equity
+    default_weight: 1
+
+  - id: infrastructure
+    metric_id: infrastructure.load_index
+    label: Strain on stressed infrastructure
+    question: How much load does this add at a site with slope, landslide, or sewer constraints?
+    direction: lower_is_better
+    group: feasibility
+    default_weight: 1
+
+  - id: opportunity
+    metric_id: opportunity.households_with_access
+    label: Households gaining transit access to jobs
+    question: How many households get this location's access to jobs?
+    direction: higher_is_better
+    group: equity
+    default_weight: 1
+
+  - id: carbon
+    metric_id: carbon.per_household_30yr
+    label: Carbon per household (30 years)
+    question: Tonnes CO2e per household over 30 years — building materials, energy, and travel.
+    direction: lower_is_better
+    group: climate
+    default_weight: 1

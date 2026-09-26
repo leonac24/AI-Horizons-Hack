@@ -1,0 +1,77 @@
+# Limitations
+
+Lotline is **decision support**. It is not zoning, legal, or financial advice.
+Confirm anything consequential with the City of Pittsburgh Department of City Planning.
+
+## Current state (updated automatically)
+
+<!-- AUTO:START -->
+_Auto-generated for config `9a168c1a5cb9`._
+
+- **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
+- **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 54 districts reviewed).
+- **Largest unreviewed districts:** H (3,230), R1D-H (3,021), RM-M (2,461), R1D-L (2,121), R2-L (2,072), R1A-VH (1,483), P (1,207), R1D-M (1,183), R2-H (1,166), R1A-H (963), LNC (949), UI (460).
+- **Placeholder assumptions (18):** `ami_4person`, `hard_cost_psf`, `soft_cost_share`, `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_kgco2e_per_kwh`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
+- **Sources not yet connected (9):** HUD Income Limits (Pittsburgh, PA HUD Metro FMR Area), Comprehensive Housing Affordability Strategy (CHAS), American Community Survey 5-Year Estimates, Pittsburgh Regional Transit GTFS, FEMA National Flood Hazard Layer, ALCOSAN / PWSA combined sewer overflow data, EPA eGRID, EPA Smart Location Database, ResStock.
+<!-- AUTO:END -->
+
+## What it gets wrong, or can't know
+
+- **Zoning is not yet reviewed.** eCode360, which hosts Title Nine, blocks
+  scripted access, and we do not write rules from memory. Until a person
+  extracts and reviews a district's rules, every lot there shows
+  "Needs planner review". Only base districts are joined. Overlays (Riverfront,
+  IPOD, historic districts) are not joined, and neither are planned-unit
+  developments or specially planned districts.
+- **Most cost, income and carbon numbers are placeholders.** Construction cost,
+  soft cost, capital cost, operating cost, embodied and operational carbon, grid
+  intensity, AMI and tract context are all stand-ins. They show how the tool
+  reasons, not what is true. The UI hatches every value that depends on one.
+- **Hazards are checked at a point.** Steep slope, landslide-prone and
+  undermined flags come from testing the parcel's centroid against city layers.
+  Part of a lot can be steep or undermined without the lot being flagged, and the
+  reverse. Flood (FEMA NFHL) and combined-sewer data are not connected yet.
+- **"Vacant" means the county's vacant land-use classes.** Lots with a condemned
+  or abandoned structure are not included. Some coded-vacant lots are side yards,
+  parking, or slivers that can't be built on.
+- **Assessed land value is not a market price.** It is used only as a land-cost
+  input and is often far below what a lot would sell for.
+- **Unit counts come from built form, not a feasibility study.** They are
+  planning rules of thumb for lot area per home. Parking, access, utility
+  capacity, and topography beyond the flags are not modeled.
+- **Rent needed to cover cost is a simple annualized model** (capital cost share
+  plus operating cost). It is not a pro forma: no financing structure, tax
+  credits, abatements, or market rents.
+- **Commute times are not modeled yet.** The PRT travel-time matrix is pending.
+- **City limits only.** Other Allegheny County municipalities have their own
+  zoning codes.
+
+## Who could be harmed by misuse
+
+- **Residents of the neighborhoods shown.** A ranking can look like a
+  recommendation. It is the arithmetic consequence of whichever weights the user
+  picked. Using it to justify a project without community process would misuse
+  it.
+- **Owners of the parcels shown.** Showing a privately owned lot as a
+  "housing opportunity" does not mean it is available. We do not show owner
+  names.
+- **Low-income households.** Affordability verdicts use placeholder costs and
+  the 30%-of-income rule. A "Yes" is not an eligibility or pricing
+  determination.
+
+## What we don't claim
+
+- That any lot can be built on, or that any option is permitted.
+- That the stakeholder presets reflect what real organizations want. They are
+  illustrative.
+- That illustrative households are real people. They are synthetic.
+- That the LLM explanation adds facts. It may only restate computed metrics,
+  and the server rejects anything else.
+
+## Reconciling sources
+
+- Parcel IDs (PARID/PIN) join assessments, centroids and city-owned properties.
+  About 50 vacant parcels had no centroid and are dropped (see
+  `data/processed/pipeline_report.json`).
+- Census geography comes from the WPRDC centroid file (March 2025 vintage).
+  Tract statistics joined later must use the matching boundary vintage.
