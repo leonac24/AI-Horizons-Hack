@@ -71,6 +71,7 @@ class ApiSettings(_Model):
     analysis_cache_entries: int = Field(gt=0)
     cache_max_age_seconds: int = Field(ge=0)
     work_backwards_max_units: int = Field(gt=0)
+    plan_max_buildings: int = Field(gt=0)
     target_ami_pct_max: float = Field(gt=0)
 
     @model_validator(mode="after")
@@ -96,29 +97,39 @@ class AppConfig(_Model):
 
 
 # --- typologies.yaml -------------------------------------------------------------
-class UnitRange(_Model):
-    min: int = Field(ge=1)
-    max: int = Field(ge=1)
+Massing = Literal["gable_house", "house_with_rear_unit", "gable_house_two_doors", "flat_rowhouse",
+                  "walkup", "podium_midrise"]
+
+
+class Building(_Model):
+    """One placeable building of this typology in the 3D lot view."""
+
+    footprint_ft: tuple[float, float]
+    homes: int = Field(ge=1)
+    massing: Massing
+    body: str
+    roof: str
+    max_in_a_row: int = Field(ge=1)
 
     @model_validator(mode="after")
-    def _ordered(self) -> UnitRange:
-        if self.max < self.min:
-            raise ValueError(f"units.max ({self.max}) < units.min ({self.min})")
+    def _positive(self) -> Building:
+        if min(self.footprint_ft) <= 0:
+            raise ValueError("footprint_ft must be positive")
         return self
 
 
 class Typology(_Model):
     id: str
     label: str
+    short_label: str
     color: str
     use_key: str
-    units: UnitRange
     unit_size_sf: float = Field(gt=0)
     stories: float = Field(gt=0)
     min_lot_sf_for_form: float = Field(gt=0)
-    lot_sf_per_unit_for_form: float | None = Field(default=None, gt=0)
     tenure_default: Literal["owner", "renter"]
     supports_senior: bool = False
+    building: Building
 
 
 # --- criteria.yaml -------------------------------------------------------------

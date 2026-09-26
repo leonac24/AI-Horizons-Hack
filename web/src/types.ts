@@ -17,13 +17,22 @@ export interface Metric {
 export interface Typology {
   id: string
   label: string
+  short_label: string
   color: string
   use_key: string
-  units: { min: number; max: number }
   unit_size_sf: number
   stories: number
   tenure_default: 'owner' | 'renter'
   supports_senior: boolean
+  min_lot_sf_for_form: number
+  building: {
+    footprint_ft: [number, number]
+    homes: number
+    massing: string
+    body: string
+    roof: string
+    max_in_a_row: number
+  }
 }
 
 export interface Criterion {
@@ -72,15 +81,19 @@ export interface Config {
   }
   city: {
     name: string
-    map: { center: [number, number]; zoom: number; basemap_style: string }
-    hazards: Record<string, { source: string; label: string }>
+    scene: { origin: [number, number]; scale: [number, number]; half_extent: number; rivers: [number, number][][] }
+    hazards: Record<string, { source: string; label: string; lot_scene?: string }>
   }
-  zoning: { statuses: Record<string, { label: string }>; code: { name: string; url: string } }
+  zoning: {
+    statuses: Record<string, { label: string; role: 'permitted' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
+    code: { name: string; url: string; citation_format: string }
+  }
   typologies: Typology[]
   criteria: Criterion[]
   households: { households: Household[]; destinations: Record<string, { label: string }> }
   stakeholders: { profiles: StakeholderProfile[] }
   sources: { sources: Record<string, Source> }
+  assumptions: Record<string, { value: number; low: number; high: number; unit: string; provenance: Provenance; source: string | null; rationale: string }>
   hash: string
 }
 
@@ -116,6 +129,8 @@ export interface ZoningResult {
   checks: ZoningCheck[]
   max_units_by_rule: number | null
   note: string | null
+  disqualified: boolean
+  disqualified_reason: string | null
 }
 
 export interface HouseholdCheck {
@@ -130,16 +145,38 @@ export interface HouseholdCheck {
 export interface Scenario {
   typology_id: string
   units: number
+  buildings: number
   form_fits: boolean
+  eligible: boolean
+  ineligible_reason: string | null
   notes: string[]
   metrics: Record<string, Metric>
   zoning: ZoningResult
   households: HouseholdCheck[]
-  carbon: { years: number[]; value: number[]; low: number[]; high: number[]; provenance: Provenance }
+  carbon: CarbonSeries
+}
+
+export interface CarbonSeries {
+  years: number[]
+  value: number[]
+  low: number[]
+  high: number[]
+  provenance: Provenance
+}
+
+export interface LotShape {
+  frontage_ft: number
+  depth_ft: number
+  provenance: Provenance
+  sourceIds: string[]
+  note: string
 }
 
 export interface Analysis {
   parcel: Record<string, unknown> & ParcelSummary
+  lot_shape: LotShape
+  rankable_typology_ids: string[]
+  excluded_typology_ids: string[]
   config_hash: string
   site_context: Metric[]
   scenarios: Scenario[]
@@ -170,4 +207,19 @@ export interface WorkBackwardsResult {
   subsidy_per_unit: { value: number; low: number; high: number; unit: string; provenance: Provenance }
   infrastructure_flags: string[]
   note: string
+}
+
+export interface PlanResult {
+  units: number
+  by_typology: Record<string, number>
+  homes_by_typology: Record<string, number>
+  metrics: Record<string, Metric>
+  zoning: ZoningResult
+  zoning_by_typology: Record<string, ZoningResult>
+  failed_typologies: string[]
+  households: HouseholdCheck[]
+  carbon: CarbonSeries
+  eligible: boolean
+  ineligible_reason: string | null
+  notes: string[]
 }

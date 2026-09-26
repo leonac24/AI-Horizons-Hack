@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 from pydantic import BaseModel
 
-from core.config import Config, Typology, UnitRange
+from core.config import Config, Typology
 from core.metrics import Metric, Samples, Trace, to_metric, weakest
 from core.zoning import ZoningResult, evaluate, load_rules
 
@@ -37,6 +37,7 @@ class CarbonSeries(BaseModel):
 class Scenario(BaseModel):
     typology_id: str
     units: int
+    buildings: int
     form_fits: bool
     notes: list[str]
     metrics: dict[str, Metric]
@@ -51,8 +52,20 @@ class Scenario(BaseModel):
     ineligible_reason: str | None = None
 
 
+class LotShape(BaseModel):
+    """Frontage and depth in feet, for drawing the lot. Observed when the deed
+    legal description gave dimensions that agree with the assessed area."""
+
+    frontage_ft: float
+    depth_ft: float
+    provenance: str
+    sourceIds: list[str]
+    note: str
+
+
 class Analysis(BaseModel):
     parcel: dict[str, Any]
+    lot_shape: LotShape
     config_hash: str
     site_context: list[Metric]
     scenarios: list[Scenario]
@@ -66,16 +79,34 @@ def _hazard_flags(cfg: Config, parcel: dict) -> dict[str, bool | None]:
     return {k: parcel.get(k) for k in cfg.hazards}
 
 
-def plan_units(typ: Typology, lot_area_sf: float) -> tuple[int, bool]:
-    """Units the built form fits on the lot (not a zoning number)."""
-    fits = lot_area_sf >= typ.min_lot_sf_for_form
-    if typ.lot_sf_per_unit_for_form:
-        n = math.floor(lot_area_sf / typ.lot_sf_per_unit_for_form)
-        return max(typ.units.min, min(typ.units.max, n)), fits and n >= typ.units.min
-    return typ.units.min, fits
+def lot_shape(cfg: Config, parcel: dict) -> LotShape:
+    area = float(parcel.get("lot_area_sf") or 0)
+    front, depth = parcel.get("frontage_ft"), parcel.get("depth_ft")
+    if front and depth:
+        return LotShape(frontage_ft=float(front), depth_ft=float(depth), provenance="observed",
+                        sourceIds=[cfg.assessment_source],
+                        note="From the deed legal description; agrees with the assessed lot area.")
+    ratio = cfg.assumption("lot_depth_to_frontage_ratio")
+    front = math.sqrt(area / ratio.value) if area > 0 else 0.0
+    return LotShape(frontage_ft=round(front, 1), depth_ft=round(area / front, 1) if front else 0.0,
+                    provenance="placeholder", sourceIds=[s for s in [ratio.source] if s],
+                    note="No usable dimensions in the legal description; drawn from lot area and a "
+                         "placeholder depth-to-frontage ratio.")
 
 
-def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analysis:
+def pure_buildings(typ: Typology, shape: LotShape, lot_area_sf: float) -> tuple[int, bool]:
+    """How many of this typology's building fit side by side along the frontage
+    (up to max_in_a_row), and whether the form fits the lot at all. Screening
+    geometry only: setbacks, access and topography are not modeled."""
+    w, d = typ.building.footprint_ft
+    fits = (w <= shape.frontage_ft and d <= shape.depth_ft and lot_area_sf >= typ.min_lot_sf_for_form)
+    n = max(1, min(typ.building.max_in_a_row, math.floor(shape.frontage_ft / w))) if fits else 1
+    return n, fits
+
+
+def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
+            homes_override: dict[str, int] | None = None) -> Analysis:
+    """`homes_override` pins a typology's home count (work backwards, mixed plans)."""
     S = samples or Samples(cfg)
     rules = load_rules(cfg)
     lot = float(parcel.get("lot_area_sf") or 0)
@@ -119,12 +150,19 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
     share = S.a("housing_cost_share", used=t_inc)
     size_factor = cfg.assumption("household_size_factor").by_size or {}
 
+    shape = lot_shape(cfg, parcel)
     scenarios: list[Scenario] = []
     for typ in cfg.typologies:
-        units, form_fits = plan_units(typ, lot)
+        if homes_override and typ.id not in homes_override:
+            continue
+        n_buildings, form_fits = pure_buildings(typ, shape, lot)
+        units = homes_override[typ.id] if homes_override else n_buildings * typ.building.homes
         notes: list[str] = []
-        if not form_fits:
-            notes.append(f"Lot is smaller than this form usually needs ({typ.min_lot_sf_for_form:,.0f} sf).")
+        if not form_fits and not homes_override:
+            w, d = typ.building.footprint_ft
+            notes.append(f"This building ({w:.0f}×{d:.0f} ft) doesn't fit a "
+                         f"{shape.frontage_ft:.0f}×{shape.depth_ft:.0f} ft lot, or the lot is under "
+                         f"{typ.min_lot_sf_for_form:,.0f} sf.")
         zres = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units)
         if zres.max_units_by_rule is not None and zres.max_units_by_rule < units:
             notes.append(f"Zoning lot-area-per-unit allows {zres.max_units_by_rule} units here; showing {units} as planned.")
@@ -248,14 +286,16 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
                 tenure_match=hh.tenure == typ.tenure_default,
                 note=None if hh.tenure == typ.tenure_default else f"Usually {typ.tenure_default}-occupied"))
 
-        scenarios.append(Scenario(typology_id=typ.id, units=units, form_fits=form_fits, notes=notes,
+        scenarios.append(Scenario(typology_id=typ.id, units=units, buildings=n_buildings,
+                                  form_fits=form_fits, notes=notes,
                                   metrics=metrics, zoning=zres, households=hh_checks, carbon=carbon,
                                   eligible=not zres.disqualified,
                                   ineligible_reason=zres.disqualified_reason))
 
     n_placeholder = sum(m.provenance == "placeholder" for m in site_context) + sum(
         m.provenance == "placeholder" for s in scenarios for m in s.metrics.values())
-    return Analysis(parcel=parcel, config_hash=cfg.hash, site_context=site_context, scenarios=scenarios,
+    return Analysis(parcel=parcel, lot_shape=shape, config_hash=cfg.hash,
+                    site_context=site_context, scenarios=scenarios,
                     placeholder_count=n_placeholder,
                     rankable_typology_ids=[s.typology_id for s in scenarios if s.eligible],
                     excluded_typology_ids=[s.typology_id for s in scenarios if not s.eligible])
@@ -270,8 +310,7 @@ def work_backwards(cfg: Config, parcel: dict, typology_id: str, units: int, targ
     lot = float(parcel.get("lot_area_sf") or 0)
     z = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units)
     # Re-run the evidence engine with this typology pinned to the requested unit count.
-    pinned = typ.model_copy(update={"units": UnitRange(min=units, max=units), "lot_sf_per_unit_for_form": None})
-    a = analyze(cfg.model_copy(update={"typologies": [pinned]}), {**parcel}, Samples(cfg))
+    a = analyze(cfg, parcel, Samples(cfg), homes_override={typology_id: units})
     m = a.scenarios[0].metrics["affordability.monthly_cost"]
     ami4 = cfg.assumption("ami_4person").value
     share = cfg.assumption("housing_cost_share").value

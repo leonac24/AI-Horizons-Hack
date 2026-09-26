@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from core.config import ROOT, get_config
 from core.engine import Analysis, analyze, work_backwards
+from core.plan import Placement, PlanResult, analyze_plan
 from core.zoning import load_rules
 from server.explain import explain
 from server.llm import get_provider
@@ -222,6 +223,30 @@ def analysis(request: Request, response: Response, parcel_id: str = PARCEL_ID) -
     if _conditional(request, response, result.model_dump(mode="json")):
         return Response(status_code=304)  # type: ignore[return-value]
     return result
+
+
+class PlanRequest(BaseModel):
+    """Buildings placed in the 3D lot view, as counts per building type. Where
+    they sit on the lot is the client's concern; the evidence only needs counts."""
+
+    placements: list[Placement] = Field(default_factory=list)
+
+
+@api.post("/analysis/{parcel_id}/plan", summary="Evaluate a mixed plan of buildings on one parcel")
+def plan_route(req: PlanRequest, parcel_id: str = PARCEL_ID) -> PlanResult:
+    cfg = get_config()
+    if (len(req.placements) > cfg.app.api.plan_max_buildings
+            or sum(p.count for p in req.placements) > cfg.app.api.plan_max_buildings):
+        raise HTTPException(413, "too many buildings in this plan")
+    if any(p.count < 0 for p in req.placements):
+        raise HTTPException(422, "building counts cannot be negative")
+    known = {t.id for t in cfg.typologies}
+    if any(p.typology_id not in known for p in req.placements):
+        raise HTTPException(400, "unknown typology")
+    try:
+        return analyze_plan(cfg, _parcel(parcel_id), req.placements)
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from e
 
 
 class ExplainRequest(BaseModel):
