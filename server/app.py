@@ -40,6 +40,7 @@ PARCELS_FILE = ROOT / "data" / "processed" / "parcels.json"
 # Useful side effect: if the config is broken, the app now refuses to start and
 # says why, instead of starting fine and then failing on some later request.
 _API = get_config().app.api
+_PARCEL_ID_FORMAT = get_config().parcel_id_format
 
 # Every route is declared on this router so the whole API can be mounted at more
 # than one prefix. Hosts differ in whether they hand the function the original
@@ -151,11 +152,17 @@ def _analysis(parcel_id: str) -> Analysis:
     return _analysis_cached(parcel_id, get_config().hash)
 
 
-# Parcel ids are county PINs: uppercase alphanumeric, fixed width. Constraining
-# the path parameter means a malformed id is a 422 at the edge rather than a
-# dictionary lookup on arbitrary user input.
-PARCEL_ID = Path(min_length=4, max_length=32, pattern=r"^[A-Z0-9]+$")
-ParcelId = Field(min_length=4, max_length=32, pattern=r"^[A-Z0-9]+$")
+# What a parcel id in a URL is allowed to look like. The rules come from
+# city.yaml, because "ids are capital letters and digits" is a fact about
+# Pittsburgh parcels, not a setting anyone would tune.
+#
+# FastAPI applies these checks before our code runs, so a bad id comes back as
+# a 422 error and never reaches a lookup. It also means an id can never contain
+# a slash or a dot, so a URL can't be used to reach a file on the server.
+_PID = {"min_length": _PARCEL_ID_FORMAT.min_chars, "max_length": _PARCEL_ID_FORMAT.max_chars,
+        "pattern": _PARCEL_ID_FORMAT.pattern}
+PARCEL_ID = Path(**_PID)
+ParcelId = Field(**_PID)
 
 
 # --- routes ----------------------------------------------------------------------

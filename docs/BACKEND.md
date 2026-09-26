@@ -135,9 +135,12 @@ function needs a subset of the fields the map needs), not to add a cache layer.
 a computation is constrained in the signature, so a malformed request costs a
 422 and nothing else.
 
-- `parcel_id` — `^[A-Z0-9]+$`, 4–32 chars. County PINs are uppercase
-  alphanumeric. This also makes path traversal unrepresentable rather than
-  merely handled.
+- `parcel_id` — pattern and length from `city.yaml: parcels.id_pattern`,
+  `id_min_chars`, `id_max_chars`. It lives in `city.yaml` rather than
+  `app.yaml` on purpose: the shape of a parcel id is a fact about the
+  jurisdiction, not a tuning knob, so serving a different municipality means
+  editing that block and not the route signatures. It is also what makes path
+  traversal unrepresentable rather than merely handled.
 - `q` — bounded by `app.yaml: api.search_query_min_chars` /
   `search_query_max_chars`. `limit` — 1..`api.search_limit_max`.
 - `units` — 1..`api.work_backwards_max_units`.
@@ -282,9 +285,10 @@ Config is validated for **cross-references**, not just shape: every stakeholder
 profile must cover exactly the criteria in `criteria.yaml`; every typology's
 `use_key` must exist in `zoning.yaml`; every assumption's `source` must exist in
 `sources.yaml`; every zoning status must have a score; and
-`city.parcels.assessments_source` is checked at startup even though `city` is
-otherwise an open section, because the running server reads it on live requests
-and a typo would otherwise surface as a 500. A typo is a startup
+the two `city.yaml` keys the server depends on — the parcel id format (regex
+included, it is compiled at load) and `parcels.assessments_source` — are checked
+at startup even though `city` is otherwise an open section, because the running
+server reads them on live requests and a typo would otherwise surface as a 500. A typo is a startup
 failure with a readable message, never a silently wrong ranking.
 
 There is exactly **one random seed** in the engine (`app.yaml:
