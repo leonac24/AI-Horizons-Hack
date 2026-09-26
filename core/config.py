@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -34,6 +35,51 @@ class SmaaSettings(_Model):
     profile_concentration: float = Field(gt=0)
 
 
+class UncertaintySettings(_Model):
+    """Draw count and seed for the evidence engine's low/high bands."""
+
+    samples: int = Field(gt=0)
+    seed: int
+
+
+class ApiSettings(_Model):
+    """The biggest values the API will accept from whoever is calling it.
+
+    Anyone on the internet can call this API. So every number a caller controls
+    needs a cap: how long a search box string can be, how many results to hand
+    back, how many homes to model. All of those caps are listed right here
+    instead of being typed into the route functions further down, which means
+    you can see them all at once and change one without editing any Python.
+
+    Three numbers are deliberately NOT in here, because nobody would ever sit
+    down and tune them:
+      - how many characters of the ETag hash we keep (32),
+      - how many IP addresses the rate limiter remembers before it forgets,
+      - the "60" in the rate limiter's 60-second window. That 60 is just what
+        the word "minute" means in `explain_requests_per_minute`.
+    Putting those in config would suggest a reviewer has a decision to make
+    about them. They don't.
+    """
+
+    search_query_min_chars: int = Field(gt=0)
+    search_query_max_chars: int = Field(gt=0)
+    search_limit_max: int = Field(gt=0)
+    id_param_max_chars: int = Field(gt=0)
+    explain_max_weights: int = Field(gt=0)
+    explain_max_ranking: int = Field(gt=0)
+    explain_requests_per_minute: int = Field(gt=0)
+    analysis_cache_entries: int = Field(gt=0)
+    cache_max_age_seconds: int = Field(ge=0)
+    work_backwards_max_units: int = Field(gt=0)
+    target_ami_pct_max: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> ApiSettings:
+        if self.search_query_max_chars < self.search_query_min_chars:
+            raise ValueError("api.search_query_max_chars < search_query_min_chars")
+        return self
+
+
 class ExplanationSettings(_Model):
     max_sentences: int = Field(gt=0)
 
@@ -43,6 +89,8 @@ class AppConfig(_Model):
     tagline: str
     disclaimer: str
     placeholder_notice: str
+    uncertainty: UncertaintySettings
+    api: ApiSettings
     smaa: SmaaSettings
     explanation: ExplanationSettings
 
@@ -158,6 +206,37 @@ class Assumption(_Model):
         return Range(value=self.value, low=self.low, high=self.high)
 
 
+# --- city.yaml ---------------------------------------------------------------
+class ParcelIdFormat(_Model):
+    """What a parcel id is allowed to look like in this city.
+
+    In Pittsburgh a parcel id is an Allegheny County PIN: capital letters and
+    digits only, always within a set length. The API checks an id from a URL
+    against this BEFORE it looks anything up. Two things fall out of that:
+
+    1. A junk id gets a "422 Bad Request" straight away and costs us nothing.
+    2. An id can never contain a slash or a dot, so nobody can smuggle
+       something like "../../secrets.txt" through a URL and reach a real file.
+
+    A different city would number its parcels differently, so this lives in
+    city.yaml. Swapping cities is a config edit, not a code edit.
+    """
+
+    pattern: str
+    min_chars: int = Field(gt=0)
+    max_chars: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _usable(self) -> ParcelIdFormat:
+        if self.max_chars < self.min_chars:
+            raise ValueError(f"max_chars ({self.max_chars}) < min_chars ({self.min_chars})")
+        try:
+            re.compile(self.pattern)
+        except re.error as e:
+            raise ValueError(f"pattern {self.pattern!r} is not a valid regex: {e}") from e
+        return self
+
+
 # --- sources.yaml --------------------------------------------------------------
 class Source(_Model):
     name: str
@@ -177,8 +256,16 @@ class SourcesConfig(_Model):
 
 
 # --- zoning.yaml ---------------------------------------------------------------
+StatusRole = Literal["permitted", "discretionary", "variance", "prohibited", "unreviewed"]
+
+# Roles the engine must be able to resolve to exactly one status id. Code asks
+# for a role; zoning.yaml decides which id plays it. No status id in code.
+_REQUIRED_ROLES: tuple[StatusRole, ...] = ("variance", "prohibited", "unreviewed")
+
+
 class ZoningStatus(_Model):
     label: str
+    role: StatusRole
 
 
 class DimensionalTarget(_Model):
@@ -207,6 +294,25 @@ class ZoningConfig(_Model):
     priority_file: str
     statuses: dict[str, ZoningStatus]
     extraction_targets: ExtractionTargets
+
+    @model_validator(mode="after")
+    def _roles_resolvable(self) -> ZoningConfig:
+        for role in _REQUIRED_ROLES:
+            ids = [i for i, s in self.statuses.items() if s.role == role]
+            if len(ids) != 1:
+                raise ValueError(
+                    f"zoning.statuses needs exactly one status with role {role!r}, found {ids}")
+        return self
+
+    def status_id(self, role: StatusRole) -> str:
+        """The status id playing `role`. Lets code branch on meaning, not on id."""
+        return next(i for i, s in self.statuses.items() if s.role == role)
+
+    def is_disqualifying(self, status_id: str) -> bool:
+        """A prohibited use is a hard stop: it is excluded from the ranking rather
+        than scored, so no amount of weight on other criteria can outrank it."""
+        s = self.statuses.get(status_id)
+        return s is not None and s.role == "prohibited"
 
 
 # --- everything ----------------------------------------------------------------
@@ -238,11 +344,21 @@ class Config(_Model):
             if any(w < 0 for w in p.weights.values()):
                 errors.append(f"stakeholder {p.id!r}: negative weight")
 
+        _unique("criterion metric_id", [c.metric_id for c in self.criteria], errors)
+
         use_keys = set(self.zoning.extraction_targets.use_keys)
         typ_ids = {t.id for t in self.typologies}
         for t in self.typologies:
             if t.use_key not in use_keys:
                 errors.append(f"typology {t.id!r}: use_key {t.use_key!r} not in zoning.yaml use_keys")
+
+        # Every approval path needs a score, or a reviewed district could return a
+        # status the engine cannot price.
+        zscore = self.assumptions.get("zoning_status_score")
+        if zscore is not None:
+            missing_scores = set(self.zoning.statuses) - set(zscore.by_key or {})
+            if missing_scores:
+                errors.append(f"assumptions.zoning_status_score.by_key missing {sorted(missing_scores)}")
         for aid, a in self.assumptions.items():
             if a.source and a.source not in self.sources.sources:
                 errors.append(f"assumption {aid!r}: unknown source {a.source!r}")
@@ -251,6 +367,25 @@ class Config(_Model):
                     errors.append(f"assumption {aid!r}: by_typology has unknown typology {tid!r}")
         if self.zoning.code.source not in self.sources.sources:
             errors.append(f"zoning.code.source {self.zoning.code.source!r} not in sources.yaml")
+
+        # Most of city.yaml is only ever read by the offline pipeline, so we let
+        # that file hold whatever keys it wants without checking them. These two
+        # are different: the running server uses them on live requests. One
+        # checks every parcel id that arrives in a URL, the other records which
+        # dataset a number came from.
+        #
+        # So we check them here, at startup. A typo then crashes the app
+        # immediately with a message naming the bad key, instead of causing a
+        # confusing 500 error later on whichever request first needed it.
+        parcels = self.parcels
+        try:
+            ParcelIdFormat(pattern=parcels.get("id_pattern"), min_chars=parcels.get("id_min_chars"),
+                           max_chars=parcels.get("id_max_chars"))
+        except (ValidationError, ValueError) as e:
+            errors.append(f"city.parcels id format is unusable: {e}")
+        if parcels.get("assessments_source") not in self.sources.sources:
+            errors.append(f"city.parcels.assessments_source "
+                          f"{parcels.get('assessments_source')!r} not in sources.yaml")
         if errors:
             raise ValueError("config cross-reference errors:\n  - " + "\n  - ".join(errors))
         return self
@@ -261,9 +396,75 @@ class Config(_Model):
         except KeyError:
             raise KeyError(f"assumptions.yaml has no {key!r}") from None
 
+    def _city(self, key: str) -> dict[str, Any]:
+        """Grab one section out of city.yaml, and remember it for next time.
+
+        The `city` config is free-form, so pulling a value out of it means
+        converting the whole section into a plain dictionary first. That is
+        wasteful to redo for every single parcel, so we do it once and keep the
+        result in `cache`.
+        """
+        cache = self.__dict__.setdefault("_city_sections", {})
+        if key not in cache:
+            cache[key] = dict(self.city.model_dump().get(key) or {})
+        return cache[key]
+
+    @property
+    def hazards(self) -> dict[str, Any]:
+        """Hazard flag specs from city.yaml, resolved once instead of per parcel."""
+        return self._city("hazards")
+
+    @property
+    def parcels(self) -> dict[str, Any]:
+        """The `parcels` block of city.yaml: id format, dataset names, columns."""
+        return self._city("parcels")
+
+    @property
+    def parcel_id_format(self) -> ParcelIdFormat:
+        """Already checked at startup by `_cross_refs`, so this is safe to call
+        inside a request: it will not blow up halfway through serving someone."""
+        if self.__dict__.get("_parcel_id_format") is None:
+            p = self.parcels
+            self.__dict__["_parcel_id_format"] = ParcelIdFormat(
+                pattern=p["id_pattern"], min_chars=p["id_min_chars"], max_chars=p["id_max_chars"])
+        return self.__dict__["_parcel_id_format"]
+
+    @property
+    def assessment_source(self) -> str:
+        """Which dataset the real, measured parcel numbers came from.
+
+        "Real, measured" means lot size and assessed land value - things we read
+        out of a public file rather than estimated. The engine has to label every
+        number with where it came from, but it must NOT know the actual name of
+        the Pittsburgh dataset. That name is a Pittsburgh fact, and this code is
+        meant to work for any city.
+
+        (The guard test that enforces this is deliberately dumb: it searches for
+        dataset names in quotes and cannot tell a docstring from real code. An
+        earlier draft of this very paragraph tripped it. Working as intended.)
+
+        So the engine asks a question ("which dataset is the assessment one?")
+        and city.yaml answers it. Exactly the same trick the zoning code uses:
+        ask for the role, never name the thing directly.
+        """
+        return str(self.parcels["assessments_source"])
+
+    # Keys stripped from the browser payload: server-side filesystem layout the
+    # client has no use for. Not a secret, but publishing your on-disk paths
+    # narrows an attacker's guessing and there is no reason to hand it over.
+    _INTERNAL_ZONING_KEYS = ("rules_file", "priority_file")
+    _INTERNAL_CODE_KEYS = ("raw_text_dir",)
+
     def public_json(self) -> dict[str, Any]:
-        """What the browser gets: everything needed for labels, legends, sliders."""
-        return self.model_dump(mode="json")
+        """What the browser gets: everything needed for labels, legends and sliders,
+        and nothing about where files live on the server."""
+        data = self.model_dump(mode="json")
+        zoning = data.get("zoning") or {}
+        for k in self._INTERNAL_ZONING_KEYS:
+            zoning.pop(k, None)
+        for k in self._INTERNAL_CODE_KEYS:
+            (zoning.get("code") or {}).pop(k, None)
+        return data
 
 
 def _unique(kind: str, ids: list[str], errors: list[str]) -> None:

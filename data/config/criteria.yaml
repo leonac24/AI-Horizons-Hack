@@ -1,6 +1,19 @@
-# Scoring criteria. Every criterion is scenario-dependent (it can change the
-# ranking between housing types on the same lot). Lot-level context that is
-# identical across scenarios is shown separately as "site context".
+# Scoring criteria. Every criterion must be scenario-dependent AND independent:
+# it has to be able to change the ranking between housing types on the same lot,
+# and it must not be a restatement of another criterion.
+#
+# Lot-level context that is identical across scenarios is shown separately as
+# "site context" and is deliberately NOT a criterion — weighting a constant
+# cannot move a ranking, it only dilutes the weights that can.
+#
+# Removed 2026-09-26: `opportunity` (households gaining transit access to jobs).
+# It was units x jobs_access_index, and jobs_access_index is a property of the
+# lot, not of the scenario. Within one lot it was therefore a positive constant
+# times unit count -- exactly the negative of `infrastructure` after
+# normalization -- so the two cancelled and only their weight difference did any
+# work. Transit access is still computed and shown as site context
+# (site.jobs_access). If a future access measure varies by housing type, add it
+# back here.
 #
 # direction: higher_is_better | lower_is_better
 criteria:
@@ -28,10 +41,18 @@ criteria:
     group: equity
     default_weight: 1
 
-  - id: displacement
-    metric_id: displacement.pressure_units
-    label: Adds displacement pressure
-    question: How many new homes are priced above what current renters nearby can pay?
+  # Renamed 2026-09-26 from `displacement` / displacement.pressure_units, and
+  # changed from a count of homes to a share.
+  #   - It is NOT an estimate of households displaced. No causal or longitudinal
+  #     method stands behind it and the old name claimed one.
+  #   - A count multiplied three placeholders together (units x tract cost burden
+  #     x affordability ratio) and reported the product in whole homes. A share
+  #     drops the invented magnitude and keeps the comparison the evidence
+  #     actually supports.
+  - id: local_affordability_gap
+    metric_id: affordability_gap.share_above_local_rents
+    label: Share priced above nearby renter incomes
+    question: What share of these homes would cost more than renters nearby can currently pay?
     direction: lower_is_better
     group: equity
     default_weight: 1
@@ -44,18 +65,12 @@ criteria:
     group: feasibility
     default_weight: 1
 
-  - id: opportunity
-    metric_id: opportunity.households_with_access
-    label: Households gaining transit access to jobs
-    question: How many households get this location's access to jobs?
-    direction: higher_is_better
-    group: equity
-    default_weight: 1
-
+  # Label carries no horizon: the horizon is assumptions.analysis_years and the
+  # engine templates the metric label off it. A literal here would go stale.
   - id: carbon
-    metric_id: carbon.per_household_30yr
-    label: Carbon per household (30 years)
-    question: Tonnes CO2e per household over 30 years — building materials, energy, and travel.
+    metric_id: carbon.per_household_horizon
+    label: Carbon per household
+    question: Tonnes CO2e per household over the analysis horizon — building materials, energy, and travel.
     direction: lower_is_better
     group: climate
     default_weight: 1

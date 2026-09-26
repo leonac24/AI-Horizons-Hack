@@ -1,7 +1,11 @@
 """Evaluate reviewed zoning rules for a (district, typology, lot) combination.
 
 Only rules with `reviewed: true` produce a definite answer. Anything else —
-district missing, use rule unreviewed — returns status "needs_review".
+district missing, or the use rule not yet reviewed — returns whichever status
+zoning.yaml gives the `unreviewed` role.
+
+Status ids are never written here. Code asks zoning.yaml for the status playing
+a role, so renaming a status in config cannot silently change behaviour.
 """
 
 from __future__ import annotations
@@ -37,6 +41,11 @@ class ZoningResult(BaseModel):
     checks: list[Check] = []
     max_units_by_rule: int | None = None
     note: str | None = None
+    # A prohibited use is a hard requirement, not a criterion. Scenarios flagged
+    # here are excluded from the ranking rather than scored, so weight on other
+    # criteria can never make an illegal scenario come out on top.
+    disqualified: bool = False
+    disqualified_reason: str | None = None
 
 
 @lru_cache(maxsize=4)
@@ -58,22 +67,29 @@ def cite(cfg: Config, section: str | None) -> str | None:
 def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_area_sf: float | None,
              units: int) -> ZoningResult:
     labels = {k: v.label for k, v in cfg.zoning.statuses.items()}
+    unreviewed = cfg.zoning.status_id("unreviewed")
+    variance = cfg.zoning.status_id("variance")
 
     def result(status: str, **kw) -> ZoningResult:
-        return ZoningResult(district=district, status=status, status_label=labels[status], **kw)
+        if status not in labels:
+            raise KeyError(f"rules file used status {status!r}, not declared in zoning.yaml statuses")
+        return ZoningResult(district=district, status=status, status_label=labels[status],
+                            disqualified=cfg.zoning.is_disqualifying(status),
+                            disqualified_reason=labels[status] if cfg.zoning.is_disqualifying(status) else None,
+                            **kw)
 
     d = rules.get(district or "")
     if not district or not d:
-        return result("needs_review", reviewed=False,
+        return result(unreviewed, reviewed=False,
                       note="This district's rules have not been extracted and reviewed yet.")
     use = (d.get("uses") or {}).get(typ.use_key)
     if not use or not use.get("reviewed"):
-        return result("needs_review", reviewed=False,
+        return result(unreviewed, reviewed=False,
                       note="Use rule for this housing type is not reviewed yet.")
     status = use["status"]
     base = {"reviewed": True, "use_citation": cite(cfg, use.get("code_section")), "use_quote": use.get("quote")}
-    if status == "not_permitted":
-        return result("not_permitted", **base)
+    if cfg.zoning.is_disqualifying(status):
+        return result(status, **base)
 
     checks: list[Check] = []
     max_units: int | None = None
@@ -98,5 +114,5 @@ def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_
                             unit=target.unit, passed=ok, code_section=rule.get("code_section"),
                             citation=cite(cfg, rule.get("code_section")), quote=rule.get("quote")))
     if any(not c.passed for c in checks):
-        status = "variance_needed"
+        status = variance
     return result(status, checks=checks, max_units_by_rule=max_units, **base)

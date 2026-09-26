@@ -6,6 +6,35 @@ disclaimer: >-
 placeholder_notice: >-
   Hatched values are placeholders: a real source has not been connected yet.
   They show how the tool works, not what is true about this lot.
+# Uncertainty draws inside the evidence engine (metric low/high bands).
+# Separate from `smaa` below, which resamples in the browser for rank
+# acceptability. Both live here so neither seed is a literal in code.
+uncertainty:
+  samples: 300
+  seed: 20260926
+
+# Server input limits. The API is public and unauthenticated; these are the
+# ceilings that keep a hostile caller from turning it into a bill or a stall.
+api:
+  search_query_min_chars: 2
+  search_query_max_chars: 64
+  search_limit_max: 50
+  # Longest a single id-style value in a URL may be, e.g. ?typology=rowhouse.
+  # We look the value up in config right afterwards anyway, so this is only
+  # here to stop someone pasting a megabyte of text into the address bar.
+  id_param_max_chars: 64
+  explain_max_weights: 64
+  explain_max_ranking: 32
+  explain_requests_per_minute: 12
+  analysis_cache_entries: 512
+  # How long a browser is allowed to reuse an answer it already has before
+  # asking us again. Answers only change when the config files change, so this
+  # is safe to raise. The only cost of a bigger number: after you edit config,
+  # someone with a warm cache keeps seeing the old answer for this many seconds.
+  cache_max_age_seconds: 60
+  work_backwards_max_units: 500
+  target_ami_pct_max: 200
+
 smaa:
   samples: 2000
   seed: 20260926

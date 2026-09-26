@@ -12,13 +12,20 @@ rules_file: pipeline/zoning/rules_review.yaml
 priority_file: pipeline/zoning/review_priority.json
 
 # Approval paths, in the order they are shown.
+# `role` is what the engine keys off, so no status id is ever written into code.
+# Exactly one status must carry each of: variance, prohibited, unreviewed.
+#   permitted     — allowed outright
+#   discretionary — allowed only after a discretionary approval
+#   variance      — use is allowed but a dimensional rule fails
+#   prohibited    — hard stop; disqualified from the ranking, never outweighed
+#   unreviewed    — no reviewed rule exists yet; answer withheld
 statuses:
-  by_right: { label: Permitted by right }
-  special_exception: { label: Special exception (Zoning Board of Adjustment) }
-  conditional_use: { label: Conditional use (City Council) }
-  variance_needed: { label: "Use allowed, but a dimensional rule fails (variance)" }
-  not_permitted: { label: Not permitted }
-  needs_review: { label: Needs planner review }
+  by_right: { label: Permitted by right, role: permitted }
+  special_exception: { label: Special exception (Zoning Board of Adjustment), role: discretionary }
+  conditional_use: { label: Conditional use (City Council), role: discretionary }
+  variance_needed: { label: "Use allowed, but a dimensional rule fails (variance)", role: variance }
+  not_permitted: { label: Not permitted, role: prohibited }
+  needs_review: { label: Needs planner review, role: unreviewed }
 
 # What the extractor pulls per district. Each rule carries code_section,
 # a quote (< 25 words), confidence, extracted_by, and reviewed.
