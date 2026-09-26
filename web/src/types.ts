@@ -91,13 +91,20 @@ export interface Config {
   city: {
     name: string
     map: { center: [number, number]; zoom: number; basemap_style: string }
-    scene: { origin: [number, number]; scale: [number, number]; half_extent: number; rivers: [number, number][][] }
+    scene: {
+      origin: [number, number]
+      scale: [number, number]
+      half_extent: number
+      rivers: [number, number][][]
+      bridges: [string, number, number, string, number][]
+    }
     hazards: Record<string, { source: string; label: string; lot_scene?: string }>
     zoning_links: string[]
   }
   zoning: {
     statuses: Record<string, { label: string; role: 'permitted' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
     code: { name: string; url: string; citation_format: string }
+    district_colors: { prefix: string; color: string }[]
   }
   typologies: Typology[]
   criteria: Criterion[]

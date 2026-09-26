@@ -236,3 +236,14 @@ sources:
     vintage: not yet retrieved
     license: public
     verified: false
+
+  aws_terrain_tiles:
+    name: Terrain Tiles (Terrarium PNG)
+    publisher: Mapzen / Amazon Web Services Open Data (derived from USGS 3DEP, SRTM and others)
+    url: https://registry.opendata.aws/terrain-tiles/
+    access: manual
+    vintage: tiles last modified 2017
+    license: see registry page; attribution to the underlying sources required
+    verified: "2026-09-26"
+    note: Used only to shape the stylized 3D city. Baked into web/public/data/terrain.bin by pipeline/build_terrain.py; never used in any metric.
+

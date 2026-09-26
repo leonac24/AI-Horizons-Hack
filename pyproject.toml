@@ -26,6 +26,7 @@ pipeline = [
     "shapely>=2.0",
     "pyogrio>=0.9",
     "requests>=2.32",
+    "pillow>=12.3.0",
 ]
 
 [tool.uv]

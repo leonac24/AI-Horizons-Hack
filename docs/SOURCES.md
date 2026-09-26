@@ -27,6 +27,7 @@ Generated from `data/config/sources.yaml` by `uv run python -m pipeline.docs`. D
 | `epa_egrid` | [EPA eGRID](https://www.epa.gov/egrid) | U.S. EPA | not yet retrieved | public domain | not yet |  |
 | `epa_smart_location` | [EPA Smart Location Database](https://www.epa.gov/smartgrowth/smart-location-mapping) | U.S. EPA | not yet retrieved | public domain | not yet |  |
 | `nrel_resstock` | [ResStock](https://resstock.nrel.gov/) | U.S. DOE / NREL | not yet retrieved | public | not yet |  |
+| `aws_terrain_tiles` | [Terrain Tiles (Terrarium PNG)](https://registry.opendata.aws/terrain-tiles/) | Mapzen / Amazon Web Services Open Data (derived from USGS 3DEP, SRTM and others) | tiles last modified 2017 | see registry page; attribution to the underlying sources required | 2026-09-26 | Used only to shape the stylized 3D city. Baked into web/public/data/terrain.bin by pipeline/build_terrain.py; never used in any metric. |
 
 ## How the pipeline fetches them
 

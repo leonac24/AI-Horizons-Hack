@@ -28,16 +28,19 @@ export function Hud(p: {
   return (
     <div className="hud" style={{ left: p.L.hudLeft, maxWidth: p.L.hudMax }}>
       <div className="hud-row">
-        <Gauge label="Homes" value={String(plan?.units ?? 0)} color="#b6f23e" />
+        <Gauge tile="green" label="Homes" value={String(plan?.units ?? 0)} color="#2fd06b" />
         <div className="gauge wide">
-          <div className="eyebrow">Zoning · {p.analysis.parcel.zoning ?? '—'}</div>
-          <div className="gauge-text" style={{ color: zColor }}>
-            {plan ? plan.zoning.status_label : 'Nothing placed yet'}
+          <div className="gauge-tile blue" />
+          <div>
+            <div className="eyebrow">Zoning · {p.analysis.parcel.zoning ?? '—'}</div>
+            <div className="gauge-text" style={{ color: zColor }}>
+              {plan ? plan.zoning.status_label : 'Nothing placed yet'}
+            </div>
           </div>
         </div>
-        <Gauge label={`Rank · ${short}`} value={rank} labelColor="#ff5fa2" />
-        <Gauge label={`CO₂e / hh · yr ${p.year}`} value={carbon} />
-        <Gauge label={`Gap / home · ${p.wbAmi}% AMI`} value={gap} />
+        <Gauge tile="pink" label={`Rank · ${short}`} value={rank} labelColor="#ff4fa8" />
+        <Gauge tile="teal" label={`CO₂e / hh · yr ${p.year}`} value={carbon} />
+        <Gauge tile="amber" label={`Gap / home · ${p.wbAmi}% AMI`} value={gap} />
       </div>
       {p.empty && p.showPlan && <div className="hud-note lime">Drag a building from the palette onto the outlined lot. R rotates · Del removes.</div>}
       {!p.showPlan && <div className="hud-note info">Before: the lot as it is today. Switch to After to edit your plan.</div>}
@@ -48,14 +51,17 @@ export function Hud(p: {
   )
 }
 
-function Gauge({ label, value, color, labelColor }: { label: string; value: string; color?: string; labelColor?: string }) {
+function Gauge({ tile, label, value, color, labelColor }: { tile: string; label: string; value: string; color?: string; labelColor?: string }) {
   return (
     <div className="gauge">
-      <div className="eyebrow" style={labelColor ? { color: labelColor } : undefined}>
-        {label}
-      </div>
-      <div className="gauge-val" style={color ? { color } : undefined}>
-        {value}
+      <div className={`gauge-tile ${tile}`} />
+      <div>
+        <div className="eyebrow" style={labelColor ? { color: labelColor } : undefined}>
+          {label}
+        </div>
+        <div className="gauge-val" style={color ? { color } : undefined}>
+          {value}
+        </div>
       </div>
     </div>
   )
@@ -72,15 +78,30 @@ export function Palette(p: { config: Config; L: L; analysis: Analysis; counts: R
       className="palette"
       style={{ left: L.palLeft, right: L.palRight, top: L.palTop, bottom: L.palBottom, flexDirection: L.palDir as 'row' | 'column', maxWidth: L.palMax, maxHeight: L.palMaxH }}
     >
+      <div className="build-tag">BUILD</div>
       {p.config.typologies.map((t) => {
         const s = p.analysis.scenarios.find((x) => x.typology_id === t.id)
         const fits = s?.form_fits ?? false
         const [w, d] = t.building.footprint_ft
         const n = p.counts[t.id] ?? 0
         return (
-          <div key={t.id} className="pal-card" title="Drag onto the lot" onPointerDown={(e) => p.onDown(t.id, e)}>
-            <div className="pal-swatch">
-              <div style={{ width: Math.round((w / maxW) * 58 + 10), height: Math.round((t.stories / maxS) * 30 + 6), background: t.building.body, borderTop: `3px solid ${t.building.roof}` }} />
+          <div
+            key={t.id}
+            className="pal-card"
+            title="Drag onto the lot"
+            style={{ ['--typ' as string]: t.color }}
+            onPointerDown={(e) => p.onDown(t.id, e)}
+          >
+            <div className="pal-swatch" style={{ background: t.color + '33' }}>
+              <div
+                style={{
+                  width: Math.round((w / maxW) * 58 + 10),
+                  height: Math.round((t.stories / maxS) * 30 + 6),
+                  background: t.building.body,
+                  border: `2px solid ${t.color}`,
+                  borderTop: `5px solid ${t.building.roof}`,
+                }}
+              />
             </div>
             <div className="pal-name">{t.short_label}</div>
             <div className={`pal-meta ${fits ? '' : 'warn'}`}>
@@ -114,10 +135,10 @@ export function Inspector(p: { config: Config; L: L; placement: Placement | null
         {z ? `${z.status_label} in ${p.analysis.parcel.zoning ?? 'this district'}${z.use_citation ? ` (${z.use_citation})` : ''}` : '—'}
       </div>
       <div className="insp-actions">
-        <button className="ghost-btn" onClick={p.onRotate}>
+        <button className="go-btn" onClick={p.onRotate}>
           Rotate · R
         </button>
-        <button className="ghost-btn danger" onClick={p.onDelete}>
+        <button className="stop-btn" onClick={p.onDelete}>
           Delete · Del
         </button>
       </div>
