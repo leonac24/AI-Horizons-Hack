@@ -29,7 +29,9 @@ pipeline = [
 ]
 
 [tool.uv]
-default-groups = ["dev", "pipeline"]
+# The pipeline group (GeoPandas…) is opt-in so hosting installs stay small:
+#   uv sync --group pipeline
+default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

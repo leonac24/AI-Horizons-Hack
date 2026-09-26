@@ -50,3 +50,14 @@ def test_coverage_random_citywide_parcels(cfg):
     parcels = list(json.loads(PARCELS.read_text())["parcels"].values())
     for p in random.Random(42).sample(parcels, 150):
         _complete(cfg, analyze(cfg, p))
+
+
+def test_work_backwards_honors_unit_count(cfg, lot):
+    from core.engine import work_backwards
+
+    t = next(x for x in cfg.typologies if x.units.max > x.units.min)
+    few = work_backwards(cfg, lot, t.id, t.units.min, 60)
+    many = work_backwards(cfg, lot, t.id, t.units.max, 60)
+    assert few["units"] == t.units.min and many["units"] == t.units.max
+    # Land cost is spread over more homes, so the per-home gap shrinks.
+    assert many["subsidy_per_unit"]["value"] <= few["subsidy_per_unit"]["value"]

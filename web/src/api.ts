@@ -1,0 +1,35 @@
+import type {
+  Analysis,
+  Config,
+  Explanation,
+  ParcelSummary,
+  Unknowns,
+  WorkBackwardsResult,
+} from './types'
+
+async function get<T>(path: string): Promise<T> {
+  const r = await fetch(path)
+  if (!r.ok) throw new Error(`${path}: ${r.status} ${await r.text()}`)
+  return (await r.json()) as T
+}
+
+export const api = {
+  config: () => get<Config>('/api/config'),
+  suggested: () => get<ParcelSummary[]>('/api/parcels/suggested'),
+  search: (q: string) => get<ParcelSummary[]>(`/api/parcels/search?q=${encodeURIComponent(q)}`),
+  analysis: (id: string) => get<Analysis>(`/api/analysis/${encodeURIComponent(id)}`),
+  unknowns: () => get<Unknowns>('/api/unknowns'),
+  workBackwards: (id: string, typology: string, units: number, amiPct: number) =>
+    get<WorkBackwardsResult>(
+      `/api/work-backwards/${encodeURIComponent(id)}?typology=${encodeURIComponent(typology)}&units=${units}&target_ami_pct=${amiPct}`,
+    ),
+  explain: async (parcelId: string, weights: Record<string, number>, ranking: string[]) => {
+    const r = await fetch('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parcel_id: parcelId, weights, ranking }),
+    })
+    if (!r.ok) throw new Error(`explain: ${r.status}`)
+    return (await r.json()) as Explanation
+  },
+}

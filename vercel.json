@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd web && npm ci",
+  "buildCommand": "cd web && npm run build",
+  "outputDirectory": "web/dist",
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index" }],
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "{core/**,server/**,data/config/**,data/processed/**,pipeline/zoning/rules_review.yaml,pipeline/zoning/review_priority.json}",
+      "excludeFiles": "{web/**,data/raw/**,tests/**,.venv/**}"
+    }
+  }
+}

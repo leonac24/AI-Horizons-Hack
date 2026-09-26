@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 from pydantic import BaseModel
 
-from core.config import Config, Typology
+from core.config import Config, Typology, UnitRange
 from core.metrics import Metric, Samples, Trace, to_metric
 from core.zoning import ZoningResult, evaluate, load_rules
 
@@ -88,9 +88,10 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
 
     land_value = parcel.get("land_value_usd")
     site_context = [
-        to_metric("site.lot_area_sf", "Lot area", S.const(lot), "sf", obs),
+        to_metric("site.lot_area_sf", "Lot area", S.const(lot), "sf", obs, provenance="observed"),
         to_metric("site.land_value", "Assessed land value (not a market price)", S.const(land_value or 0), "USD",
-                  obs, note=None if land_value is not None else "missing in assessment"),
+                  obs, note=None if land_value is not None else "missing in assessment",
+                  provenance="observed" if land_value is not None else "placeholder"),
         to_metric("site.tract_median_income", "Median household income nearby", income_local, "USD/yr", t_ctx),
         to_metric("site.renter_cost_burden", "Renters paying 30%+ of income nearby", burden * 100, "%", t_burden),
         to_metric("site.jobs_access", "Transit access to jobs (city avg = 1)", access, "index", t_access),
@@ -248,10 +249,10 @@ def work_backwards(cfg: Config, parcel: dict, typology_id: str, units: int, targ
     rules = load_rules(cfg)
     lot = float(parcel.get("lot_area_sf") or 0)
     z = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units)
-    a = analyze(cfg, {**parcel}, Samples(cfg))
-    sc = next(s for s in a.scenarios if s.typology_id == typology_id)
-    # Scale cost to the requested unit count (linear in units; land spread over more homes).
-    m = sc.metrics["affordability.monthly_cost"]
+    # Re-run the evidence engine with this typology pinned to the requested unit count.
+    pinned = typ.model_copy(update={"units": UnitRange(min=units, max=units), "lot_sf_per_unit_for_form": None})
+    a = analyze(cfg.model_copy(update={"typologies": [pinned]}), {**parcel}, Samples(cfg))
+    m = a.scenarios[0].metrics["affordability.monthly_cost"]
     ami4 = cfg.assumption("ami_4person").value
     share = cfg.assumption("housing_cost_share").value
     cap = cfg.assumption("annual_capital_cost_share").value
