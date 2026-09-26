@@ -76,3 +76,17 @@ def test_no_zoning_status_ids_in_code():
     # config.py names the roles, not the ids, so it is not exempt. The only
     # legitimate mention of a status id anywhere is in zoning.yaml itself.
     _assert_absent(list(cfg.zoning.statuses), _source_files())
+
+
+def test_no_source_ids_in_code():
+    cfg = load_config()
+    # Dataset names are Pittsburgh facts, same as zoning codes and housing types.
+    # Which public table a number came from should be swappable in config, not
+    # baked into the engine.
+    #
+    # This test was added after finding exactly that: the engine had a dataset
+    # name written into a constant at the top of the file, duplicating a name
+    # city.yaml was already storing two directories away. The older guard tests
+    # checked housing types, criteria, stakeholders and zoning statuses - but
+    # nobody had thought to check dataset names, so it slipped through.
+    _assert_absent(list(cfg.sources.sources), _source_files())

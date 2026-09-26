@@ -16,8 +16,6 @@ from core.config import Config, Typology, UnitRange
 from core.metrics import Metric, Samples, Trace, to_metric, weakest
 from core.zoning import ZoningResult, evaluate, load_rules
 
-OBSERVED_SOURCES = {"assessment": "wprdc_assessments", "centroid": "wprdc_parcel_centroids"}
-
 
 class HouseholdCheck(BaseModel):
     household_id: str
@@ -93,7 +91,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
     access = S.a("jobs_access_index", used=t_access)
     t_sewer = Trace()
     sewer = S.a("sewer_stress_index", used=t_sewer)
-    obs = Trace({"observed"}, {OBSERVED_SOURCES["assessment"]})
+    obs = Trace({"observed"}, {cfg.assessment_source})
 
     land_value = parcel.get("land_value_usd")
     site_context = [
@@ -143,7 +141,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None) -> Analys
                 notes.append(f"{hazards_cfg[flag]['label']}: added site cost range applied.")
         land = S.const(float(land_value or 0))
         if land_value is not None:
-            t_cost.add("observed", OBSERVED_SOURCES["assessment"])
+            t_cost.add("observed", cfg.assessment_source)
         dev_cost = gross_sf * hard * (1 + soft + site_share) + land
         per_unit = dev_cost / units
 
