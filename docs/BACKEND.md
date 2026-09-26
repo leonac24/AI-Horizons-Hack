@@ -344,7 +344,10 @@ curl -s -X POST "$BASE/api/explain" \
 diff <(curl -s "$BASE/api/analysis/$PID") <(curl -s "$BASE/api/analysis/$PID") && echo IDENTICAL
 
 # Conditional requests: second call is 304 with no body
-ETAG=$(curl -sI "$BASE/api/config" | tr -d '\r' | awk -F': ' '/^etag/i{print $2}')
+# Note: curl -I sends a HEAD request, and these routes only answer GET, so it
+# comes back 405 with no etag header at all. Read the etag off a normal GET.
+ETAG=$(curl -s -D - -o /dev/null "$BASE/api/config" | tr -d '\r' \
+  | awk -F': ' 'tolower($1)=="etag"{print $2}')
 curl -s -o /dev/null -w '%{http_code}\n' "$BASE/api/config" -H "If-None-Match: $ETAG"   # 304
 
 # Validation rejects before doing work
