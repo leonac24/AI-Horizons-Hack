@@ -3,8 +3,8 @@ import { api } from '../api'
 import { PLAN_ID, type Option, type Ranking } from '../lib/plan'
 import type { Placement } from '../three/engine'
 import type { Analysis, Config, Explanation, Unknowns, WorkBackwardsResult } from '../types'
-import { fmt, ROLE_COLOR, roleOf, usd } from '../lib/format'
-import { MetricBox, ProvTag } from './ui'
+import { ROLE_COLOR, roleOf, usd } from '../lib/format'
+import { MetricBox, ProvTag, SourceRefs } from './ui'
 
 export type Tab = 'compare' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
 const TABS: [Tab, string][] = [
@@ -98,6 +98,15 @@ function CompareTab(p: Props) {
               {par.neighborhood} · zoning district <strong>{par.zoning ?? '—'}</strong> · {Math.round(par.lot_area_sf ?? 0).toLocaleString()} sf · parcel {par.id}
             </span>
             {par.public && <span className="pub-badge">publicly held</span>}
+          </div>
+          <div className="dim small">
+            Confirm this lot against{' '}
+            {config.city.zoning_links.map((id, index) => {
+              const source = config.sources.sources[id]
+              return source?.url ? <span key={id}>{index > 0 ? ' · ' : ''}<a href={source.url} target="_blank" rel="noreferrer">{source.name}</a></span> : null
+            })}
+            {typeof par.zoning_code_url === 'string' && par.zoning_code_url && <span> · <a href={par.zoning_code_url} target="_blank" rel="noreferrer">district code section</a></span>}
+            . The mapped base district does not establish what can be built.
           </div>
           {analysis.placeholder_count > 0 && (
             <div className="hatched note-box small">
@@ -239,13 +248,13 @@ function CompareTab(p: Props) {
               {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft
             </strong>
           </div>
-          {analysis.site_context.map((m) => (
-            <div key={m.id} className={`mbox prov-${m.provenance}`} title={m.note ?? undefined}>
-              <div className="mbox-head">
-                <span className="mbox-label">{m.label}</span>
-                <ProvTag p={m.provenance} />
-              </div>
-              <strong>{fmt(m.value, m.unit)}</strong>
+          {analysis.site_context.map((m) => <MetricBox key={m.id} m={m} sources={config.sources.sources} />)}
+          {analysis.site_facts.map((fact) => (
+            <div key={fact.id} className={`mbox prov-${fact.provenance}`}>
+              <div className="mbox-head"><span className="mbox-label">{fact.label}</span><ProvTag p={fact.provenance} /></div>
+              <strong>{fact.value}</strong>
+              <div className="dim small">{fact.note}</div>
+              <SourceRefs ids={fact.sourceIds} sources={config.sources.sources} provenance={fact.provenance} />
             </div>
           ))}
         </div>
@@ -541,6 +550,18 @@ function UnknownsTab() {
           ))}
         </div>
       </details>
+      <div className="h-card">Coverage of connected data</div>
+      <p className="muted small">Counts describe indexed vacant lots, not every property in Pittsburgh.</p>
+      {([
+        ['acs_income_values', '2024 ACS tract median income'],
+        ['acs_renter_burden_values', '2024 ACS tract renter cost burden'],
+        ['parcel_polygons_matched', 'County parcel boundaries'],
+        ['fema_classified', 'Matched FEMA flood zones'],
+        ['combined_sewershed_matched', 'Matched combined sewersheds'],
+      ] as const).map(([key, label]) => (
+        <div key={key} className="small unk-row">{label}: {(u.pipeline?.counts?.[key] ?? 0).toLocaleString()} of {u.vacant_parcels.toLocaleString()}</div>
+      ))}
+      <p className="muted small">ACS gaps include special-use tracts. FEMA is a point screen that can miss a hazard on another part of a lot. A missing sewershed match does not establish sewer type or available capacity.</p>
       <div className="h-card">Placeholder numbers ({u.placeholder_assumptions.length})</div>
       {u.placeholder_assumptions.map((a) => (
         <div key={a.id} className="small unk-row">
@@ -556,7 +577,7 @@ function UnknownsTab() {
       ))}
       <div className="h-card">Always true</div>
       {[
-        'Hazard flags are tested at each parcel’s centroid, so part of a lot can be steep or flood-prone without a flag.',
+        'Slope, landslide and undermining flags use parcel centroids. FEMA uses a point inside the parcel boundary where available. These screens can miss a hazard on another part of a lot.',
         'Assessed land values are not market prices.',
         'The 3D city and the neighbors around a lot are stylized; lot positions and dimensions come from county records.',
         'City limits only — other Allegheny County municipalities have their own zoning codes.',

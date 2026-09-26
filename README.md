@@ -47,7 +47,7 @@ assessment records) and compare six kinds of housing that could go there:
 - **Work backwards.** Pick a housing type, a home count and an income tier. See
   the zoning rules that fail, the subsidy gap per home, and the site flags.
 - **What we don't know.** Every placeholder, unconnected source and unreviewed
-  zoning district.
+  zoning district, plus citywide coverage counts for joined data.
 - **Memo.** One printable page for a community meeting.
 
 **Core principle: evidence and values are separate.** Metrics carry ranges and
@@ -83,6 +83,21 @@ uv sync --group pipeline
 uv run python -m pipeline.build_parcels   # ~2 min first run; caches in data/raw/
 uv run python -m pipeline.docs            # regenerate SOURCES.md + LIMITATIONS.md counts
 ```
+
+To re-run official ACS tract estimates and parcel-point FEMA/PWSA site context
+without rebuilding assessments:
+
+```bash
+uv sync --group pipeline
+uv run python -m pipeline.enrich_context
+uv run python -m pipeline.docs
+```
+
+The 2024 ACS table-based summary files need no API key. Raw GIS downloads are
+cached in `data/raw/`; remove a source's cached file to fetch its latest version.
+Derived facts and coverage counts are checked in. The
+flood and sewer screens test a point inside the parcel where a boundary is
+available, so they can miss hazards covering only another part of a lot.
 
 To extract zoning rules, save the Title Nine sections as text in
 `data/raw/zoning/` (eCode360 blocks scripts), set `GEMINI_API_KEY`, then run:
@@ -125,10 +140,13 @@ whatever that folder declares.
 
 1. Review zoning rules for the districts with the most vacant lots: H, R1D-H,
    RM-M, R1D-L, R2-L.
-2. Replace the placeholders. HUD income limits, ACS and CHAS by tract (needs a
-   Census API key), and a sourced set of Pittsburgh construction costs.
-3. Connect FEMA flood, the ALCOSAN/PWSA sewersheds, and a PRT GTFS travel-time
-   matrix with a slope-aware walk leg.
+2. Replace remaining cost and carbon placeholders with verified local evidence;
+   evaluate CHAS for income-tier detail.
+3. Build a measured PRT travel-time matrix with a walking network and job
+   destinations, or obtain the University of Minnesota's block-level 2024
+   transit-access data (the linked repository rejected access during this
+   build). Combined-sewershed boundaries are loaded, but sewer stress still
+   needs capacity or overflow observations.
 4. Add the advocates + referee explanation mode.
 
 **Pilot partners we'd approach:** a Pittsburgh CDC, the Department of City

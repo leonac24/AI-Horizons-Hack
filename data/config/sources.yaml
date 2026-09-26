@@ -102,15 +102,35 @@ sources:
     license: public law
     verified: "2026-09-26"
 
-  hud_income_limits:
-    name: HUD Income Limits (Pittsburgh, PA HUD Metro FMR Area)
-    publisher: U.S. Department of Housing and Urban Development
-    url: https://www.huduser.gov/portal/datasets/il.html
+  pgh_zoning_map:
+    name: Pittsburgh Zoning Map
+    publisher: City of Pittsburgh
+    url: https://pittsburghpa.maps.arcgis.com/apps/instant/sidebar/index.html?appid=4bb79ea64bf848b3a0560e3856efeccb
     access: manual
-    vintage: not yet retrieved
+    vintage: live city map; verify before a site decision
+    license: public map
+    verified: "2026-09-26"
+    note: Official map for checking district and overlays; Lotline's stored base district alone is not an approval determination.
+
+  pgh_zoning_page:
+    name: Pittsburgh City Planning Zoning Page
+    publisher: City of Pittsburgh
+    url: https://www.pittsburghpa.gov/Business-Development/City-Planning/Zoning
+    access: manual
+    vintage: live city guidance; verify before a site decision
+    license: public page
+    verified: "2026-09-26"
+    note: City guidance and contact path for confirming site-specific zoning requirements.
+
+  hud_income_limits:
+    name: HUD FY2026 Income Limits (Pittsburgh, PA HMFA)
+    publisher: U.S. Department of Housing and Urban Development
+    url: https://www.huduser.gov/portal/datasets/il/il26/Section8-IncomeLimits-FY26.pdf
+    access: manual
+    vintage: FY2026; Pittsburgh HMFA METRO38300M38300
     license: public domain
-    verified: false
-    note: huduser.gov blocked scripted requests on 2026-09-26.
+    verified: "2026-09-26"
+    note: Published area MFI is $110,400; four-person extremely low/very low/low limits are $33,100/$55,200/$88,300. Limits are not simple multiples of MFI.
 
   hud_chas:
     name: Comprehensive Housing Affordability Strategy (CHAS)
@@ -122,14 +142,35 @@ sources:
     verified: false
 
   acs_5yr:
-    name: American Community Survey 5-Year Estimates
+    name: 2024 American Community Survey 5-Year Detailed Tables
     publisher: U.S. Census Bureau
-    url: https://www.census.gov/data/developers/data-sets/acs-5year.html
-    access: manual
-    vintage: not yet retrieved
+    url: https://www.census.gov/programs-surveys/acs/data/summary-file.html
+    access: census_bulk
+    vintage: 2020–2024, 2024 ACS tract geography
     license: public domain
-    verified: false
-    note: The Census API now requires a (free) key — set CENSUS_API_KEY.
+    verified: "2026-09-26"
+    note: Key-free official table-based summary files B19013 and B25070; tract estimates and 90% margins of error. Rent-burden ratio bounds in Lotline are approximate, not Census-published MOEs.
+
+  allegheny_parcel_boundaries:
+    name: Allegheny County Parcel Boundaries
+    publisher: Allegheny County GIS
+    url: https://gisdata.alleghenycounty.us/arcgis/rest/services/OPENDATA/Parcels/MapServer/0
+    access: arcgis
+    vintage: cached ArcGIS extract (remove raw cache to refetch)
+    license: see Allegheny County GIS terms
+    verified: "2026-09-26"
+    note: PIN-matched polygons provide an interior sample point for mapped context; polygons are not published in the app.
+
+  pwsa_combined_sewersheds:
+    name: PWSA Combined Sewersheds
+    publisher: Pittsburgh Water and Sewer Authority via WPRDC
+    url: https://data.wprdc.org/dataset/combined-sewershed
+    access: ckan_download
+    resource_id: 138d6b65-1630-4905-9421-de90cd9d59e5
+    vintage: July 2018 resource
+    license: Creative Commons Attribution
+    verified: "2026-09-26"
+    note: CSO_SHED identifies the mapped combined sewershed; outside the layer is not proof of a separate sewer or available capacity.
 
   prt_gtfs:
     name: Pittsburgh Regional Transit GTFS
@@ -140,14 +181,25 @@ sources:
     license: see WPRDC dataset page
     verified: false
 
-  fema_nfhl:
-    name: FEMA National Flood Hazard Layer
-    publisher: FEMA
-    url: https://www.fema.gov/flood-maps/national-flood-hazard-layer
+  umn_aaa_transit:
+    name: Access Across America Transit 2024
+    publisher: University of Minnesota Accessibility Observatory
+    url: https://access.umn.edu/ao-research/aaa/transit/2024
     access: manual
-    vintage: not yet retrieved
-    license: public domain
+    vintage: 2024 travel-time analysis; report published 2025
+    license: verify dataset reuse terms
     verified: false
+    note: The report describes block-level jobs reachable by transit, but the linked data repository returned 403/401 on 2026-09-26. No parcel or tract values were extracted; request access or locate an authorized download before replacing jobs_access_index.
+
+  fema_nfhl:
+    name: FEMA National Flood Hazard Layer, Pennsylvania
+    publisher: FEMA via Pennsylvania Spatial Data Access
+    url: https://pasda.psu.edu/uci/DataSummary.aspx?dataset=2365
+    access: arcgis
+    vintage: July 2026 Pennsylvania extract
+    license: public domain
+    verified: "2026-09-26"
+    note: A point inside each available parcel polygon is tested against the mapped flood zones. Partial-lot hazards can be missed; verify the map panel for a site decision.
 
   alcosan_cso:
     name: ALCOSAN / PWSA combined sewer overflow data

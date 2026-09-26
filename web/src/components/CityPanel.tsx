@@ -73,7 +73,11 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
                 <span>Hide {h.label.toLowerCase()}</span>
               </label>
             ))}
-            <span className="dim small">Flood &amp; transit filters: not loaded yet</span>
+            <label>
+              <input type="checkbox" checked={!!filters.exclude.fh} onChange={(e) => setFilters({ ...filters, exclude: { ...filters.exclude, fh: e.target.checked } })} />
+              Hide lots whose tested point is in a FEMA high-risk flood zone
+            </label>
+            <span className="dim small">Unmatched flood locations stay visible; transit job access is not measured yet.</span>
           </div>
         </div>
         <div className="cp-legend">

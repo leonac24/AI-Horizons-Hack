@@ -90,10 +90,27 @@ zoning_layer:
   code_link_field: municode
 
 # `lot_scene: hill` draws a hillside behind the lot in the 3D view.
+zoning_links: [pgh_zoning_code, pgh_zoning_map, pgh_zoning_page]
 hazards:
   steep_slope: { source: wprdc_steep_slope, label: "Slope 25% or greater", lot_scene: hill }
   landslide: { source: wprdc_landslide_prone, label: "Landslide-prone area" }
   undermined: { source: wprdc_undermined, label: "Undermined area" }
+
+# Observed context. These fields inform the site panel; sewershed and flood
+# polygons do not feed the unmeasured sewer-stress or site-cost assumptions.
+context:
+  acs:
+    source: acs_5yr
+    income_url: https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19013.dat
+    rent_burden_url: https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b25070.dat
+  parcel_boundaries:
+    source: allegheny_parcel_boundaries
+    service_url: https://gisdata.alleghenycounty.us/arcgis/rest/services/OPENDATA/Parcels/MapServer/0
+  flood:
+    source: fema_nfhl
+    service_url: https://maps.pasda.psu.edu/ArcGIS/rest/services/pasda/FEMA_NationalFloodHazardLayer_PA/MapServer/0
+  combined_sewersheds:
+    source: pwsa_combined_sewersheds
 
 # Suggested lots: spread across the city, not favorites.
 suggested_lots:

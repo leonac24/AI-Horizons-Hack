@@ -7,8 +7,9 @@ Two layers, kept apart on purpose:
 - **Values** (`web/src/lib/scoring.ts`, mirrored in `core/scoring.py`) combine
   the evidence using weights that the user controls.
 
-Every number below comes from `data/config/assumptions.yaml`. Housing types come
-from `typologies.yaml`, and criteria and their directions from `criteria.yaml`.
+Model parameters come from `data/config/assumptions.yaml`; joined site estimates
+come from the processed parcel index. Housing types come from `typologies.yaml`,
+and criteria and their directions from `criteria.yaml`.
 
 ## Uncertainty ranges
 
@@ -20,6 +21,14 @@ the central value plus the 5th–95th percentile of the draws.
 **Provenance** is the weakest input. If any placeholder feeds a metric, the
 metric is a placeholder. Otherwise the order runs modeled, then assumption, then
 observed.
+
+For a lot with a valid 2024 ACS tract match, `B19013_E001` supplies median
+household income and its published 90% MOE supplies the sample envelope. Renter
+gross-rent burden is `(B25070_E007 + E008 + E009 + E010) / (E001 − E011)`.
+The denominator excludes “not computed.” The ratio envelope uses the component
+MOEs conservatively and is **not** an official Census ratio MOE. Missing or
+suppressed estimates retain the documented placeholder. The tract's estimate
+does not describe any particular household or lot.
 
 ## Homes per lot (buildings that fit, not zoning)
 

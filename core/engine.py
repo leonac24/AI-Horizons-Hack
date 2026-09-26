@@ -34,6 +34,15 @@ class CarbonSeries(BaseModel):
     provenance: str
 
 
+class SiteFact(BaseModel):
+    id: str
+    label: str
+    value: str
+    provenance: str
+    sourceIds: list[str]
+    note: str
+
+
 class Scenario(BaseModel):
     typology_id: str
     units: int
@@ -68,6 +77,7 @@ class Analysis(BaseModel):
     lot_shape: LotShape
     config_hash: str
     site_context: list[Metric]
+    site_facts: list[SiteFact] = []
     scenarios: list[Scenario]
     placeholder_count: int
     # Server-side answer to "what may be ranked". The browser scores only these.
@@ -93,6 +103,15 @@ def lot_shape(cfg: Config, parcel: dict) -> LotShape:
                     note="No usable dimensions in the legal description; drawn from lot area and a "
                          "placeholder depth-to-frontage ratio.")
 
+def _interval_samples(S: Samples, parcel: dict, key: str, value: float,
+                      low: float | None, high: float | None) -> np.ndarray:
+    """Use a parcel's published estimate and uncertainty, not a citywide stand-in."""
+    lo = float(value if low is None else low)
+    hi = float(value if high is None else high)
+    rng = S.stream("site-context", str(parcel.get("id", "")), key)
+    draws = rng.uniform(lo, hi, S.n) if hi > lo else np.full(S.n, value)
+    return np.concatenate([[value], draws])
+
 
 def pure_buildings(typ: Typology, shape: LotShape, lot_area_sf: float) -> tuple[int, bool]:
     """How many of this typology's building fit side by side along the frontage
@@ -114,10 +133,34 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     hazards_cfg = cfg.hazards
 
     # --- Lot context (same for every scenario) ----------------------------------
+    context_sources = cfg.city.model_dump().get("context") or {}
+    acs_source = (context_sources.get("acs") or {}).get("source")
+    income_est = parcel.get("tract_median_household_income")
     t_ctx = Trace()
-    income_local = S.a("tract_median_household_income", used=t_ctx)
+    if income_est is None:
+        income_local = S.a("tract_median_household_income", used=t_ctx)
+        income_note = "Tract estimate unavailable; citywide placeholder shown."
+    else:
+        t_ctx.add("observed", acs_source)
+        income_moe = parcel.get("tract_median_household_income_moe")
+        income_local = _interval_samples(
+            S, parcel, "income", float(income_est),
+            max(0, float(income_est) - float(income_moe)) if income_moe is not None else None,
+            float(income_est) + float(income_moe) if income_moe is not None else None)
+        income_note = "2020–2024 ACS tract estimate; range uses published 90% margin of error."
+    burden_est = parcel.get("tract_renter_cost_burden_share")
     t_burden = Trace()
-    burden = S.a("tract_renter_cost_burden_share", used=t_burden)
+    if burden_est is None:
+        burden = S.a("tract_renter_cost_burden_share", used=t_burden)
+        burden_note = "Tract estimate unavailable; citywide placeholder shown."
+    else:
+        t_burden.add("modeled", acs_source)
+        burden = _interval_samples(S, parcel, "rent-burden", float(burden_est),
+                                   parcel.get("tract_renter_cost_burden_low"),
+                                   parcel.get("tract_renter_cost_burden_high"))
+        burden_note = ("2020–2024 ACS tract renters with gross rent at 30%+ of income, "
+                       "excluding not-computed. Range is an approximate component-MOE envelope, "
+                       "not a Census-published ratio MOE.")
     t_access = Trace()
     access = S.a("jobs_access_index", used=t_access)
     t_sewer = Trace()
@@ -130,8 +173,12 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
         to_metric("site.land_value", "Assessed land value (not a market price)", S.const(land_value or 0), "USD",
                   obs, note=None if land_value is not None else "missing in assessment",
                   provenance="observed" if land_value is not None else "placeholder"),
-        to_metric("site.tract_median_income", "Median household income nearby", income_local, "USD/yr", t_ctx),
-        to_metric("site.renter_cost_burden", "Renters paying 30%+ of income nearby", burden * 100, "%", t_burden),
+        to_metric("site.tract_median_income", "Tract median household income", income_local,
+                  "USD/yr", t_ctx, note=income_note,
+                  provenance="observed" if income_est is not None else "placeholder"),
+        to_metric("site.renter_cost_burden", "Tract renters paying 30%+ of income", burden * 100,
+                  "%", t_burden, note=burden_note,
+                  provenance="modeled" if burden_est is not None else "placeholder"),
         to_metric("site.jobs_access", "Transit access to jobs (city avg = 1)", access, "index", t_access),
         to_metric("site.sewer_stress", "Combined-sewer stress (city avg = 1)", sewer, "index", t_sewer),
     ]
@@ -144,10 +191,40 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
             note="Tested at the parcel centroid" if val is not None else f"{src.name} not loaded",
             provenance="observed" if val is not None else "placeholder"))
 
+    fema_source = (context_sources.get("flood") or {}).get("source")
+    flood_zones = parcel.get("fema_flood_zones")
+    if flood_zones:
+        flood_value = ("Mapped high-risk flood area" if parcel.get("fema_sfha") else
+                       "Mapped outside high-risk flood area") + f" · zone {', '.join(flood_zones)}"
+        flood_note = (f"{parcel.get('fema_join_method')}; July 2026 FEMA map screen. "
+                      "Another part of the lot may cross a zone boundary.")
+    else:
+        flood_value = "No mapped zone match"
+        flood_note = "No mapped polygon matched this lot; flood status remains unknown."
+    sewer_source = (context_sources.get("combined_sewersheds") or {}).get("source")
+    sheds = parcel.get("combined_sewershed_ids")
+    site_facts = [
+        SiteFact(id="site.fema_flood", label="FEMA flood map", value=flood_value,
+                 provenance="observed" if flood_zones else "placeholder",
+                 sourceIds=[fema_source] if fema_source else [], note=flood_note),
+        SiteFact(id="site.combined_sewershed", label="Combined sewershed",
+                 value=", ".join(sheds) if sheds else "No mapped combined-sewershed match",
+                 provenance="observed" if sheds else "placeholder",
+                 sourceIds=[sewer_source] if sewer_source else [],
+                 note=(f"{parcel.get('sewershed_join_method')}; 2018 PWSA boundary. "
+                       "This does not measure sewer capacity or overflow pressure.") if sheds else
+                       "Outside or unmatched in the 2018 layer; sewer type and capacity are unknown."),
+    ]
+
     # --- Shared affordability inputs --------------------------------------------
     t_inc = Trace()
     ami4 = S.a("ami_4person", used=t_inc)
     share = S.a("housing_cost_share", used=t_inc)
+    site_context.insert(0, to_metric(
+        "site.area_mfi", "FY2026 Pittsburgh HUD area median family income",
+        ami4, "USD/yr", Trace({"observed"}, {cfg.assumption("ami_4person").source}),
+        note="Pittsburgh HUD Metro FMR Area baseline, not this tract or household's income.",
+        provenance="observed"))
     size_factor = cfg.assumption("household_size_factor").by_size or {}
 
     shape = lot_shape(cfg, parcel)
@@ -293,9 +370,10 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                                   ineligible_reason=zres.disqualified_reason))
 
     n_placeholder = sum(m.provenance == "placeholder" for m in site_context) + sum(
+        f.provenance == "placeholder" for f in site_facts) + sum(
         m.provenance == "placeholder" for s in scenarios for m in s.metrics.values())
     return Analysis(parcel=parcel, lot_shape=shape, config_hash=cfg.hash,
-                    site_context=site_context, scenarios=scenarios,
+                    site_context=site_context, site_facts=site_facts, scenarios=scenarios,
                     placeholder_count=n_placeholder,
                     rankable_typology_ids=[s.typology_id for s in scenarios if s.eligible],
                     excluded_typology_ids=[s.typology_id for s in scenarios if not s.eligible])

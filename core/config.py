@@ -253,7 +253,7 @@ class Source(_Model):
     name: str
     publisher: str
     url: str | None
-    access: Literal["ckan_datastore", "ckan_download", "manual"]
+    access: Literal["ckan_datastore", "ckan_download", "census_bulk", "arcgis", "manual"]
     resource_id: str | None = None
     vintage: str
     license: str

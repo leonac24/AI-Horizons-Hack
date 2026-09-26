@@ -6,13 +6,16 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `8f957cd8a654`._
+_Auto-generated for config `e059290e476f`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
 - **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 54 districts reviewed).
 - **Largest unreviewed districts:** H (3,230), R1D-H (3,021), RM-M (2,461), R1D-L (2,121), R2-L (2,072), R1A-VH (1,483), P (1,207), R1D-M (1,183), R2-H (1,166), R1A-H (963), LNC (949), UI (460).
-- **Placeholder assumptions (19):** `ami_4person`, `hard_cost_psf`, `soft_cost_share`, `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_kgco2e_per_kwh`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
-- **Sources not yet connected (9):** HUD Income Limits (Pittsburgh, PA HUD Metro FMR Area), Comprehensive Housing Affordability Strategy (CHAS), American Community Survey 5-Year Estimates, Pittsburgh Regional Transit GTFS, FEMA National Flood Hazard Layer, ALCOSAN / PWSA combined sewer overflow data, EPA eGRID, EPA Smart Location Database, ResStock.
+- **Placeholder assumptions (18):** `hard_cost_psf`, `soft_cost_share`, `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_kgco2e_per_kwh`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
+- **2024 ACS median income / renter burden:** 22,113 / 22,132 indexed lots have tract estimates.
+- **FEMA point screen:** 22,183 classified; 359 in a mapped Special Flood Hazard Area at the tested point.
+- **2018 PWSA combined sewersheds:** 19,444 indexed lots have a point match.
+- **Sources not yet connected (7):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, EPA eGRID, EPA Smart Location Database, ResStock.
 <!-- AUTO:END -->
 
 ## What it gets wrong, or can't know
@@ -23,14 +26,18 @@ _Auto-generated for config `8f957cd8a654`._
   "Needs planner review". Only base districts are joined. Overlays (Riverfront,
   IPOD, historic districts) are not joined, and neither are planned-unit
   developments or specially planned districts.
-- **Most cost, income and carbon numbers are placeholders.** Construction cost,
-  soft cost, capital cost, operating cost, embodied and operational carbon, grid
-  intensity, AMI and tract context are all stand-ins. They show how the tool
-  reasons, not what is true. The UI hatches every value that depends on one.
-- **Hazards are checked at a point.** Steep slope, landslide-prone and
-  undermined flags come from testing the parcel's centroid against city layers.
-  Part of a lot can be steep or undermined without the lot being flagged, and the
-  reverse. Flood (FEMA NFHL) and combined-sewer data are not connected yet.
+- **Most cost and carbon numbers remain placeholders.** HUD FY2026 Pittsburgh
+  area median family income is published, and 2024 ACS tract income and renter
+  burden estimates are joined where available. Construction cost, soft cost,
+  capital cost, operating cost, embodied and operational carbon, grid intensity,
+  job access and sewer stress remain stand-ins. The UI hatches values that
+  depend on a placeholder.
+- **Mapped site context is checked at a point.** Slope, landslide and undermining
+  use the published parcel centroid. FEMA flood and PWSA combined-sewershed
+  screens use a point inside the county parcel polygon when its PIN matches,
+  otherwise the published centroid. Part of a lot can cross a boundary without
+  its tested point doing so. A flood result is not a site-specific FEMA
+  determination. A combined-sewershed match is not sewer capacity or stress.
 - **"Vacant" means the county's vacant land-use classes.** Lots with a condemned
   or abandoned structure are not included. Some coded-vacant lots are side yards,
   parking, or slivers that can't be built on.
@@ -52,7 +59,8 @@ _Auto-generated for config `8f957cd8a654`._
 - **Rent needed to cover cost is a simple annualized model** (capital cost share
   plus operating cost). It is not a pro forma: no financing structure, tax
   credits, abatements, or market rents.
-- **Commute times are not modeled yet.** The PRT travel-time matrix is pending.
+- **Commute times are not modeled yet.** The PRT travel-time matrix is pending;
+  a stop or route alone cannot establish jobs reachable by transit.
 - **City limits only.** Other Allegheny County municipalities have their own
   zoning codes.
 
@@ -84,4 +92,8 @@ _Auto-generated for config `8f957cd8a654`._
   About 50 vacant parcels had no centroid and are dropped (see
   `data/processed/pipeline_report.json`).
 - Census geography comes from the WPRDC centroid file (March 2025 vintage).
-  Tract statistics joined later must use the matching boundary vintage.
+  The 2024 ACS 5-year release uses 2020-era tract GEOIDs. Special-use tracts may
+  have suppressed or non-computable income or burden estimates; these fall back
+  to visibly labeled placeholders, not zero. Renter burden excludes ACS
+  “not computed” households from its denominator. Its range is an approximate
+  envelope from component margins of error, not a Census-published ratio MOE.
