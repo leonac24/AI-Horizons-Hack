@@ -308,6 +308,16 @@ class Config(_Model):
                     errors.append(f"assumption {aid!r}: by_typology has unknown typology {tid!r}")
         if self.zoning.code.source not in self.sources.sources:
             errors.append(f"zoning.code.source {self.zoning.code.source!r} not in sources.yaml")
+
+        # Most of city.yaml is only ever read by the offline pipeline, so we let
+        # that file hold whatever keys it wants without checking them. This one
+        # is different: the running server uses it on live requests to record
+        # which dataset a number came from. Check it here, at startup, so a typo
+        # crashes the app immediately with a message naming the bad key, instead
+        # of causing a confusing 500 error later on.
+        if self.parcels.get("assessments_source") not in self.sources.sources:
+            errors.append(f"city.parcels.assessments_source "
+                          f"{self.parcels.get('assessments_source')!r} not in sources.yaml")
         if errors:
             raise ValueError("config cross-reference errors:\n  - " + "\n  - ".join(errors))
         return self
@@ -318,12 +328,48 @@ class Config(_Model):
         except KeyError:
             raise KeyError(f"assumptions.yaml has no {key!r}") from None
 
+    def _city(self, key: str) -> dict[str, Any]:
+        """Grab one section out of city.yaml, and remember it for next time.
+
+        The `city` config is free-form, so pulling a value out of it means
+        converting the whole section into a plain dictionary first. That is
+        wasteful to redo for every single parcel, so we do it once and keep the
+        result in `cache`.
+        """
+        cache = self.__dict__.setdefault("_city_sections", {})
+        if key not in cache:
+            cache[key] = dict(self.city.model_dump().get(key) or {})
+        return cache[key]
+
     @property
     def hazards(self) -> dict[str, Any]:
         """Hazard flag specs from city.yaml, resolved once instead of per parcel."""
-        if self.__dict__.get("_hazards") is None:
-            self.__dict__["_hazards"] = dict(self.city.model_dump().get("hazards") or {})
-        return self.__dict__["_hazards"]
+        return self._city("hazards")
+
+    @property
+    def parcels(self) -> dict[str, Any]:
+        """The `parcels` block of city.yaml: id format, dataset names, columns."""
+        return self._city("parcels")
+
+    @property
+    def assessment_source(self) -> str:
+        """Which dataset the real, measured parcel numbers came from.
+
+        "Real, measured" means lot size and assessed land value - things we read
+        out of a public file rather than estimated. The engine has to label every
+        number with where it came from, but it must NOT know the actual name of
+        the Pittsburgh dataset. That name is a Pittsburgh fact, and this code is
+        meant to work for any city.
+
+        (The guard test that enforces this is deliberately dumb: it searches for
+        dataset names in quotes and cannot tell a docstring from real code. An
+        earlier draft of this very paragraph tripped it. Working as intended.)
+
+        So the engine asks a question ("which dataset is the assessment one?")
+        and city.yaml answers it. Exactly the same trick the zoning code uses:
+        ask for the role, never name the thing directly.
+        """
+        return str(self.parcels["assessments_source"])
 
     # Keys stripped from the browser payload: server-side filesystem layout the
     # client has no use for. Not a secret, but publishing your on-disk paths

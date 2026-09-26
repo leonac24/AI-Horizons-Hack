@@ -254,10 +254,20 @@ intentions: `tests/test_no_hardcoding.py` fails the build if a typology id,
 stakeholder id, criterion id or zoning status id appears quoted in `core/`,
 `server/`, `api/` or `web/src/`.
 
+The guard covers typology, criterion, stakeholder, zoning-status **and dataset
+source** ids. Source ids were the gap: `core/engine.py` carried a module
+constant naming the county assessment dataset, duplicating
+`city.yaml: parcels.assessments_source`, and the test never looked for it. The
+engine now asks `cfg.assessment_source` — the same role-not-id pattern it already
+uses for zoning statuses.
+
 Config is validated for **cross-references**, not just shape: every stakeholder
 profile must cover exactly the criteria in `criteria.yaml`; every typology's
 `use_key` must exist in `zoning.yaml`; every assumption's `source` must exist in
-`sources.yaml`; every zoning status must have a score. A typo is a startup
+`sources.yaml`; every zoning status must have a score; and
+`city.parcels.assessments_source` is checked at startup even though `city` is
+otherwise an open section, because the running server reads it on live requests
+and a typo would otherwise surface as a 500. A typo is a startup
 failure with a readable message, never a silently wrong ranking.
 
 There is exactly **one random seed** in the engine (`app.yaml:

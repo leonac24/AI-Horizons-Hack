@@ -9,6 +9,9 @@ map:
 
 # Parcels ---------------------------------------------------------------------
 parcels:
+  # The dataset that lot size and assessed land value come from. Two jobs: the
+  # pipeline downloads from it, and the engine tags every number it produces
+  # with where that number came from, reading the name from right here.
   assessments_source: wprdc_assessments
   centroids_source: wprdc_parcel_centroids
   centroids_filter: { MUNI_NAME: PITTSBURGH }
