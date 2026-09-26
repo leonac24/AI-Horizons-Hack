@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from core.config import Config, UnitRange
+from core.config import Config
 from core.engine import CarbonSeries, HouseholdCheck, analyze
 from core.metrics import Metric, Samples, weakest
 from core.zoning import Check, ZoningResult, evaluate, load_rules
@@ -85,9 +85,7 @@ def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> Plan
     rules = load_rules(cfg)
 
     # Evidence per building type, pinned to the homes the plan gives it.
-    pinned = [typs[tid].model_copy(update={"units": UnitRange(min=h, max=h), "lot_sf_per_unit_for_form": None})
-              for tid, h in homes.items()]
-    a = analyze(cfg.model_copy(update={"typologies": pinned}), parcel, Samples(cfg))
+    a = analyze(cfg, parcel, Samples(cfg), homes_override=homes)
     by_id = {s.typology_id: s for s in a.scenarios}
 
     metrics = {mid: _combine(mid, [(homes[tid], by_id[tid].metrics[mid]) for tid in homes])

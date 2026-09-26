@@ -97,17 +97,6 @@ class AppConfig(_Model):
 
 
 # --- typologies.yaml -------------------------------------------------------------
-class UnitRange(_Model):
-    min: int = Field(ge=1)
-    max: int = Field(ge=1)
-
-    @model_validator(mode="after")
-    def _ordered(self) -> UnitRange:
-        if self.max < self.min:
-            raise ValueError(f"units.max ({self.max}) < units.min ({self.min})")
-        return self
-
-
 Massing = Literal["gable_house", "house_with_rear_unit", "gable_house_two_doors", "flat_rowhouse",
                   "walkup", "podium_midrise"]
 
@@ -134,11 +123,9 @@ class Typology(_Model):
     label: str
     color: str
     use_key: str
-    units: UnitRange
     unit_size_sf: float = Field(gt=0)
     stories: float = Field(gt=0)
     min_lot_sf_for_form: float = Field(gt=0)
-    lot_sf_per_unit_for_form: float | None = Field(default=None, gt=0)
     tenure_default: Literal["owner", "renter"]
     supports_senior: bool = False
     building: Building

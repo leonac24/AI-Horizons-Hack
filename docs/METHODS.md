@@ -21,14 +21,40 @@ the central value plus the 5th–95th percentile of the draws.
 metric is a placeholder. Otherwise the order runs modeled, then assumption, then
 observed.
 
-## Homes per lot (built form, not zoning)
+## Homes per lot (buildings that fit, not zoning)
 
-For types with a fixed count (detached, duplex, house + ADU), the count is the
-fixed number. Otherwise:
+Each typology defines one building in `typologies.yaml`: a footprint (width
+along the street × depth, in feet) and the number of homes in it. The option
+shown for a lot is as many of those buildings as fit side by side along the
+frontage:
 
-    homes = clamp(floor(lot_area / lot_sf_per_unit_for_form), units.min, units.max)
+    fits       = footprint_w ≤ frontage and footprint_d ≤ depth and lot_area ≥ min_lot_sf_for_form
+    buildings  = min(max_in_a_row, floor(frontage / footprint_w))     (1 if it doesn't fit)
+    homes      = buildings × homes_per_building
 
-If the lot is smaller than `min_lot_sf_for_form`, the card says so.
+These are the same buildings the 3D lot view places, so what you see ranked is
+what "Place" puts on the lot. It is a geometric screen: setbacks, access,
+parking and topography are not modeled.
+
+**Lot shape.** For about 71% of vacant parcels, the deed legal description
+gives dimensions ("LOT 30X100"). We use them only when frontage × depth agrees
+with the assessed lot area (within 0.6–1.6×); these are **observed**. Otherwise
+the lot is drawn from its area and a placeholder depth-to-frontage ratio
+(`lot_depth_to_frontage_ratio`), and marked **placeholder**.
+
+## Your plan (mixed buildings)
+
+`POST /api/analysis/{id}/plan` takes building counts per type. Each type runs
+through the same engine at the homes the plan gives it, and the results are
+combined:
+
+- **Counts add up:** homes, homes serving local need, and infrastructure load.
+- **Per-home measures are averaged, weighted by homes:** income needed, monthly
+  cost, share above local rents, and carbon per household.
+- **Zoning takes the most restrictive path** among the plan's building types.
+  Dimensional rules are checked against the plan's total homes.
+- **Prohibited types:** any building type whose use is prohibited is flagged,
+  and the plan is excluded from the ranking.
 
 ## Cost and affordability
 

@@ -39,12 +39,12 @@ def test_fake_typologies_work(config_copy, lot):
     def fake(y):
         y["typologies"] = [
             {"id": "zeta", "label": "Zeta", "color": "#000000", "use_key": "multi_unit",
-             "units": {"min": 1, "max": 9}, "lot_sf_per_unit_for_form": 700, "unit_size_sf": 900,
+             "unit_size_sf": 900,
              "stories": 3, "min_lot_sf_for_form": 1000, "tenure_default": "renter",
-             "building": {"footprint_ft": [40, 50], "homes": 6, "massing": "walkup", "body": "#111111",
-                          "roof": "#222222", "max_in_a_row": 1}},
+             "building": {"footprint_ft": [20, 50], "homes": 6, "massing": "walkup", "body": "#111111",
+                          "roof": "#222222", "max_in_a_row": 3}},
             {"id": "omega", "label": "Omega", "color": "#ffffff", "use_key": "two_unit",
-             "units": {"min": 2, "max": 2}, "unit_size_sf": 1000, "stories": 2,
+             "unit_size_sf": 1000, "stories": 2,
              "min_lot_sf_for_form": 1000, "tenure_default": "owner",
              "building": {"footprint_ft": [20, 40], "homes": 2, "massing": "gable_house", "body": "#333333",
                           "roof": "#444444", "max_in_a_row": 2}},
@@ -59,7 +59,10 @@ def test_fake_typologies_work(config_copy, lot):
     cfg = load_config(d)
     a = analyze(cfg, lot)
     assert [s.typology_id for s in a.scenarios] == ["zeta", "omega"]
-    assert a.scenarios[0].units == 7  # floor(5000 / 700)
+    # No legal-description dims on the fixture lot, so the shape is the placeholder
+    # ratio; however many 20-ft-wide buildings fit that frontage, capped at 3.
+    s = a.scenarios[0]
+    assert 1 <= s.buildings <= 3 and s.units == s.buildings * 6
 
 
 def test_no_typology_or_stakeholder_ids_in_code():
