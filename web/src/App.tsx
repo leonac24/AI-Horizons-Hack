@@ -17,6 +17,7 @@ interface PointProps {
   n: string | null
   p: 0 | 1
   ad: string
+  fh: 0 | 1 | null
   [hazard: string]: unknown
 }
 export type ParcelFeature = GeoJSON.Feature<GeoJSON.Point, PointProps>

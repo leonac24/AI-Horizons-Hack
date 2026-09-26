@@ -14,6 +14,15 @@ export interface Metric {
   note?: string | null
 }
 
+export interface SiteFact {
+  id: string
+  label: string
+  value: string
+  provenance: Provenance
+  sourceIds: string[]
+  note: string
+}
+
 export interface Typology {
   id: string
   label: string
@@ -81,8 +90,10 @@ export interface Config {
   }
   city: {
     name: string
+    map: { center: [number, number]; zoom: number; basemap_style: string }
     scene: { origin: [number, number]; scale: [number, number]; half_extent: number; rivers: [number, number][][] }
     hazards: Record<string, { source: string; label: string; lot_scene?: string }>
+    zoning_links: string[]
   }
   zoning: {
     statuses: Record<string, { label: string; role: 'permitted' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
@@ -179,6 +190,7 @@ export interface Analysis {
   excluded_typology_ids: string[]
   config_hash: string
   site_context: Metric[]
+  site_facts: SiteFact[]
   scenarios: Scenario[]
   placeholder_count: number
 }
@@ -195,6 +207,7 @@ export interface Unknowns {
   unreviewed_districts: { district: string; vacant_parcels: number }[]
   vacant_parcels: number
   share_covered_by_reviewed_rules: number
+  pipeline?: { counts?: Record<string, number>; context?: Record<string, unknown> } | null
 }
 
 export interface WorkBackwardsResult {
