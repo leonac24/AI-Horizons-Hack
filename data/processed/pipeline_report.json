@@ -1,0 +1,42 @@
+{
+  "config_hash": "42360f751a2e",
+  "sources": {
+    "wprdc_assessments": {
+      "provenance": "observed",
+      "notes": []
+    },
+    "wprdc_parcel_centroids": {
+      "provenance": "observed",
+      "notes": []
+    },
+    "wprdc_city_owned": {
+      "provenance": "observed",
+      "notes": []
+    },
+    "wprdc_zoning": {
+      "provenance": "observed",
+      "notes": []
+    },
+    "wprdc_steep_slope": {
+      "provenance": "observed",
+      "notes": []
+    },
+    "wprdc_landslide_prone": {
+      "provenance": "observed",
+      "notes": []
+    },
+    "wprdc_undermined": {
+      "provenance": "observed",
+      "notes": []
+    }
+  },
+  "counts": {
+    "vacant_in_city": 22233,
+    "missing_location": 50,
+    "flag_steep_slope": 5743,
+    "flag_landslide": 5155,
+    "flag_undermined": 5946,
+    "indexed": 22183,
+    "suggested": 12
+  }
+}

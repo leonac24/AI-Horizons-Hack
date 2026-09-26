@@ -1,0 +1,72 @@
+# Housing types compared on every lot. Code iterates over this list; nothing
+# downstream names a typology. `use_key` links a typology to zoning rules in
+# pipeline/zoning/rules_review.yaml.
+#
+# Form parameters are planning rules of thumb for a first pass
+# (provenance: assumption) — see assumptions.yaml for the cost/carbon numbers.
+typologies:
+  - id: detached
+    label: Detached house
+    color: "#8c6d46"
+    use_key: single_unit_detached
+    units: { min: 1, max: 1 }
+    unit_size_sf: 1400
+    stories: 2
+    min_lot_sf_for_form: 2400
+    tenure_default: owner
+
+  - id: adu_pair
+    label: House + backyard unit (ADU)
+    color: "#b08850"
+    use_key: single_unit_detached_with_adu
+    units: { min: 2, max: 2 }
+    unit_size_sf: 1050
+    stories: 2
+    min_lot_sf_for_form: 3200
+    tenure_default: owner
+
+  - id: two_unit
+    label: Two-unit (duplex)
+    color: "#a4553a"
+    use_key: two_unit
+    units: { min: 2, max: 2 }
+    unit_size_sf: 1100
+    stories: 2.5
+    min_lot_sf_for_form: 2400
+    tenure_default: renter
+
+  - id: rowhouse
+    label: Rowhouses / townhouses
+    color: "#7a3b2e"
+    use_key: single_unit_attached
+    units: { min: 2, max: 6 }
+    # land per unit the built form needs (not a zoning number)
+    lot_sf_per_unit_for_form: 1200
+    unit_size_sf: 1300
+    stories: 3
+    min_lot_sf_for_form: 2400
+    tenure_default: owner
+
+  - id: small_multi
+    label: Small apartment building (3–12)
+    color: "#4f6d7a"
+    use_key: multi_unit
+    units: { min: 3, max: 12 }
+    lot_sf_per_unit_for_form: 600
+    unit_size_sf: 800
+    stories: 3
+    min_lot_sf_for_form: 2400
+    tenure_default: renter
+    supports_senior: true
+
+  - id: midrise
+    label: Mid-rise apartments (13+)
+    color: "#2f4858"
+    use_key: multi_unit
+    units: { min: 13, max: 80 }
+    lot_sf_per_unit_for_form: 350
+    unit_size_sf: 750
+    stories: 5
+    min_lot_sf_for_form: 6000
+    tenure_default: renter
+    supports_senior: true

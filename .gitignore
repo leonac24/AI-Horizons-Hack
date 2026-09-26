@@ -1,0 +1,22 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# data: raw downloads are fetched by the pipeline (see docs/SOURCES.md)
+data/raw/*
+!data/raw/.gitkeep
+
+# web
+web/node_modules/
+web/dist/
+.vercel/
+
+.DS_Store

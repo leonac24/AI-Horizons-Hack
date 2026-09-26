@@ -1,0 +1,32 @@
+# Preset weight profiles. These are VALUES, not evidence: illustrative starting
+# points for conversation, not claims about what any real organization wants.
+# Weights are relative (normalized at use). Keys are criterion ids.
+illustrative: true
+profiles:
+  - id: equal
+    label: Equal weights
+    weights: { demand_fit: 1, feasibility: 1, affordability: 1, displacement: 1, infrastructure: 1, opportunity: 1, carbon: 1 }
+
+  - id: resident
+    label: Long-time resident
+    weights: { demand_fit: 2, feasibility: 0.5, affordability: 3, displacement: 3, infrastructure: 1.5, opportunity: 1, carbon: 0.5 }
+
+  - id: cdc
+    label: Community development corporation
+    weights: { demand_fit: 3, feasibility: 1.5, affordability: 3, displacement: 2, infrastructure: 0.5, opportunity: 1.5, carbon: 0.5 }
+
+  - id: developer
+    label: Developer
+    weights: { demand_fit: 1, feasibility: 3, affordability: 0.5, displacement: 0.25, infrastructure: 1.5, opportunity: 1, carbon: 0.5 }
+
+  - id: city_planning
+    label: City Planning
+    weights: { demand_fit: 2, feasibility: 2, affordability: 1.5, displacement: 1.5, infrastructure: 1.5, opportunity: 1.5, carbon: 1.5 }
+
+  - id: ura
+    label: Urban Redevelopment Authority
+    weights: { demand_fit: 2, feasibility: 2.5, affordability: 2, displacement: 1, infrastructure: 1, opportunity: 1.5, carbon: 0.5 }
+
+  - id: climate
+    label: Climate advocate
+    weights: { demand_fit: 1, feasibility: 0.5, affordability: 1, displacement: 1, infrastructure: 1.5, opportunity: 2.5, carbon: 3 }

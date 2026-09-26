@@ -1,0 +1,15 @@
+name: Lotline
+tagline: Pick any vacant lot in Pittsburgh. See who each housing option serves, what it costs, what it emits, and how the ranking changes with whose priorities you use.
+disclaimer: >-
+  Decision support only — not zoning, legal, or financial advice.
+  Confirm with City of Pittsburgh Department of City Planning.
+placeholder_notice: >-
+  Hatched values are placeholders: a real source has not been connected yet.
+  They show how the tool works, not what is true about this lot.
+smaa:
+  samples: 2000
+  seed: 20260926
+  # Dirichlet concentration when centering on a stakeholder profile (higher = tighter).
+  profile_concentration: 40
+explanation:
+  max_sentences: 6

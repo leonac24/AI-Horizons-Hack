@@ -1,0 +1,37 @@
+code:
+  name: Pittsburgh Zoning Code (Title Nine, Pittsburgh Code of Ordinances)
+  source: pgh_zoning_code
+  url: https://ecode360.com/45474054
+  citation_format: "Pittsburgh Code § {section}"
+  # eCode360 returns 403 to scripted requests. Save district/use-table text to
+  # this folder (one .txt per section, filename = section number) and run
+  # `uv run python -m pipeline.zoning.extract`.
+  raw_text_dir: data/raw/zoning
+
+rules_file: pipeline/zoning/rules_review.yaml
+priority_file: pipeline/zoning/review_priority.json
+
+# Approval paths, in the order they are shown.
+statuses:
+  by_right: { label: Permitted by right }
+  special_exception: { label: Special exception (Zoning Board of Adjustment) }
+  conditional_use: { label: Conditional use (City Council) }
+  variance_needed: { label: "Use allowed, but a dimensional rule fails (variance)" }
+  not_permitted: { label: Not permitted }
+  needs_review: { label: Needs planner review }
+
+# What the extractor pulls per district. Each rule carries code_section,
+# a quote (< 25 words), confidence, extracted_by, and reviewed.
+extraction_targets:
+  use_keys:
+    single_unit_detached: Single-unit detached residential
+    single_unit_detached_with_adu: Accessory dwelling unit on a single-unit lot
+    two_unit: Two-unit residential
+    single_unit_attached: Single-unit attached residential (rowhouse/townhouse)
+    multi_unit: Multi-unit residential
+  dimensional:
+    min_lot_area_sf: { label: Minimum lot area, unit: sf, check: lot_area_at_least }
+    lot_area_per_unit_sf: { label: Lot area per unit, unit: sf/unit, check: lot_area_per_unit_at_least }
+    max_height_ft: { label: Maximum height, unit: ft, check: height_at_most }
+    max_stories: { label: Maximum stories, unit: stories, check: stories_at_most }
+  other: [setbacks, parking, overlays, bonuses]

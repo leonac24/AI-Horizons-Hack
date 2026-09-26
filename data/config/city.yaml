@@ -1,0 +1,72 @@
+id: pittsburgh
+name: City of Pittsburgh
+state_fips: "42"
+county_fips: "003"
+map:
+  center: [-79.9959, 40.4406]
+  zoom: 11.5
+  basemap_style: https://tiles.openfreemap.org/styles/positron
+
+# Parcels ---------------------------------------------------------------------
+parcels:
+  assessments_source: wprdc_assessments
+  centroids_source: wprdc_parcel_centroids
+  centroids_filter: { MUNI_NAME: PITTSBURGH }
+  centroid_fields:
+    PIN: id
+    LONG: lon
+    LAT: lat
+    FIPS_TRACT: tract
+    FIPS_BLOCKGROUP: block_group
+    CITY_NEIGHBORHOOD: neighborhood
+  # Assessment rows inside city limits: MUNIDESC looks like "13th Ward - PITTSBURGH".
+  municipality_field: MUNIDESC
+  municipality_pattern: "Ward - PITTSBURGH$"
+  # What counts as "vacant" (decision 2026-09-26: vacant land use classes only).
+  vacant_use_field: USEDESC
+  vacant_use_values:
+    - VACANT LAND
+    - VACANT COMMERCIAL LAND
+    - VACANT INDUSTRIAL LAND
+    - ">10 ACRES VACANT"
+  # Only these assessment fields are kept. Owner names and owner mailing
+  # addresses (CHANGENOTICEADDRESS*) are never read into the pipeline.
+  keep_fields:
+    PARID: id
+    PROPERTYHOUSENUM: house_number
+    PROPERTYADDRESS: street
+    PROPERTYZIP: zip
+    USEDESC: land_use
+    LOTAREA: lot_area_sf
+    FAIRMARKETLAND: land_value_usd
+    OWNERDESC: owner_type
+
+public_land:
+  source: wprdc_city_owned
+  id_field: pin
+  keep_fields:
+    inventory_type: public_inventory_type
+    current_status: public_status
+
+neighborhoods:
+  source: wprdc_neighborhoods
+  name_field: hood
+
+zoning_layer:
+  source: wprdc_zoning
+  district_field: zon_new
+  label_field: full_zoning_type
+  code_link_field: municode
+
+hazards:
+  steep_slope: { source: wprdc_steep_slope, label: "Slope 25% or greater" }
+  landslide: { source: wprdc_landslide_prone, label: "Landslide-prone area" }
+  undermined: { source: wprdc_undermined, label: "Undermined area" }
+
+# Suggested lots: spread across the city, not favorites.
+suggested_lots:
+  count: 12
+  min_lot_area_sf: 2000
+  # Pick at most one lot per neighborhood, and cycle through these strata so the
+  # suggestions cover different conditions.
+  strata: [zoning_district, steep_slope, landslide, public]

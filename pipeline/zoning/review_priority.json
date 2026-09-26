@@ -1,0 +1,218 @@
+[
+ {
+  "district": "H",
+  "vacant_parcels": 3230
+ },
+ {
+  "district": "R1D-H",
+  "vacant_parcels": 3021
+ },
+ {
+  "district": "RM-M",
+  "vacant_parcels": 2461
+ },
+ {
+  "district": "R1D-L",
+  "vacant_parcels": 2121
+ },
+ {
+  "district": "R2-L",
+  "vacant_parcels": 2072
+ },
+ {
+  "district": "R1A-VH",
+  "vacant_parcels": 1483
+ },
+ {
+  "district": "P",
+  "vacant_parcels": 1207
+ },
+ {
+  "district": "R1D-M",
+  "vacant_parcels": 1183
+ },
+ {
+  "district": "R2-H",
+  "vacant_parcels": 1166
+ },
+ {
+  "district": "R1A-H",
+  "vacant_parcels": 963
+ },
+ {
+  "district": "LNC",
+  "vacant_parcels": 949
+ },
+ {
+  "district": "UI",
+  "vacant_parcels": 460
+ },
+ {
+  "district": "R1A-M",
+  "vacant_parcels": 278
+ },
+ {
+  "district": "NDI",
+  "vacant_parcels": 185
+ },
+ {
+  "district": "RIV-MU",
+  "vacant_parcels": 148
+ },
+ {
+  "district": "R1D-VL",
+  "vacant_parcels": 99
+ },
+ {
+  "district": "UPR-B",
+  "vacant_parcels": 98
+ },
+ {
+  "district": "RIV-IMU",
+  "vacant_parcels": 97
+ },
+ {
+  "district": "R2-M",
+  "vacant_parcels": 92
+ },
+ {
+  "district": "RIV-RM",
+  "vacant_parcels": 88
+ },
+ {
+  "district": "RIV-NS",
+  "vacant_parcels": 87
+ },
+ {
+  "district": "RP",
+  "vacant_parcels": 77
+ },
+ {
+  "district": "RM-H",
+  "vacant_parcels": 70
+ },
+ {
+  "district": "R2-VH",
+  "vacant_parcels": 59
+ },
+ {
+  "district": "HC",
+  "vacant_parcels": 52
+ },
+ {
+  "district": "GI",
+  "vacant_parcels": 42
+ },
+ {
+  "district": "AP",
+  "vacant_parcels": 41
+ },
+ {
+  "district": "UC-E",
+  "vacant_parcels": 34
+ },
+ {
+  "district": "GPRB",
+  "vacant_parcels": 32
+ },
+ {
+  "district": "UC-MU",
+  "vacant_parcels": 30
+ },
+ {
+  "district": "UNC",
+  "vacant_parcels": 30
+ },
+ {
+  "district": "NDO",
+  "vacant_parcels": 29
+ },
+ {
+  "district": "EMI",
+  "vacant_parcels": 28
+ },
+ {
+  "district": "UPR-A",
+  "vacant_parcels": 22
+ },
+ {
+  "district": "SP-8",
+  "vacant_parcels": 19
+ },
+ {
+  "district": "SP-10",
+  "vacant_parcels": 19
+ },
+ {
+  "district": "RIV-GI",
+  "vacant_parcels": 14
+ },
+ {
+  "district": "R-MU",
+  "vacant_parcels": 13
+ },
+ {
+  "district": "R3-M",
+  "vacant_parcels": 12
+ },
+ {
+  "district": "(none)",
+  "vacant_parcels": 12
+ },
+ {
+  "district": "R1D-VH",
+  "vacant_parcels": 10
+ },
+ {
+  "district": "GT-C",
+  "vacant_parcels": 9
+ },
+ {
+  "district": "GPRA",
+  "vacant_parcels": 8
+ },
+ {
+  "district": "GT-E",
+  "vacant_parcels": 7
+ },
+ {
+  "district": "SP-9",
+  "vacant_parcels": 6
+ },
+ {
+  "district": "GT-B",
+  "vacant_parcels": 4
+ },
+ {
+  "district": "R3-L",
+  "vacant_parcels": 4
+ },
+ {
+  "district": "RM-VH",
+  "vacant_parcels": 3
+ },
+ {
+  "district": "SP-5",
+  "vacant_parcels": 3
+ },
+ {
+  "district": "SP-1",
+  "vacant_parcels": 2
+ },
+ {
+  "district": "SP-11",
+  "vacant_parcels": 1
+ },
+ {
+  "district": "GPRC",
+  "vacant_parcels": 1
+ },
+ {
+  "district": "RM-VL",
+  "vacant_parcels": 1
+ },
+ {
+  "district": "SP-4",
+  "vacant_parcels": 1
+ }
+]

@@ -1,0 +1,265 @@
+# Every number the engine uses. Each has value/low/high/unit/source/rationale and
+# a provenance:
+#   assumption  — a documented modeling choice or published rule of thumb
+#   placeholder — NOT yet sourced; shown hatched in the UI and counted in
+#                 docs/LIMITATIONS.md. Replace with a sourced value, then change
+#                 provenance to "assumption" (or "observed") and set `source`.
+# Optional `by_typology` overrides value/low/high per typology id; typologies
+# not listed fall back to the top-level value.
+assumptions:
+
+  # --- Income -----------------------------------------------------------------
+  ami_4person:
+    value: 100000
+    low: 95000
+    high: 110000
+    unit: USD/yr
+    provenance: placeholder
+    source: hud_income_limits
+    rationale: >-
+      HUD median family income for the Pittsburgh, PA HUD Metro FMR Area. HUD's
+      site blocked scripted download on 2026-09-26; fill in the current fiscal
+      year value by hand from huduser.gov and flip provenance.
+
+  household_size_factor:
+    # HUD income-limit adjustment relative to a 4-person household.
+    value: 1.0
+    low: 1.0
+    high: 1.0
+    unit: ratio
+    provenance: assumption
+    source: hud_income_limits
+    rationale: HUD's published household-size adjustment (1p 70%, 2p 80%, 3p 90%, 4p 100%, +8% each above 4).
+    by_size: { 1: 0.70, 2: 0.80, 3: 0.90, 4: 1.00, 5: 1.08, 6: 1.16, 7: 1.24, 8: 1.32 }
+
+  housing_cost_share:
+    value: 0.30
+    low: 0.30
+    high: 0.30
+    unit: share of income
+    provenance: assumption
+    source: hud_chas
+    rationale: HUD's cost-burden threshold — housing costs above 30% of income.
+
+  # --- Development cost -------------------------------------------------------
+  hard_cost_psf:
+    value: 250
+    low: 200
+    high: 320
+    unit: USD/sf
+    provenance: placeholder
+    source: null
+    rationale: >-
+      Pittsburgh residential hard construction cost. Needs a sourced local figure
+      (e.g., recent URA/PHFA project budgets or a cost guide).
+    by_typology:
+      detached: { value: 230, low: 190, high: 290 }
+      adu_pair: { value: 245, low: 200, high: 310 }
+      two_unit: { value: 235, low: 195, high: 295 }
+      rowhouse: { value: 240, low: 195, high: 300 }
+      small_multi: { value: 260, low: 215, high: 330 }
+      midrise: { value: 290, low: 240, high: 370 }
+
+  soft_cost_share:
+    value: 0.25
+    low: 0.18
+    high: 0.32
+    unit: share of hard cost
+    provenance: placeholder
+    source: null
+    rationale: Design, permitting, financing and fees as a share of hard cost.
+
+  steep_slope_cost_share:
+    value: 0.12
+    low: 0.05
+    high: 0.30
+    unit: share of hard cost
+    provenance: placeholder
+    source: null
+    rationale: Extra foundation, retaining and grading cost on 25%+ slopes. Site-specific; needs geotechnical input.
+
+  landslide_cost_share:
+    value: 0.10
+    low: 0.03
+    high: 0.35
+    unit: share of hard cost
+    provenance: placeholder
+    source: null
+    rationale: Added stabilization cost in landslide-prone areas. Highly site-specific.
+
+  undermined_cost_share:
+    value: 0.05
+    low: 0.0
+    high: 0.20
+    unit: share of hard cost
+    provenance: placeholder
+    source: null
+    rationale: Mine-subsidence investigation / mitigation allowance.
+
+  # --- Cost to occupants ------------------------------------------------------
+  annual_capital_cost_share:
+    value: 0.075
+    low: 0.06
+    high: 0.09
+    unit: share of development cost per year
+    provenance: placeholder
+    source: null
+    rationale: Debt service plus required return, expressed per year. Drives the rent needed to cover cost.
+
+  operating_cost_per_unit_month:
+    value: 450
+    low: 350
+    high: 600
+    unit: USD/unit/month
+    provenance: placeholder
+    source: null
+    rationale: Taxes, insurance, maintenance, management, reserves.
+
+  # --- Carbon -----------------------------------------------------------------
+  embodied_kgco2e_psf:
+    value: 45
+    low: 30
+    high: 65
+    unit: kgCO2e/sf
+    provenance: placeholder
+    source: null
+    rationale: Upfront (A1–A5) embodied carbon of new residential construction.
+    by_typology:
+      detached: { value: 40, low: 28, high: 58 }
+      adu_pair: { value: 40, low: 28, high: 58 }
+      two_unit: { value: 40, low: 28, high: 58 }
+      rowhouse: { value: 38, low: 27, high: 55 }
+      small_multi: { value: 45, low: 32, high: 65 }
+      midrise: { value: 55, low: 40, high: 80 }
+
+  operational_kwh_psf_yr:
+    value: 9
+    low: 6
+    high: 13
+    unit: kWh/sf/yr
+    provenance: placeholder
+    source: nrel_resstock
+    rationale: All-electric new construction site energy. Attached forms share walls and use less per sf.
+    by_typology:
+      detached: { value: 10.5, low: 7.5, high: 14 }
+      adu_pair: { value: 10, low: 7, high: 13.5 }
+      two_unit: { value: 9, low: 6.5, high: 12.5 }
+      rowhouse: { value: 8.5, low: 6, high: 12 }
+      small_multi: { value: 7.5, low: 5.5, high: 10.5 }
+      midrise: { value: 7, low: 5, high: 10 }
+
+  grid_kgco2e_per_kwh:
+    value: 0.40
+    low: 0.33
+    high: 0.48
+    unit: kgCO2e/kWh
+    provenance: placeholder
+    source: epa_egrid
+    rationale: Pennsylvania / RFC West grid emission rate. Needs the current eGRID value.
+
+  grid_decarbonization_per_yr:
+    value: 0.02
+    low: 0.0
+    high: 0.04
+    unit: share per year
+    provenance: placeholder
+    source: null
+    rationale: Annual decline in grid carbon intensity over the analysis period.
+
+  vmt_per_household_yr:
+    value: 12000
+    low: 8000
+    high: 16000
+    unit: miles/yr
+    provenance: placeholder
+    source: epa_smart_location
+    rationale: Household vehicle miles traveled at a location with average transit access. Scaled by the lot's access index.
+
+  kgco2e_per_vmt:
+    value: 0.35
+    low: 0.28
+    high: 0.42
+    unit: kgCO2e/mile
+    provenance: placeholder
+    source: null
+    rationale: Average light-duty fleet tailpipe emissions per mile, declining fleet ignored.
+
+  analysis_years:
+    value: 30
+    low: 30
+    high: 30
+    unit: years
+    provenance: assumption
+    source: null
+    rationale: Horizon for cumulative carbon and crossover years.
+
+  # --- Lot context (until tract adapters are connected) -----------------------
+  tract_median_household_income:
+    value: 60000
+    low: 40000
+    high: 85000
+    unit: USD/yr
+    provenance: placeholder
+    source: acs_5yr
+    rationale: Stand-in until ACS B19013 is joined by tract (Census API key needed).
+
+  tract_renter_cost_burden_share:
+    value: 0.45
+    low: 0.35
+    high: 0.55
+    unit: share of renter households
+    provenance: placeholder
+    source: hud_chas
+    rationale: Share of renter households paying 30%+ of income. Stand-in until CHAS is joined by tract.
+
+  jobs_access_index:
+    value: 1.0
+    low: 0.6
+    high: 1.4
+    unit: index (city average = 1)
+    provenance: placeholder
+    source: prt_gtfs
+    rationale: Jobs reachable by transit relative to the city average. Stand-in until the PRT travel-time matrix is built.
+
+  sewer_stress_index:
+    value: 1.0
+    low: 0.8
+    high: 1.2
+    unit: index (city average = 1)
+    provenance: placeholder
+    source: alcosan_cso
+    rationale: Combined-sewer overflow pressure at the lot's sewershed. Stand-in until ALCOSAN/PWSA data is joined.
+
+  # --- Scoring conventions ----------------------------------------------------
+  zoning_status_score:
+    value: 1.0
+    low: 1.0
+    high: 1.0
+    unit: score 0–1
+    provenance: assumption
+    source: null
+    rationale: >-
+      How approval paths map onto the 0–1 feasibility score. A modeling choice,
+      shown in METHODS.md so it can be argued with.
+    by_key:
+      by_right: 1.0
+      special_exception: 0.6
+      conditional_use: 0.45
+      variance_needed: 0.3
+      needs_review: 0.5
+      not_permitted: 0.1
+
+  infrastructure_hazard_weight:
+    value: 1.0
+    low: 1.0
+    high: 1.0
+    unit: added load multiplier per flag
+    provenance: assumption
+    source: null
+    rationale: >-
+      How much each site flag multiplies infrastructure load (1 + sum of weights of
+      flags present). A modeling choice to make site strain visible, not an engineering estimate.
+    by_key:
+      steep_slope: 0.5
+      landslide: 0.5
+      undermined: 0.25
