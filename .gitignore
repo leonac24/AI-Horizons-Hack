@@ -7,6 +7,7 @@
 __pycache__/
 *.pyc
 .venv/
+.venv-laya/
 .pytest_cache/
 .ruff_cache/
 

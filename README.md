@@ -130,14 +130,20 @@ Laya is only for unstructured source documents.
    Additional zoning text can go in `data/raw/zoning/`. Newly added raw files
    are gitignored by default; the repository already tracks seven curated
    zoning excerpts there. Keep only public documents in this corpus.
-3. Install a CPU-only PyTorch build, then install `requirements-laya.txt`
-   in a local virtual environment. Laya's first run downloads its checkpoint.
-4. From the repository root, run
-   `python -m pipeline.laya_compile`. Inspect the source links and labels in
-   `data/processed/laya_evidence.json`, then commit that file with the source
-   and code changes. Run `python -m pipeline.laya_compile --check` to verify
-   the committed artifact against its source files without loading Laya. The
-   site's “What we don’t know” tab reads the artifact.
+3. From the repository root, install the CPU model in its own environment and
+   run the compile:
+
+   ```bash
+   python3 -m venv .venv-laya
+   .venv-laya/bin/python -m pip install 'torch==2.14.0+cpu' --index-url https://download.pytorch.org/whl/cpu
+   .venv-laya/bin/python -m pip install -r requirements-laya.txt
+   .venv-laya/bin/python -m pipeline.laya_compile
+   .venv-laya/bin/python -m pipeline.laya_compile --check
+   ```
+
+   Laya's first run downloads its checkpoint. Inspect the source links and
+   labels in `data/processed/laya_evidence.json`, then commit that file with
+   the source and code changes. The site's “What we don’t know” tab reads it.
 
 The artifact records document and passage hashes, model version, question
 version, source IDs, and short excerpts. Recompile when the source text,
