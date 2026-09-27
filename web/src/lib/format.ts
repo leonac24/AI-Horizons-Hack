@@ -3,6 +3,7 @@ import type { Config } from '../types'
 // Zoning path colors keyed by the semantic role from zoning.yaml.
 export const ROLE_COLOR: Record<string, string> = {
   permitted: '#5fd49a',
+  staff_review: '#a8d98a',
   discretionary: '#ffc53d',
   variance: '#ff7a5c',
   prohibited: '#ff4a3a',

@@ -6,11 +6,12 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `8f957cd8a654`._
+_Auto-generated for config `c639dbc08ff8`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
-- **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 54 districts reviewed).
-- **Largest unreviewed districts:** H (3,230), R1D-H (3,021), RM-M (2,461), R1D-L (2,121), R2-L (2,072), R1A-VH (1,483), P (1,207), R1D-M (1,183), R2-H (1,166), R1A-H (963), LNC (949), UI (460).
+- **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 41 districts reviewed).
+- **Largest unreviewed base districts:** R1D (6,434), R2 (3,389), H (3,230), R1A (2,724), RM (2,535), P (1,207), LNC (949), UI (460), NDI (185), RIV-MU (148), UPR-B (98), RIV-IMU (97).
+- **Uses settled city-wide (1):** `single_unit_detached_with_adu`. These are decided by a reviewed rule that applies in every district, so they are excluded from the ranking everywhere, with a citation.
 - **Placeholder assumptions (19):** `ami_4person`, `hard_cost_psf`, `soft_cost_share`, `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_kgco2e_per_kwh`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
 - **Sources not yet connected (9):** HUD Income Limits (Pittsburgh, PA HUD Metro FMR Area), Comprehensive Housing Affordability Strategy (CHAS), American Community Survey 5-Year Estimates, Pittsburgh Regional Transit GTFS, FEMA National Flood Hazard Layer, ALCOSAN / PWSA combined sewer overflow data, EPA eGRID, EPA Smart Location Database, ResStock.
 <!-- AUTO:END -->

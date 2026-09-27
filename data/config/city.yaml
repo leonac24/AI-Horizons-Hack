@@ -100,5 +100,7 @@ suggested_lots:
   count: 12
   min_lot_area_sf: 2000
   # Pick at most one lot per neighborhood, and cycle through these strata so the
-  # suggestions cover different conditions.
+  # suggestions cover different conditions. A lot no housing type fits is never
+  # suggested — it would open on an empty comparison — but it stays selectable
+  # from the map like any other parcel.
   strata: [zoning_district, steep_slope, landslide, public]

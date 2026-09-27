@@ -32,10 +32,11 @@ def test_prohibited_building_type_is_flagged_and_plan_is_excluded(cfg, lot, monk
     a, b = _two_types(cfg)
     prohibited = cfg.zoning.status_id("prohibited")
     permitted = next(s for s, v in cfg.zoning.statuses.items() if v.role == "permitted")
-    rules = {lot["zoning"]: {"uses": {
+    base_district, _ = cfg.zoning.district_code.split(lot["zoning"])
+    rules = {"districts": {base_district: {"uses": {
         a.use_key: {"status": permitted, "code_section": "1", "quote": "q", "reviewed": True},
         b.use_key: {"status": prohibited, "code_section": "2", "quote": "q", "reviewed": True},
-    }}}
+    }}}, "subdistricts": {}, "citywide": {}}
     monkeypatch.setattr(plan_mod, "load_rules", lambda _cfg: rules)
     r = analyze_plan(cfg, lot, [Placement(typology_id=a.id, count=1), Placement(typology_id=b.id, count=1)])
     assert r.failed_typologies == [b.id]

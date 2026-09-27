@@ -3,24 +3,50 @@ code:
   source: pgh_zoning_code
   url: https://ecode360.com/45474054
   citation_format: "Pittsburgh Code § {section}"
-  # eCode360 returns 403 to scripted requests. Save district/use-table text to
-  # this folder (one .txt per section, filename = section number) and run
-  # `uv run python -m pipeline.zoning.extract`.
+  # eCode360 returns 403 to scripted requests, so the text is read in a real
+  # browser and saved here as one .txt per chapter, named by number. data/raw is
+  # gitignored, so a fresh clone has to repeat this before extracting. Retrieved
+  # 2026-09-26 from the pages below (open, then save the rendered chapter text):
+  #   903  https://ecode360.com/45474194   Residential districts, § 903.03 subdistricts
+  #   904  https://ecode360.com/45474257   Mixed-use districts
+  #   905  https://ecode360.com/45474542   Special-purpose districts (incl. H, P)
+  #   911  https://ecode360.com/45476524   Primary uses — the use table
+  #   912  https://ecode360.com/45477814   Accessory uses, incl. § 912.08 ADU overlay
+  # Then: uv run python -m pipeline.zoning.extract uses --only 911 ...
   raw_text_dir: data/raw/zoning
 
 rules_file: pipeline/zoning/rules_review.yaml
 priority_file: pipeline/zoning/review_priority.json
 
+# A zoning map code carries two separate things. Use is set by the base district
+# (the Chapter 911 use table is keyed R1D, R2, RM ...); how big and how tall is
+# set by the development subdistrict (§ 903.03, keyed VL/L/M/H/VH). `R1D-H` is
+# both. Codes such as UC-MU, R-MU, GT-B and SP-1 also contain a hyphen but are
+# not this split, so a code is only split when the text after its last hyphen
+# appears below. Keeping them apart is why ~30 extractions cover all 54 codes
+# instead of 54 — and why a use rule is never transcribed five times.
+district_code:
+  subdistrict_suffixes: [VL, L, M, H, VH]
+
 # Approval paths, in the order they are shown.
 # `role` is what the engine keys off, so no status id is ever written into code.
 # Exactly one status must carry each of: variance, prohibited, unreviewed.
 #   permitted     — allowed outright
-#   discretionary — allowed only after a discretionary approval
+#   staff_review  — allowed after an administrative review by City staff, with
+#                   no public hearing and no board or council vote
+#   discretionary — allowed only after a hearing before a board or council
 #   variance      — use is allowed but a dimensional rule fails
 #   prohibited    — hard stop; disqualified from the ranking, never outweighed
 #   unreviewed    — no reviewed rule exists yet; answer withheld
+#
+# Pittsburgh's use table marks four paths: P, A, S and C. `A` is kept separate
+# from `S` and `C` because it is a different burden on an applicant — staff
+# review, no hearing — and collapsing it into "special exception" would overstate
+# what the code asks of them. It matters at scale: detached housing in Hillside
+# (H), the district holding the most vacant parcels, is an `A`.
 statuses:
   by_right: { label: Permitted by right, role: permitted }
+  administrator_exception: { label: "Administrator exception (staff review, no hearing)", role: staff_review }
   special_exception: { label: Special exception (Zoning Board of Adjustment), role: discretionary }
   conditional_use: { label: Conditional use (City Council), role: discretionary }
   variance_needed: { label: "Use allowed, but a dimensional rule fails (variance)", role: variance }

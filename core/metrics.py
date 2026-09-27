@@ -22,6 +22,11 @@ class Metric(BaseModel):
     provenance: Provenance
     sourceIds: list[str]
     note: str | None = None
+    # Which assumptions this number is made of (keys into assumptions.yaml).
+    # Recorded by `Trace` as the computation runs, so it cannot drift from the
+    # actual arithmetic. core/inquiries.py walks these to work out which real
+    # unknowns hold a metric up.
+    dependsOn: list[str] = []
 
 
 def weakest(*provs: str) -> Provenance:
@@ -40,11 +45,19 @@ class Samples:
     `n` and `seed` default to app.yaml `uncertainty`, so the draw count is a
     reviewable config value rather than a literal buried in the engine. Pass them
     explicitly only in tests.
+
+    `overrides` maps an assumption key to a single number the user says they have
+    now gone and found out — a planner's answer, a utility's letter, a quote. An
+    overridden assumption stops being a band and becomes a point, which is what
+    makes the ranking move when an answer arrives. It does NOT upgrade the
+    metric's provenance: the user asserted the value, we did not verify it, and
+    the API echoes every override back so the UI can label it as assumed.
     """
 
     cfg: Config
     n: int = -1
     seed: int = -1
+    overrides: dict[str, float] = field(default_factory=dict)
     _cache: dict[tuple, np.ndarray] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -63,14 +76,18 @@ class Samples:
         asm = self.cfg.assumption(key)
         r = asm.for_typology(typology) if typology else asm
         if used is not None:
-            used.add(asm.provenance, asm.source)
+            used.add(asm.provenance, asm.source, key)
         ck = (key, typology)
         if ck not in self._cache:
-            # Stable per-assumption stream so adding a new assumption doesn't
-            # reshuffle the others.
-            rng = np.random.default_rng([self.seed, _stable_hash(key), _stable_hash(typology or "")])
-            draws = rng.uniform(r.low, r.high, self.n) if r.high > r.low else np.full(self.n, r.value)
-            self._cache[ck] = np.concatenate([[r.value], draws])
+            if key in self.overrides:
+                # An answer the user has gone and got: one number, no band.
+                self._cache[ck] = self.const(self.overrides[key])
+            else:
+                # Stable per-assumption stream so adding a new assumption doesn't
+                # reshuffle the others.
+                rng = np.random.default_rng([self.seed, _stable_hash(key), _stable_hash(typology or "")])
+                draws = rng.uniform(r.low, r.high, self.n) if r.high > r.low else np.full(self.n, r.value)
+                self._cache[ck] = np.concatenate([[r.value], draws])
         return self._cache[ck]
 
     def const(self, x: float) -> np.ndarray:
@@ -81,14 +98,19 @@ class Samples:
 class Trace:
     provenance: set[str] = field(default_factory=set)
     sources: set[str] = field(default_factory=set)
+    # Assumption keys touched, so a metric can say what it rests on.
+    keys: set[str] = field(default_factory=set)
 
-    def add(self, prov: str, source: str | None) -> None:
+    def add(self, prov: str, source: str | None, key: str | None = None) -> None:
         self.provenance.add(prov)
         if source:
             self.sources.add(source)
+        if key:
+            self.keys.add(key)
 
     def merge(self, other: Trace) -> Trace:
-        return Trace(self.provenance | other.provenance, self.sources | other.sources)
+        return Trace(self.provenance | other.provenance, self.sources | other.sources,
+                     self.keys | other.keys)
 
     def prov(self) -> Provenance:
         return weakest(*(self.provenance or {"modeled"}))
@@ -101,7 +123,8 @@ def to_metric(id: str, label: str, arr: np.ndarray, unit: str, trace: Trace,
     lo, hi = np.percentile(draws, [5, 95]) if draws.size > 1 else (central, central)
     prov = provenance or weakest(trace.prov(), "modeled")
     return Metric(id=id, label=label, value=_r(central), low=_r(min(lo, central)), high=_r(max(hi, central)),
-                  unit=unit, provenance=prov, sourceIds=sorted(trace.sources), note=note)
+                  unit=unit, provenance=prov, sourceIds=sorted(trace.sources), note=note,
+                  dependsOn=sorted(trace.keys))
 
 
 def _r(x: float) -> float:

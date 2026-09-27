@@ -77,7 +77,15 @@ export interface Config {
     tagline: string
     disclaimer: string
     placeholder_notice: string
-    smaa: { samples: number; seed: number; profile_concentration: number }
+    smaa: {
+      samples: number
+      seed: number
+      profile_concentration: number
+      // Draws and noise floor for the per-criterion leverage runs that order
+      // the work plan (web/src/lib/leverage.ts).
+      leverage_samples: number
+      leverage_epsilon: number
+    }
   }
   city: {
     name: string
@@ -85,7 +93,7 @@ export interface Config {
     hazards: Record<string, { source: string; label: string; lot_scene?: string }>
   }
   zoning: {
-    statuses: Record<string, { label: string; role: 'permitted' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
+    statuses: Record<string, { label: string; role: 'permitted' | 'staff_review' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
     code: { name: string; url: string; citation_format: string }
   }
   typologies: Typology[]

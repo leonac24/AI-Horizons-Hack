@@ -3,14 +3,67 @@
 # Only reviewed rules drive a definite zoning status in the app; everything
 # else shows "Needs planner review".
 #
+# Title Nine governs the two questions in different places, so this file keeps
+# them apart and core/zoning.py recombines them per parcel:
+#
+#   districts:    what may be built  — the Chapter 911 use table, keyed on the
+#                 BASE district (R1D, R2, RM, H, P ...)
+#   subdistricts: how big and tall   — § 903.03 development subdistricts, keyed
+#                 on the suffix (VL, L, M, H, VH)
+#
+# A parcel zoned `R1D-H` reads uses from districts.R1D and dimensional rules
+# from subdistricts.H. A parcel zoned `H` (Hillside) has no suffix, so it reads
+# uses from districts.H and has no dimensional rules here. Which suffixes count
+# as subdistricts is declared in data/config/zoning.yaml (district_code), not
+# here and not in code.
+#
+# Keeping them apart is the difference between ~30 extractions and 54, and it
+# means a use rule is transcribed once rather than repeated for every density.
+#
 # Shape:
 # districts:
-#   <DISTRICT CODE>:
+#   <BASE DISTRICT>:
 #     uses:
 #       <use_key>: { status, code_section, quote, confidence, extracted_by, reviewed }
+# subdistricts:
+#   <SUFFIX>:
 #     dimensional:
 #       <rule_id>: { value, code_section, quote, confidence, extracted_by, reviewed }
 #
-# Empty on first pass: eCode360 blocked scripted retrieval (2026-09-26), and we
-# do not write rules from memory.
+# Empty until the extractor is run. Source text for it is in data/raw/zoning/
+# (Chapters 903, 904, 905 and 911, retrieved 2026-09-26 from eCode360, which
+# refuses scripted requests and was read through a browser). We do not write
+# rules from memory.
 districts: {}
+subdistricts: {}
+
+# Uses the code governs city-wide instead of by a column in the district use
+# table. Chapter 912 accessory uses are the case: the Chapter 911 table has no
+# row for them anywhere, and a missing row is not a blank cell. A reviewed rule
+# here answers the use question before the district is consulted.
+citywide:
+  uses:
+    single_unit_detached_with_adu:
+      status: not_permitted
+      code_section: "912.08"
+      quote: >-
+        the intent of this Section to permit the construction and operation of
+        Accessory Dwelling Units, as defined in Section 912.08.D, in certain districts
+      confidence: 0.9
+      retrieved: "2026-09-26"
+      extracted_by: "manual read of eCode360 § 912.08 — not LLM extraction"
+      reviewed: true
+      reviewed_on: "2026-09-26"
+      note: >-
+        Pittsburgh permits accessory dwelling units only inside an adopted
+        Accessory Dwelling Unit Overlay District (§ 912.08, Ord. No. 32-2018).
+        The overlay is not a base district — it has to be adopted for an area
+        under § 922.05, and an interim one lapses after 24 months. No such
+        overlay is currently mapped: the City's zoning overlay layer carries 127
+        overlay types and none is an ADU overlay. So the mechanism exists in the
+        code but has not been applied anywhere, and an ADU cannot be permitted
+        on any lot in the city today. If an overlay were adopted here, § 912.08.E
+        would exempt the unit from the underlying district's minimum lot size and
+        lot-area-per-unit rules, and cap it at 800 sq ft, 2 stories and 30 feet.
+        Checked 2026-09-26 against the City's published overlay layer; confirm
+        with the Department of City Planning.

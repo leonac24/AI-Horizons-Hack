@@ -197,6 +197,24 @@ assumptions:
       25-40 ft wide and 100-120 ft deep; a sourced value would come from parcel
       boundary geometry.
 
+  site_area_per_building_footprint:
+    value: 1.2
+    low: 1.0
+    high: 1.6
+    unit: lot sf / building footprint sf
+    provenance: assumption
+    source: null
+    rationale: >-
+      Screening floor on how much lot a building form needs, as a multiple of its
+      own footprint. Deliberately permissive: what actually limits how much of a
+      Pittsburgh lot may be covered is the zoning code's lot-coverage and setback
+      rules, which are evaluated separately in core/zoning.py against reviewed
+      rules. This check exists only to stop a form being offered on a lot that
+      plainly cannot hold it, so it is set just above bare footprint rather than
+      at a coverage ratio that would silently duplicate — and pre-empt — the
+      zoning layer. Each typology's floor is derived from this and its own
+      footprint; nothing is written per typology.
+
   analysis_years:
     value: 30
     low: 30
@@ -256,6 +274,11 @@ assumptions:
       shown in METHODS.md so it can be argued with.
     by_key:
       by_right: 1.0
+      # An Administrator Exception is decided by City staff with no public
+      # hearing and no board or council vote, so it sits much closer to
+      # by-right than to a Zoning Board case — a real step with real risk,
+      # but not a hearing to prepare for.
+      administrator_exception: 0.85
       special_exception: 0.6
       conditional_use: 0.45
       variance_needed: 0.3

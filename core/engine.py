@@ -231,7 +231,9 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
 
         # Zoning path score
         zscore = cfg.assumption("zoning_status_score")
-        zt = Trace({"assumption"})
+        # This one draws from its own stream rather than S.a(), so it has to
+        # declare the assumption it rests on itself.
+        zt = Trace({"assumption"}, keys={"zoning_status_score"})
         unreviewed_status = cfg.zoning.status_id("unreviewed")
         if zres.status == unreviewed_status:
             # Unknown approval path: the band spans every outcome the code allows.
