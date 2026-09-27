@@ -1026,6 +1026,10 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     setLineResolution(w, h)
     camera.aspect = w / h
     camera.updateProjectionMatrix()
+    // Resizing clears the canvas, and observers run after this frame's render but
+    // before paint, so redraw now or animated layout (the intro's viewport slide,
+    // panels opening) paints a blank canvas every frame.
+    renderer.render(scene, camera)
   })
   ro.observe(container)
   let raf = 0
