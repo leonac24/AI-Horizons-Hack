@@ -214,6 +214,7 @@ function CompareTab(p: Props) {
           <button
             className="go-btn"
             disabled={loading}
+            aria-busy={loading}
             onClick={() => {
               setLoading(true)
               api
@@ -222,7 +223,18 @@ function CompareTab(p: Props) {
                 .finally(() => setLoading(false))
             }}
           >
-            {loading ? 'Explaining…' : 'Explain these tradeoffs'}
+            {loading ? (
+              <>
+                Explaining
+                <span className="dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </>
+            ) : (
+              'Explain these tradeoffs with AI'
+            )}
           </button>
           {expl && (
             <div className="expl">
