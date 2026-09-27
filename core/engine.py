@@ -13,6 +13,8 @@ import numpy as np
 from pydantic import BaseModel
 
 from core.config import Config, Typology
+from core.context_estimates import context_fallback
+from core.environment_evidence import declared_overrides, parcel_environment_inputs
 from core.environment_model import environment_defaults_from_config, estimate_environment
 from core.finance_model import build_finance_defaults, estimate_finance
 from core.metrics import (
@@ -121,12 +123,12 @@ def lot_shape(cfg: Config, parcel: dict) -> LotShape:
             note=("Approximate axes from the county parcel polygon's minimum rotated rectangle. "
                   "Not legal frontage or a survey."),
         )
-    ratio = cfg.assumption("lot_depth_to_frontage_ratio")
-    front = math.sqrt(area / ratio.value) if area > 0 else 0.0
+    ratio = context_fallback("lot_depth_to_frontage_ratio")
+    front = math.sqrt(area / ratio["value"]) if area > 0 else 0.0
     return LotShape(frontage_ft=round(front, 1), depth_ft=round(area / front, 1) if front else 0.0,
-                    provenance="placeholder", sourceIds=[s for s in [ratio.source] if s],
+                    provenance=ratio["provenance"], sourceIds=ratio["source_ids"],
                     note="No usable dimensions in the legal description; drawn from lot area and a "
-                         "placeholder depth-to-frontage ratio.")
+                         "local donor depth-to-frontage ratio. Not legal frontage or survey dimensions.")
 
 def _interval_samples(S: Samples, parcel: dict, key: str, value: float,
                       low: float | None, high: float | None) -> np.ndarray:
@@ -177,6 +179,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     lot = float(parcel.get("lot_area_sf") or 0)
     flags = _hazard_flags(cfg, parcel)
     hazards_cfg = cfg.hazards
+    environmental_inputs = declared_overrides(parcel_environment_inputs(parcel), S.overrides)
 
     # --- Lot context (same for every scenario) ----------------------------------
     context_sources = cfg.city.model_dump().get("context") or {}
@@ -184,8 +187,11 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     income_est = parcel.get("tract_median_household_income")
     t_ctx = Trace()
     if income_est is None:
-        income_local = S.a("tract_median_household_income", used=t_ctx)
-        income_note = "Tract estimate unavailable; citywide placeholder shown."
+        income_envelope = declared_overrides({"tract_median_household_income": context_fallback("tract_median_household_income")}, S.overrides)["tract_median_household_income"]
+        income_local = envelope_samples(S, income_envelope, "tract_median_household_income")
+        t_ctx = envelope_trace(income_envelope)
+        t_ctx.keys.add("tract_median_household_income")
+        income_note = income_envelope["limitations"]
     else:
         t_ctx.add("observed", acs_source)
         income_moe = parcel.get("tract_median_household_income_moe")
@@ -197,8 +203,11 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     burden_est = parcel.get("tract_renter_cost_burden_share")
     t_burden = Trace()
     if burden_est is None:
-        burden = S.a("tract_renter_cost_burden_share", used=t_burden)
-        burden_note = "Tract estimate unavailable; citywide placeholder shown."
+        burden_envelope = declared_overrides({"tract_renter_cost_burden_share": context_fallback("tract_renter_cost_burden_share")}, S.overrides)["tract_renter_cost_burden_share"]
+        burden = envelope_samples(S, burden_envelope, "tract_renter_cost_burden_share")
+        t_burden = envelope_trace(burden_envelope)
+        t_burden.keys.add("tract_renter_cost_burden_share")
+        burden_note = burden_envelope["limitations"]
     else:
         t_burden.add("modeled", acs_source)
         burden = _interval_samples(S, parcel, "rent-burden", float(burden_est),
@@ -211,9 +220,12 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     transit_access = parcel.get("transit_access_index")
     transit_source = (context_sources.get("transit_jobs") or {}).get("source")
     if transit_access is None:
-        access = S.a("jobs_access_index", used=t_access)
-        access_note = "EPA transit-access value unavailable for this block group; fallback assumption shown."
-        access_provenance = "placeholder"
+        access_envelope = declared_overrides({"jobs_access_index": context_fallback("jobs_access_index")}, S.overrides)["jobs_access_index"]
+        access = envelope_samples(S, access_envelope, "jobs_access_index")
+        t_access = envelope_trace(access_envelope)
+        t_access.keys.add("jobs_access_index")
+        access_note = access_envelope["limitations"]
+        access_provenance = access_envelope["provenance"]
     else:
         access = S.const(float(transit_access))
         t_access.add("observed", transit_source)
@@ -221,7 +233,15 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                        "block group in its CBSA; 2021-vintage data.")
         access_provenance = "observed"
     t_sewer = Trace()
-    sewer = S.a("sewer_stress_index", used=t_sewer)
+    sewer_envelope = environmental_inputs.get("sewer_stress_index")
+    sewer = envelope_samples(S, sewer_envelope, "sewer_stress_index", str(parcel.get("id")))
+    if sewer is None:
+        sewer = S.a("sewer_stress_index", used=t_sewer)
+    else:
+        t_sewer = envelope_trace(sewer_envelope)
+    sewer_note = (sewer_envelope or {}).get("limitations")
+    if isinstance(sewer_note, list):
+        sewer_note = "; ".join(str(item) for item in sewer_note)
     obs = Trace({"observed"}, {cfg.assessment_source})
 
     land_value = parcel.get("land_value_usd")
@@ -234,14 +254,18 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                   provenance="observed" if land_value is not None else "placeholder"),
         to_metric("site.tract_median_income", "Tract median household income", income_local,
                   "USD/yr", t_ctx, note=income_note,
-                  provenance="observed" if income_est is not None else "placeholder"),
+                  evidence=income_envelope if income_est is None else None,
+                  provenance="observed" if income_est is not None else t_ctx.prov()),
         to_metric("site.renter_cost_burden", "Tract renters paying 30%+ of income", burden * 100,
                   "%", t_burden, note=burden_note,
-                  provenance="modeled" if burden_est is not None else "placeholder"),
+                  evidence=burden_envelope if burden_est is None else None,
+                  provenance="modeled" if burden_est is not None else t_burden.prov()),
         to_metric("site.jobs_access", "Transit access to jobs (regional relative index)",
                   access, "index (0–1)", t_access, note=access_note,
+                  evidence=access_envelope if transit_access is None else None,
                   provenance=access_provenance),
-        to_metric("site.sewer_stress", "Combined-sewer stress (city avg = 1)", sewer, "index", t_sewer),
+        to_metric("site.sewer_stress", "Historical modeled overflow pressure", sewer, "index", t_sewer,
+                  note=sewer_note, evidence=sewer_envelope),
     ]
     site_context[0].unavailable = lot <= 0
     site_context[1].unavailable = land_value is None
@@ -278,6 +302,15 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                        "This does not measure sewer capacity or overflow pressure.") if sheds else
                        "Outside or unmatched in the 2018 layer; sewer type and capacity are unknown."),
     ]
+    overflow = environmental_inputs.get("sewer_overflow_context")
+    if overflow and overflow.get("value") is not None:
+        site_facts.append(SiteFact(
+            id="site.sewer_overflow", label="Historical modeled sewer overflow",
+            value=f"{overflow['value']:,.2f} {overflow.get('unit', '')}",
+            provenance=overflow.get("provenance", "modeled"),
+            sourceIds=overflow.get("source_ids", []),
+            note=f"{overflow.get('geography', '')}. {overflow.get('limitations', '')}",
+        ))
     transit_jobs = parcel.get("transit_jobs_accessible")
     if transit_jobs is not None:
         site_facts.append(SiteFact(
@@ -339,7 +372,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
         for flag in hazards_cfg:
             if flags.get(flag):
                 site_share = site_share + S.a(f"{flag}_cost_share", used=t_cost)
-                notes.append(f"{hazards_cfg[flag]['label']}: added site cost range applied.")
+                notes.append(f"{hazards_cfg[flag]['label']}: declared budget reserve included; engineering costs remain unconfirmed.")
         land = S.const(float(land_value or 0))
         if land_value is not None:
             t_cost.add("observed", cfg.assessment_source)
@@ -427,8 +460,11 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                 share_above_local_rents * 100, "%", t_local,
                 note="Renter-income distribution unavailable; this uses tract all-household median as a visibly provisional fallback.")
 
+        typology_environment_inputs = declared_overrides(
+            parcel_environment_inputs(parcel, typ.id), S.overrides,
+        )
         environment = estimate_environment(
-            parcel, typ.id, units, typ.unit_size_sf, parcel_evidence,
+            parcel, typ.id, units, typ.unit_size_sf, typology_environment_inputs,
             environment_defaults_from_config(cfg, typ.id),
         )
         # Infrastructure load
@@ -469,6 +505,9 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
             carbon_envelope, "tCO2e", str(parcel.get("id")), typ.id,
         )
         if modeled_carbon is not None:
+            modeled_carbon.dependsOn = sorted(
+                key for key in (carbon_envelope or {}).get("inputs", {}) if key in cfg.assumptions
+            )
             for field in ("value", "low", "high"):
                 setattr(modeled_carbon, field, round(getattr(modeled_carbon, field) / 1000, 3))
             series = carbon_envelope.get("carbon_series") or {}
@@ -527,10 +566,25 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
             "carbon.per_household_horizon": modeled_carbon or to_metric(
                 "carbon.per_household_horizon", f"Carbon per household over {years} years", cumulative[-1], "tCO2e", t_c,
                 evidence={"unresolved_environment_model": carbon_envelope}),
-            "carbon.embodied_per_household": to_metric(
+            "carbon.embodied_per_household": _evidence_metric(
+                S, "carbon.embodied_per_household", "Partial A1–A3 materials per household",
+                environment.get("embodied_kgco2e_psf"), "kgCO2e/sf", str(parcel.get("id")), typ.id,
+            ) or to_metric(
                 "carbon.embodied_per_household", "Upfront (embodied) carbon per household", emb, "tCO2e", t_c),
             "units.count": to_metric("units.count", "Homes", S.const(units), "homes", Trace({"modeled"})),
         }
+        embodied_metric = metrics["carbon.embodied_per_household"]
+        if embodied_metric.unit == "kgCO2e/sf":
+            for field in ("value", "low", "high"):
+                setattr(embodied_metric, field, round(getattr(embodied_metric, field) * typ.unit_size_sf / 1000, 3))
+            embodied_metric.unit = "tCO2e"
+            embodied_metric.dependsOn = ["embodied_kgco2e_psf"]
+            embodied_metric.evidence = {
+                **(embodied_metric.evidence or {}),
+                "value": embodied_metric.value, "low": embodied_metric.low,
+                "high": embodied_metric.high, "unit": "tCO2e/home",
+                "inputs": {"embodied_kgco2e_psf": environment.get("embodied_kgco2e_psf")},
+            }
         # The public-cost reference still uses the configured hard-cost input;
         # keep the planner's inquiry tied to that editable assumption.
         if modeled_per_unit is not None:

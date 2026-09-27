@@ -18,6 +18,12 @@ from pydantic import BaseModel, Field
 
 from core.config import ROOT, get_config
 from core.engine import Analysis, analyze, work_backwards
+from core.environment_evidence import (
+    analysis_artifact_paths,
+    artifact_digest,
+    parcel_environment_inputs,
+)
+from core.environment_model import environment_defaults_from_config
 from core.next_steps import Step, StepKind
 from core.next_steps import build as build_next_steps
 from core.plan import Placement, PlanResult, analyze_plan
@@ -175,24 +181,17 @@ def _index_cached(evidence_hash: str) -> dict:
 
 def _evidence_hash() -> str:
     """Hash the artifact actually served; changing only data invalidates analysis."""
-    if not PARCEL_EVIDENCE_FILE.exists() and not VALID_SALES_FILE.exists():
+    paths = analysis_artifact_paths()
+    if not any(path.exists() for path in paths):
         return "none"
-    version = tuple((path.name, path.stat().st_mtime_ns, path.stat().st_size)
-                    for path in (PARCEL_EVIDENCE_FILE, VALID_SALES_FILE) if path.exists())
+    version = tuple((str(path.relative_to(ROOT)), path.stat().st_mtime_ns, path.stat().st_size)
+                    for path in paths if path.exists())
     return _evidence_hash_for_version(version)
 
 
 @lru_cache(maxsize=8)
 def _evidence_hash_for_version(version: tuple[tuple[str, int, int], ...]) -> str:
-    digest = hashlib.sha256()
-    for path in (PARCEL_EVIDENCE_FILE, VALID_SALES_FILE):
-        if not path.exists():
-            continue
-        digest.update(path.name.encode())
-        with path.open("rb") as handle:
-            for block in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(block)
-    return digest.hexdigest()
+    return artifact_digest(analysis_artifact_paths())
 
 
 @lru_cache(maxsize=2)
@@ -451,12 +450,7 @@ def unknowns() -> dict:
     covered = sum(n for d, n in by_district.items() if base(d) in covered_b)
     human = sum(n for d, n in by_district.items() if base(d) in human_b)
     report_path = ROOT / "data" / "processed" / "pipeline_report.json"
-    evidence_coverage: dict[str, Counter[str]] = {}
-    for parcel in _index()["parcels"].values():
-        for field, envelope in (parcel.get("evidence") or {}).items():
-            if not isinstance(envelope, dict):
-                continue
-            evidence_coverage.setdefault(field, Counter())[str(envelope.get("evidence_tier") or "unknown")] += 1
+    evidence_coverage = _environment_coverage(cfg.hash, _evidence_hash())
     return {
         "placeholder_assumptions": [
             {"id": k, "unit": a.unit, "rationale": a.rationale, "source": a.source}
@@ -472,8 +466,30 @@ def unknowns() -> dict:
         "pipeline": json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None,
         "evidence_manifest_hash": _evidence_hash(),
         "evidence_record_count": _index().get("evidence_record_count", 0),
-        "evidence_coverage": {field: dict(counts) for field, counts in sorted(evidence_coverage.items())},
+        "evidence_coverage": evidence_coverage,
     }
+
+
+@lru_cache(maxsize=2)
+def _environment_coverage(config_hash: str, evidence_hash: str) -> dict:
+    path = ROOT / "data" / "processed" / "environment_coverage.json"
+    if path.exists():
+        report = json.loads(path.read_text(encoding="utf-8"))
+        if report.get("config_hash") == config_hash and report.get("runtime_evidence_hash") == evidence_hash:
+            return report["coverage"]
+    # Source refreshes can precede the offline audit. Recompute once per actual
+    # data/config hash rather than serve stale counts or rescan every request.
+    cfg = get_config()
+    defaults = environment_defaults_from_config(cfg, cfg.typologies[0].id)
+    counts: dict[str, Counter[str]] = {}
+    for parcel in _index()["parcels"].values():
+        envelopes = {**defaults, **parcel_environment_inputs(parcel, cfg.typologies[0].id)}
+        for field, envelope in envelopes.items():
+            if not isinstance(envelope, dict):
+                continue
+            tier = str(envelope.get("evidence_tier") or "unknown") if envelope.get("value") is not None else "unavailable"
+            counts.setdefault(field, Counter())[tier] += 1
+    return {field: dict(tiers) for field, tiers in sorted(counts.items())}
 
 
 @api.get("/evidence", summary="Locally compiled document leads; not verified findings")

@@ -12,6 +12,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from core.artifact_files import replace_text
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "data" / "models" / "carbon_geography.json"
 _MODEL_CACHE: dict[str, tuple[tuple[int, int], dict[str, Any]]] = {}
@@ -470,9 +471,7 @@ def refresh_model_data(
     access is therefore optional and never occurs in ``build_geographic_inputs``.
     """
     import tempfile
-
-    from datetime import date
-    from urllib.request import Request, urlopen
+    from datetime import UTC, datetime
 
     from_source_parcels = Path(parcels_json_path) if parcels_json_path else Path(__file__).resolve().parents[1] / "data" / "processed" / "parcels.json"
     out_path = Path(output_path) if output_path else MODEL_PATH
@@ -484,9 +483,9 @@ def refresh_model_data(
             _download_source(LATCH_DOWNLOAD_URL, local_latch)
         if cambium_xlsx_path is None:
             _download_source(CAMBIUM_DOWNLOAD_URL, local_cambium)
-        artifact = _build_model_snapshot(local_latch, local_cambium, from_source_parcels, date.today().isoformat())
+        artifact = _build_model_snapshot(local_latch, local_cambium, from_source_parcels, datetime.now(UTC).date().isoformat())
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(artifact, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+        replace_text(out_path, json.dumps(artifact, sort_keys=True, separators=(",", ":")) + "\n")
     # Force the serving process to notice the refreshed stat signature.
     cache_key = str(out_path.resolve())
     _MODEL_CACHE.pop(cache_key, None)
@@ -674,7 +673,6 @@ def _nhts_annualization() -> dict[str, Any]:
 
 
 def _xlsx_sheet_rows(archive: Any, path: str) -> list[tuple[int, dict[str, Any]]]:
-    import re
     from xml.etree import ElementTree as ET
 
     ns = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
@@ -827,16 +825,17 @@ def _parse_cambium_workbook(path: Path) -> tuple[dict[str, Any], dict[str, str]]
             scenario_offset = scenario_col - scenario_headers[0][0]
             values = []
             for year_index, _year in enumerate(years):
-                def number(component: tuple[str, str]) -> float:
-                    column = components[component] + scenario_offset + year_index
+                emissions = {}
+                for component, first_column in components.items():
+                    column = first_column + scenario_offset + year_index
                     raw = cells.get(f"{_column_letter(column)}{row_number}")
                     if raw is None:
                         raise ValueError(f"Missing Cambium value {region}/{scenario_name}/{_year}/{component}")
-                    return float(raw)
+                    emissions[component] = float(raw)
 
-                co2 = number(("CO2", "direct")) + number(("CO2", "precombustion"))
-                ch4 = number(("CH4", "direct")) + number(("CH4", "precombustion"))
-                n2o = number(("N2O", "direct")) + number(("N2O", "precombustion"))
+                co2 = emissions[("CO2", "direct")] + emissions[("CO2", "precombustion")]
+                ch4 = emissions[("CH4", "direct")] + emissions[("CH4", "precombustion")]
+                n2o = emissions[("N2O", "direct")] + emissions[("N2O", "precombustion")]
                 kg_per_mwh = co2 + ch4 * gwp_ch4 / 1000 + n2o * gwp_n2o / 1000
                 values.append(round(kg_per_mwh / 1000, 9))
             trajectories[region][scenario_name] = values

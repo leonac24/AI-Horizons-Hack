@@ -300,6 +300,15 @@ def build(cfg: Config) -> dict:
         encoding="utf-8",
     )
     (PROCESSED / "pipeline_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    from pipeline.build_environment import build_environment_coverage
+    from pipeline.context_fallbacks import build as build_context_fallbacks
+    from pipeline.planning_estimates import build as build_planning_estimates
+
+    build_context_fallbacks()
+    build_planning_estimates()
+    environment_report = build_environment_coverage()
+    report["environment"] = environment_report["coverage"]
+    (PROCESSED / "pipeline_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     log.info("indexed %d vacant parcels; report: %s", len(records), json.dumps(report["counts"]))
     return report
 

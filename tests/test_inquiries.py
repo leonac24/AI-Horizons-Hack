@@ -185,7 +185,7 @@ def test_a_reviewed_district_stops_asking_about_use(cfg, lot, monkeypatch):
 # --- lot shape -----------------------------------------------------------------
 def test_a_drawn_lot_shape_is_asked_about(cfg, lot):
     a = analyze(cfg, lot)
-    assert a.lot_shape.provenance == "placeholder"  # the fixture lot has no legal dims
+    assert a.lot_shape.provenance == "modeled"  # local donor ratio; legal dimensions remain unconfirmed
     assert any(q.kind == "lot_shape" for q in build(cfg, a))
 
 
@@ -232,7 +232,9 @@ def test_an_answer_does_not_upgrade_provenance(cfg, lot):
     before = _metric_on(analyze(cfg, lot), _LOCAL_INCOME)
     after_analysis = analyze(cfg, lot, Samples(cfg, overrides={_LOCAL_INCOME: 57_500}))
     after = next(m for m in after_analysis.site_context if m.id == before.id)
-    assert after.provenance == before.provenance
+    assert before.provenance == "modeled"
+    assert after.provenance == "assumption"
+    assert after.evidence["evidence_tier"] == "user_declared_scenario"
 
 
 def test_an_unrelated_metric_is_untouched_by_an_answer(cfg, lot):

@@ -475,11 +475,11 @@ function Carbon({ pool, year, setYear, config }: Props) {
       <div className="row-between">
         <div className="h-tab">
           Carbon per household over time<HelpTip id="carbon_over_time" />
-          <InfoTip id="carbon.series" sourceIds={carbonInputs?.sourceIds} dependsOn={[...(carbonInputs?.dependsOn ?? []), 'analysis_years']} provenance={prov} />
+          <InfoTip id="carbon.series" metric={carbonInputs} sourceIds={carbonInputs?.sourceIds} dependsOn={[...(carbonInputs?.dependsOn ?? []), 'analysis_years']} provenance={prov} />
         </div>
         <ProvTag p={prov} />
       </div>
-      <p className="muted small">Building materials at year 0, then home energy (PA grid, decarbonizing) and travel each year. Tonnes CO₂e.</p>
+      <p className="muted small">Prototype building materials at year 0, then modeled home electricity and household driving. The regional grid follows a named scenario. Tonnes CO₂e; a partial estimate.</p>
       <div className="carbon-grid">
         <div>
           <svg viewBox="0 0 360 200" className={`chart prov-${prov}`}>

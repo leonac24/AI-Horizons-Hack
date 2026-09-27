@@ -50,13 +50,14 @@ def test_empty_or_unknown_plan_rejected(cfg, lot):
         analyze_plan(cfg, lot, [Placement(typology_id="not-a-type", count=1)])
 
 
-def test_lot_shape_observed_vs_placeholder(cfg, lot):
+def test_lot_shape_observed_vs_donor_estimate(cfg, lot):
     obs = lot_shape(cfg, {**lot, "frontage_ft": 25, "depth_ft": 200})
     assert (obs.frontage_ft, obs.depth_ft, obs.provenance) == (25, 200, "observed")
     ph = lot_shape(cfg, {**lot, "frontage_ft": None, "depth_ft": None})
-    assert ph.provenance == "placeholder"
+    assert ph.provenance == "modeled"
+    assert "Not legal frontage" in ph.note
     assert abs(ph.frontage_ft * ph.depth_ft - lot["lot_area_sf"]) < 5
-    assert analyze(cfg, lot).lot_shape.provenance == "placeholder"
+    assert analyze(cfg, lot).lot_shape.provenance == "modeled"
 
 
 def test_plan_route_limit_comes_from_config():

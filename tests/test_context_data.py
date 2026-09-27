@@ -66,7 +66,9 @@ def test_joined_tract_values_replace_placeholders_without_claiming_sewer_stress(
     assert facts["site.fema_flood"].provenance == "observed"
     assert "AE" in facts["site.fema_flood"].value
     assert facts["site.combined_sewershed"].value == "O-25"
-    assert metrics["site.sewer_stress"].provenance == "placeholder"
+    assert metrics["site.sewer_stress"].provenance == "modeled"
+    assert "capacity" in metrics["site.sewer_stress"].note
+    assert metrics["site.sewer_stress"].evidence["evidence_tier"] == "direct_sewershed_outfall_match"
 
 
 def test_unmatched_flood_is_unknown_not_safe(cfg, lot):

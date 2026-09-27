@@ -133,20 +133,30 @@ type, it belongs back in this table.
 
 ## Carbon over time (per household)
 
-When material, energy, annual travel and grid inputs have sourced envelopes,
-the environment model uses their year-specific grid path and returns a partial
-series with component and omission details. It does not infer sewer capacity
-from a mapped sewershed. Where those inputs are absent, the following legacy
-configured comparison remains explicitly labeled placeholder:
+The active model resolves sourced estimates for every indexed parcel and all six
+housing types. It uses DOE 2021 IECC climate-zone-5A all-electric heat-pump
+prototype electricity, a published partial A1–A3 materials benchmark,
+annualized BTS LATCH 2017 household vehicle miles, and the Cambium 2024 Mid-case
+annual regional grid path. Exact 2010 tract-code travel matches are disclosed
+as proxies; unmatched parcels use the household-weighted county estimate.
 
-    year 0:  embodied = embodied_kgco2e_psf × unit_size_sf / 1000                         (t)
-    year y:  energy   = operational_kwh_psf_yr × unit_size_sf × grid_kgco2e_per_kwh × (1 − decarb)^(y−1)
-             travel   = vmt_per_household_yr × kgco2e_per_vmt
-    cumulative(y) = embodied + Σ (energy + travel) / 1000
+    year 0: materials = partial_A1_A3_kgco2e_psf × unit_size_sf / 1000
+    year y: electricity = prototype_kwh_psf_yr × unit_size_sf × grid_factor[calendar_year]
+            travel      = annualized_household_vmt × EPA_gasoline_vehicle_factor
+    cumulative(y) = materials + Σ (electricity + travel) / 1000
 
-A **crossover year** is the first year one option's cumulative line crosses
-another's. It happens when one option costs more carbon to build but less to
-live in.
+Cambium five-year source points are interpolated annually; the 2050 scenario
+endpoint is held constant beyond 2050. Ranges propagate scenario/proxy bands,
+not statistical confidence. Materials omit interiors, MEP, appliances, site
+works, A4–A5 and later life-cycle stages; no biogenic credit is deducted. Driving
+uses a static national gasoline tailpipe proxy. A crossover is conditional on
+these choices, not a precise carbon payback forecast. See
+[environmental estimates](ENVIRONMENT_ESTIMATES.md) for sources and regeneration.
+
+Historical ALCOSAN typical-year modeled outfall overflow is shown separately
+from proposed wastewater design flow. Exact report IDs or printed aliases join
+PWSA sewershed labels; unmatched parcels receive a disclosed regional estimate.
+Neither establishes available sewer capacity.
 
 ## Scoring
 

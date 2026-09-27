@@ -48,7 +48,7 @@ methods:
       margin of error.
     limits: >-
       A tract average, not this block or any household. Where the tract has no
-      estimate, a citywide placeholder is shown instead.
+      estimate, a disclosed median of distinct matched city tracts is shown instead.
 
   site.renter_cost_burden:
     title: Renters paying 30%+ of income
@@ -70,7 +70,7 @@ methods:
       criterion.
     limits: >-
       2021-vintage data built on 2020 transit schedules, not today's PRT service
-      or any household's commute. Where EPA has no value, a placeholder band is shown.
+      or any household's commute. Where EPA has no value, a disclosed local block-group donor band is shown.
 
   site.transit_jobs_accessible:
     title: Jobs within a 45-minute transit trip
@@ -83,13 +83,23 @@ methods:
       prediction of any household's commute.
 
   site.sewer_stress:
-    title: Combined-sewer stress
+    title: Historical modeled overflow pressure
     how: >-
-      Overflow pressure in the lot's combined sewershed, relative to the city
-      average (1 = average). It scales the infrastructure-load criterion.
+      ALCOSAN Clean Water Plan typical-year modeled annual outfall overflow,
+      relative to the equal-weight mean across 339 modeled outfalls. Exact PWSA
+      sewershed labels are matched to report IDs; unmatched parcels use a
+      disclosed regional mean. The proposed design-flow card is separate.
     limits: >-
-      Placeholder until ALCOSAN / PWSA overflow data is joined. Being in a
-      combined sewershed is not evidence of spare or missing capacity.
+      Historical model using a representative 2003 rainfall year, not observed
+      current overflow, parcel discharge or available sewer capacity.
+
+  site.sewer_overflow:
+    title: Historical modeled outfall overflow
+    how: >-
+      Sum of unique matched ALCOSAN outfall typical-year modeled annual volumes,
+      in million gallons. A regional outfall-mean proxy is shown when the PWSA
+      labels cannot be resolved. Source table, page and outfall IDs are retained.
+    limits: An outfall model result, not this parcel's contribution or a current capacity finding.
 
   site.steep_slope:
     title: Steep slope
@@ -225,22 +235,28 @@ methods:
       determination is required; sewershed membership cannot establish capacity.
 
   carbon.per_household_horizon:
-    title: Carbon scenario per household
+    title: Partial carbon scenario per household
     how: >-
-      A partial scenario combines upfront materials, operating electricity and
-      household vehicle travel when matched source inputs are available. Annual
-      grid factors may be supplied as a year-by-year trajectory. The configured
-      placeholder comparison remains visible where inputs are unresolved.
+      A partial scenario combines an A1–A3 structure/enclosure/foundation
+      materials proxy, DOE all-electric heat-pump prototype electricity, and
+      annualized BTS LATCH modeled household vehicle miles. Cambium Mid-case
+      provides the annual grid trajectory, with its 2050 endpoint held afterward.
     formula: embodied + Σ_years (electricity × annual grid factor + vehicle miles × vehicle factor)
     limits: >-
-      Fuel use, future vehicle fleet changes and construction-specific quantities
-      are omitted. Placeholder totals are not measured emissions.
+      Interiors, MEP, appliances, site works, A4–A5, replacements, end-of-life,
+      fuel use and future vehicle-fleet changes are omitted. Proxy and scenario
+      ranges are not confidence intervals or measured parcel emissions.
 
   carbon.embodied_per_household:
-    title: Upfront carbon per household
-    how: Carbon emitted making and installing the building's materials, per home, before anyone moves in.
+    title: A1–A3 structure materials per household
+    how: >-
+      Published single-family structure/enclosure/foundation gross materials
+      benchmark times floor area. The benchmark midpoint is a declared center;
+      wider form-proxy ranges are used for non-native housing types.
     formula: embodied_kgco2e_psf × unit_size_sf / 1000
-    limits: Covers life-cycle stages A1–A5 only. Demolition and end-of-life are not counted.
+    limits: >-
+      Partial A1–A3 proxy. Interiors, MEP, appliances, site works, A4–A5,
+      replacements and end-of-life are not quantified. No biogenic credit.
 
   units.count:
     title: Homes
@@ -278,15 +294,16 @@ methods:
   carbon.series:
     title: Carbon over time
     how: >-
-      Each line starts at the embodied carbon of building one home, then adds a
-      year of home energy and travel at a time. Where two lines cross, the option
-      that cost more to build has paid back its extra carbon.
+      Each line starts at the partial materials estimate for one home, then
+      adds annual prototype electricity with Cambium grid factors and modeled
+      household driving. A crossover is conditional on these selected scenarios.
     formula: >-
-      year 0: embodied; year y: + kWh × grid × (1 − decarb)^(y−1) + vmt × kgCO2e_per_mile
+      year 0: partial A1–A3 materials; year y: + kWh × grid_factor[calendar_year] + vmt × kgCO2e_per_mile
     limits: >-
-      Grid decarbonization, driving and embodied carbon are placeholders, and
-      driving is the same for every lot. The shape of the lines is more reliable
-      than the tonnes.
+      Material scope is incomplete; prototype forms, historical tract-code
+      travel proxies and future grid scenarios have different source boundaries.
+      Driving varies by matched tract, with county fallbacks. No complete
+      whole-life carbon or precise crossover claim is supported.
 
   backwards.subsidy_gap:
     title: Subsidy gap per home

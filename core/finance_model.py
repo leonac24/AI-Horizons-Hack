@@ -301,7 +301,7 @@ def _development_cost(gross_sf: float, units: int, land: dict, defaults: dict, p
             "share of hard cost", [site_share, *hazard_envs], evidence_tier="site_risk_scenario",
             interval_type="scenario_range", geography="parcel flag + Pittsburgh cost scenario",
             limitations=[
-                "Flagged hazard allowances are configured placeholders without local engineering-cost calibration; they are scenario increments, not measured costs."],
+                "Flagged hazard reserves are declared budget scenarios without local engineering-cost calibration; they are not measured costs or evidence of required remediation."],
             confirmation="Obtain geotechnical review and contractor estimates for this parcel.")
     if site_rate:
         site = site_rate
@@ -619,7 +619,8 @@ def build_finance_defaults(cfg: Any, typology_id: str) -> dict:
     if tdc_per_unit:
         tdc_per_unit["limitations"] = ["HUD published TDC-to-HCC limit multiplier used only as a separate benchmark; it is not added to line items or reused as a soft-cost share."]
 
-    scenario_source_id = _source_id(cfg, name="Lotline declared planning scenario")
+    scenario_source_id = (_source_id(cfg, name="Lotline Declared Finance Scenario Defaults")
+                          or _source_id(cfg, name="Lotline declared planning scenario"))
 
     def source_id_for(role):
         url = FINANCE_SOURCE_URLS.get(role)
@@ -752,12 +753,12 @@ def build_finance_defaults(cfg: Any, typology_id: str) -> dict:
                       ("undermined", "undermined_cost_share")):
         hazard = _cfg_range(cfg, key, typology_id)
         if hazard:
-            hazard.update({"unit": "share of hard cost", "provenance": "placeholder",
-                "evidence_tier": "configured_placeholder", "interval_type": "scenario_range",
-                "geography": "parcel risk scenario", "source_ids": [],
-                "source_snapshot_ids": [], "as_of": None, "model_id": None,
-                "model_version": None, "sample_size": None,
-                "limitations": ["Existing configured allowance is a placeholder with no verified local contractor or engineering calibration."],
+            hazard.update({"unit": "share of hard cost",
+                "evidence_tier": "declared_site_risk_reserve", "interval_type": "budget stress scenario range",
+                "geography": "parcel hazard flag plus declared budget reserve",
+                "source_snapshot_ids": ["2025 PHFA reference; Lotline reserve model v1"],
+                "as_of": "2026-09-27", "model_id": "lotline:declared-planning-budget:v1",
+                "model_version": "1", "sample_size": None,
                 "confirmation_needed": "Get parcel-specific geotechnical and contractor estimates."})
         defaults[key] = hazard
     return defaults

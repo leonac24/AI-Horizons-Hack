@@ -296,14 +296,14 @@ inquiries:
     trigger: assumption
     question: Is there sewer capacity for new homes here, or is this a combined-sewer constraint?
     why: >-
-      This is a placeholder index, not a capacity finding. Being near a sewer is
+      Historical modeled overflow context does not establish available capacity. Being near a sewer is
       not evidence of room in it, and in a combined-sewer area added flow can be
       the thing that stops a project or adds stormwater controls to it.
     resolver: pgh_water
     ask_for: A written capacity or point-of-connection letter, and any stormwater requirements
     effort: agency_request
     weeks: { low: 4, high: 16, unit: weeks }
-    source: alcosan_cso
+    source: alcosan_cwp_section4_2018
     contact_template: >-
       Re {address} (parcel {parcel_id}) in {neighborhood}: we are evaluating new
       residential construction on this lot. Could you confirm available sanitary
@@ -440,12 +440,13 @@ inquiries:
     trigger: assumption
     question: What is the upfront carbon of actually building this?
     why: >-
-      Embodied carbon is modelled at {low}–{high} {unit}, unsourced. It is paid in
-      year zero and is most of the difference between the options in the early
-      years of the comparison.
+      The sourced estimate covers A1–A3 structure, enclosure and foundation
+      only. A design-specific full material inventory is needed to quantify
+      omitted assemblies, construction and later life-cycle stages.
     resolver: architect
     ask_for: A whole-life carbon estimate, or published EPD figures for the intended assemblies
     effort: professional_study
+    source: jungclaus_2024_sf_embodied_a1a3
     contact_template: >-
       Re {address} (parcel {parcel_id}): for the forms we are screening, can you
       give upfront (A1–A5) embodied carbon per square foot from published EPDs or a
@@ -455,13 +456,12 @@ inquiries:
     trigger: assumption
     question: How much energy would these homes really use?
     why: >-
-      Energy use is modelled at {low}–{high} {unit}. Operational carbon overtakes
-      embodied carbon somewhere in the analysis period, and this figure decides
-      when that crossover happens.
+      DOE climate-zone prototypes provide an all-electric heat-pump scenario.
+      Design, weather, occupancy and equipment may differ from those prototypes.
     resolver: energy_modeler
     ask_for: Modelled annual energy use intensity for each form under consideration
     effort: professional_study
-    source: nrel_resstock
+    source: doe_iecc2021_residential_cz5a_outputs
     contact_template: >-
       Re {address} (parcel {parcel_id}): we need modelled energy use intensity for
       all-electric new residential construction in each of the forms we are
@@ -471,8 +471,9 @@ inquiries:
     trigger: assumption
     question: How dirty is the grid these homes would run on?
     why: >-
-      The grid emission rate is a placeholder at {low}–{high} {unit}. It is a
-      published regional figure, so this is a lookup rather than a study.
+      The published historical regional output-rate reference differs from the
+      Cambium end-use scenario used in the calculation. Confirm the chosen
+      geography and accounting boundary before replacing either.
     resolver: own_team
     ask_for: The current eGRID emission rate for the Pennsylvania / RFC West subregion
     effort: desk_check
@@ -485,12 +486,13 @@ inquiries:
     trigger: assumption
     question: How fast should we assume the grid cleans up?
     why: >-
-      Assumed at {low}–{high} per year. This is a forecast, not a measurement, and
-      it compounds over the analysis period — so it deserves a stated basis rather
-      than a default.
+      Cambium provides named modeled pathways through 2050, not forecasts.
+      The endpoint compound-decline summary is descriptive; the calculation uses
+      the annual pathway and discloses its terminal-year hold beyond 2050.
     resolver: own_team
     ask_for: A citable decarbonisation trajectory for the regional grid
     effort: desk_check
+    source: nrel_cambium_2024
     contact_template: >-
       Find a citable projection for the regional grid's emission rate over the
       analysis period and record the basis alongside the value.
@@ -499,16 +501,18 @@ inquiries:
     trigger: assumption
     question: How much would households here need to drive?
     why: >-
-      Modelled at {low}–{high} {unit} before adjusting for transit access.
+      Modeled tract or county weekday travel is annualized using a disclosed
+      national weekday/weekend ratio; it is not adjusted by transit access.
       Transport is a large share of household carbon and of household cost, and
       both depend on this.
     resolver: own_team
-    ask_for: EPA Smart Location household VMT for the block group containing this parcel
+    ask_for: A current local household-travel estimate or validated LATCH tract crosswalk and annualization
     effort: desk_check
-    source: epa_smart_location
+    source: bts_latch_2017
     contact_template: >-
-      Pull EPA Smart Location Database household VMT for the block group
-      containing {address} (parcel {parcel_id}).
+      Verify the 2010 LATCH tract match for {address} (parcel {parcel_id}), retain
+      reliability flags, and validate the annualization or replace it with a
+      current regional household travel-model estimate.
 
   kgco2e_per_vmt:
     trigger: assumption

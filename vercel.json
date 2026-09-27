@@ -12,7 +12,7 @@
   ],
   "functions": {
     "api/index.py": {
-      "includeFiles": "{core/**,server/**,data/config/**,data/processed/**,pipeline/zoning/rules_review.yaml,pipeline/zoning/review_priority.json}",
+      "includeFiles": "{core/**,server/**,data/config/**,data/processed/**,data/models/**,pipeline/__init__.py,pipeline/carbon_prototypes.py,pipeline/carbon_geography.py,pipeline/overflow_context.py,pipeline/zoning/rules_review.yaml,pipeline/zoning/review_priority.json}",
       "excludeFiles": "{web/**,data/raw/**,tests/**,.venv/**}"
     }
   }

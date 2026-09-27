@@ -224,7 +224,7 @@ def build(cfg: Config, analysis: Analysis) -> list[Inquiry]:
     # 3b. A lot whose dimensions were never recorded. Its frontage and depth are
     #     drawn from area and a ratio, and every question about what fits here
     #     rests on that drawing.
-    if analysis.lot_shape.provenance == "placeholder":
+    if analysis.lot_shape.provenance in ("placeholder", "modeled"):
         found = next(((k, r) for k, r in inq.inquiries.items() if r.trigger == "lot_shape"), None)
         if found is not None:
             key, rec = found

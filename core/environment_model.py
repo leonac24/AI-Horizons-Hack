@@ -91,6 +91,19 @@ def estimate_environment(
         annual_travel_input, grid, grid_path, vehicle, cfg.get("analysis_years", 60),
         grid_decarbonization, cfg.get("analysis_start_year"),
     )
+    inputs = {
+        "embodied_kgco2e_psf": embodied,
+        "operational_kwh_psf_yr": energy,
+        "vmt_per_household_yr": travel,
+        "kgco2e_per_vmt": vehicle,
+    }
+    if grid_path:
+        inputs["grid_kgco2e_by_year"] = grid_path
+    else:
+        inputs["grid_kgco2e_per_kwh"] = grid
+        if grid_decarbonization:
+            inputs["grid_decarbonization_per_yr"] = grid_decarbonization
+    outputs["carbon_scenario"]["inputs"] = {key: value for key, value in inputs.items() if value}
     # Parcel linkage is included for provenance, but no sewer capacity field is
     # synthesized from sewershed membership or overflow history.
     outputs["sewer_capacity"] = {
@@ -168,7 +181,7 @@ def environment_defaults_from_config(cfg: Any, typology_id: str) -> dict:
 
 def _input(evidence: dict, defaults: dict, key: str, typology: str,
            unit: str, fallback_model: str) -> dict | None:
-    value = _lookup(evidence, key)
+    value = _lookup(evidence, key, typology)
     if value is not None:
         return _normalize(value, unit)
     value = _lookup(defaults, key, typology)
@@ -201,8 +214,11 @@ def _lookup(mapping: dict, key: str, typology: str | None = None) -> Any:
         return None
     if typology and isinstance(value, Mapping):
         by_typology = value.get("by_typology")
-        if isinstance(by_typology, Mapping) and typology in by_typology:
-            return {**value, **by_typology[typology]}
+        if isinstance(by_typology, Mapping):
+            if typology in by_typology:
+                return {**value, **by_typology[typology]}
+            if not value.get("generic_typology_fallback_declared"):
+                return None
         if typology in value and isinstance(value[typology], Mapping):
             return {**value, **value[typology]}
     return value
@@ -325,11 +341,20 @@ def _carbon_scenario(embodied: dict | None, energy: dict | None, travel: dict | 
         yearly_low.append(yearly_low[-1] + low_vals[index])
         yearly_high.append(yearly_high[-1] + high_vals[index])
     low, high = yearly_low[-1], yearly_high[-1]
-    used = [embodied, energy, travel, vehicle, *( [grid_path] if grid_path else [grid] )]
+    used = [embodied, energy, travel, vehicle, *([grid_path] if grid_path else [grid])]
+    if not grid_path and decarbonization:
+        used.append(decarbonization)
     provs = {item.get("provenance", "modeled") for item in used}
     provenance = "placeholder" if "placeholder" in provs else "assumption" if "assumption" in provs else "modeled"
     ids = sorted({sid for item in used for sid in item.get("source_ids", [])})
-    limitations = "Combines prototype embodied, operational energy, household travel and annual grid factors; excludes unprovided fuel, fleet-transition and construction-specific data."
+    limitations = (
+        "Combines prototype materials, operational electricity, household travel and annual grid factors. "
+        "The connected materials proxy covers gross A1–A3 structure, enclosure and foundation only; "
+        "interiors, MEP, appliances, site works, A4–A5, replacements and end-of-life are not quantified. "
+        "No biogenic-storage credit is deducted. Excludes unprovided fuel, fleet-transition and construction-specific data. "
+        "The cumulative range conservatively combines input bands and each year's grid-scenario extrema; "
+        "it may switch grid pathways between years and is not a coherent named-pathway range or confidence interval."
+    )
     extrapolation = "none"
     if grid_path and trajectory_years:
         methods = []
@@ -342,11 +367,11 @@ def _carbon_scenario(embodied: dict | None, energy: dict | None, travel: dict | 
         extrapolation = ";".join(methods) if methods else "none"
     return {"value": central, "low": min(low, central), "high": max(high, central),
             "unit": "kgCO2e/home over analysis period", "provenance": provenance,
-            "evidence_tier": "modeled_scenario", "interval_type": "scenario_range",
+            "evidence_tier": "modeled_scenario", "interval_type": "conservative_input_and_annual_extrema_envelope",
             "geography": "typology and source geography scenario", "source_ids": ids, "as_of": None,
             "partial": True,
-            "components_included": ["upfront embodied estimate", "operational electricity estimate", "household travel with static vehicle factor", "grid electricity emissions"],
-            "components_omitted": ["fuel use/emissions", "future vehicle fleet and electrification trajectory", "EV charging electricity where applicable", "construction-specific bill of quantities"],
+            "components_included": ["A1–A3 structure/enclosure/foundation materials proxy", "operational electricity estimate", "household travel with static vehicle factor", "grid electricity emissions"],
+            "components_omitted": ["interiors/MEP/appliances/site works", "A4–A5 material transport and construction", "material replacements and end-of-life", "fuel use/emissions", "future vehicle fleet and electrification trajectory", "EV charging electricity where applicable", "construction-specific bill of quantities"],
             "limitations": _merge_text(limitations, "Partial carbon screen: fuel and vehicle fleet transition are not modeled; do not present as a complete whole-life carbon total."),
             "confirmation_needed": "Design-specific quantities and energy model; scenario and source review", "analysis_years": count,
             "analysis_start_year": base_year,

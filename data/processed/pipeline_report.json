@@ -1,5 +1,5 @@
 {
-  "config_hash": "e1a443786872",
+  "config_hash": "0b5630e45ee1",
   "sources": {
     "wprdc_assessments": {
       "provenance": "observed",
@@ -119,5 +119,54 @@
         "Current assessment vacancy class does not establish sale-date condition."
       ]
     }
-  }
+  },
+  "parcel_source_config_hash": "e1a443786872",
+  "analysis_refresh_scope": "environment models and declared analysis scenarios; parcel sources preserved",
+  "environment": {
+    "acs_renter_income_bins": {
+      "geographic_estimate": 22233
+    },
+    "county_assessment_zero_fields": {
+      "direct_parcel_fact": 26
+    },
+    "county_sales": {
+      "direct_parcel_fact": 83
+    },
+    "embodied_kgco2e_psf": {
+      "modeled_prototype_lca": 22233
+    },
+    "grid_decarbonization_per_yr": {
+      "derived_scenario_summary": 22233
+    },
+    "grid_kgco2e_by_year": {
+      "regional_scenario": 22233
+    },
+    "grid_kgco2e_per_kwh": {
+      "regional_scenario": 22233
+    },
+    "kgco2e_per_vmt": {
+      "cited_scenario_input": 22233
+    },
+    "occupants_per_home": {
+      "declared_scenario": 22233
+    },
+    "operational_kwh_psf_yr": {
+      "doe_energyplus_prototype_output": 22233
+    },
+    "sewer_overflow_context": {
+      "regional_modeled_fallback": 7285,
+      "direct_sewershed_outfall_match": 14948
+    },
+    "sewer_stress_index": {
+      "regional_modeled_fallback": 7285,
+      "direct_sewershed_outfall_match": 14948
+    },
+    "vmt_per_household_yr": {
+      "geographic_estimate": 22233
+    },
+    "wastewater_gpd_per_person": {
+      "cited_design_reference": 22233
+    }
+  },
+  "environment_runtime_evidence_hash": "82ad2fe0cdaafcee34ab786fc9946d9bfa4357812bfe600644211917966617e6"
 }

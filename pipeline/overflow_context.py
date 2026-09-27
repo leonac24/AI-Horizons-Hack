@@ -21,6 +21,8 @@ from pathlib import Path
 from typing import Any
 from urllib.request import Request, urlopen
 
+from core.artifact_files import replace_text
+
 MODEL_PATH = Path(__file__).resolve().parents[1] / "data" / "models" / "alcosan_overflows.json"
 ALCOSAN_SOURCE_ID = "alcosan_cwp_section4_2018"
 PWSA_SOURCE_ID = "pwsa_combined_sewersheds"
@@ -305,7 +307,7 @@ def _refresh_cli(argv: list[str] | None = None) -> int:
             pdf_path = downloaded_path
         model = _refresh_from_pdf(pdf_path)
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(model, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        replace_text(args.output, json.dumps(model, ensure_ascii=False, indent=2) + "\n")
         metadata = model["metadata"]
         print(
             f"Wrote {len(model['outfalls'])} rows ({metadata['modeled_record_count']} modeled, "

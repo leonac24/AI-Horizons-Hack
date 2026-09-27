@@ -14,6 +14,8 @@ from pathlib import Path
 from statistics import mean as statistics_mean
 from typing import Any
 
+from core.artifact_files import replace_text
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = REPO_ROOT / "data" / "models" / "carbon_prototypes.json"
 ASSET_DIR = REPO_ROOT / "data" / "models" / "carbon_prototypes"
@@ -229,11 +231,11 @@ def write_prototype_model(destination: Path | str = MODEL_PATH) -> dict[str, Any
     model = build_prototype_model()
     output = Path(destination)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(model, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    replace_text(output, json.dumps(model, indent=2, ensure_ascii=False) + "\n")
     return model
 
 
-def build_prototype_inputs(typology_id: str) -> dict[str, Any]:
+def build_prototype_inputs(typology_id: str, *, allow_missing: bool = False) -> dict[str, Any]:
     """Return modeled embodied and operational envelopes for one typology.
 
     The center of the embodied envelope is the explicitly assumed midpoint of
@@ -244,6 +246,8 @@ def build_prototype_inputs(typology_id: str) -> dict[str, Any]:
     try:
         record = data["by_typology"][typology_id]
     except KeyError as exc:
+        if allow_missing:
+            return {}
         raise KeyError(f"unknown housing typology: {typology_id}") from exc
     return json.loads(json.dumps(record))
 
@@ -294,7 +298,8 @@ def _load_model_cached(path: str, mtime_ns: int, size: int) -> dict[str, Any]:
     return data
 
 
-def download_and_extract_doe_outputs(destination: Path | str = ENERGY_EXTRACT_PATH) -> dict[str, Any]:
+def download_and_extract_doe_outputs(destination: Path | str = ENERGY_EXTRACT_PATH,
+                                     *, source_zip: Path | str | None = None) -> dict[str, Any]:
     """Download and extract official DOE 2021 IECC 5A HP end-use output tables.
 
     This is an optional maintainer helper, not used by the application. Network,
@@ -311,10 +316,18 @@ def download_and_extract_doe_outputs(destination: Path | str = ENERGY_EXTRACT_PA
     except ImportError as exc:  # pragma: no cover - maintainer-only workflow
         raise RuntimeError("install beautifulsoup4 to refresh DOE output extracts") from exc
 
-    request = Request(DOE_ZIP_URL, headers={"User-Agent": "Lotline prototype data refresh"})
-    with urlopen(request, timeout=60) as response:
-        package = response.read()
+    if source_zip is not None:
+        package = Path(source_zip).read_bytes()
+    else:
+        request = Request(DOE_ZIP_URL, headers={"User-Agent": "Lotline prototype data refresh"})
+        with urlopen(request, timeout=60) as response:
+            package = response.read()
     package_hash = sha256(package).hexdigest()
+    manifest = _read_json(SOURCES_PATH)
+    expected = next(source["sha256"] for source in manifest["sources"]
+                    if source["id"] == "doe_iecc2021_residential_cz5a_outputs")
+    if package_hash != expected:
+        raise ValueError("DOE package differs from the pinned source; review and curate the source vintage before refreshing")
     rows: list[dict[str, Any]] = []
     with ZipFile(__import__("io").BytesIO(package)) as archive:
         for prototype in ("SF", "MF"):
@@ -364,20 +377,35 @@ def download_and_extract_doe_outputs(destination: Path | str = ENERGY_EXTRACT_PA
                     "conditioned_area_sf": conditioned_area,
                     "electricity_facility_meter_kwh_yr": facility_kwh,
                     "fuel_end_uses_kbtu_yr": fuel_end_uses,
-                    "electricity_kwh_per_conditioned_sf_yr": facility_kwh / conditioned_area,
+                    "electricity_kwh_per_conditioned_sf_yr": round(facility_kwh / conditioned_area, 8),
                 })
+    # The pinned package's curated publication/generation dates and accounting
+    # notes remain valid; only extracted meter, area and fuel rows are rebuilt.
     result = {
+        **_read_json(ENERGY_EXTRACT_PATH),
         "source_id": "doe_iecc2021_residential_cz5a_outputs",
         "source_url": DOE_ZIP_URL,
         "package_sha256": package_hash,
-        "metric_method": (
-            "EnergyPlus Electricity:Facility annual meter (kWh/year) divided by "
-            "Net Conditioned Building Area (ft2). The annual end-use fuel table is "
-            "also retained and checked to confirm that all non-electric energy carriers are zero."
-        ),
         "rows": rows,
     }
     output = Path(destination)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    replace_text(output, json.dumps(result, indent=2) + "\n")
     return result
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--refresh", action="store_true", help="regenerate from pinned source extracts")
+    parser.add_argument("--download-doe", action="store_true", help="re-extract the pinned official DOE package (requires beautifulsoup4)")
+    parser.add_argument("--doe-zip", type=Path, help="re-extract a cached pinned DOE package offline")
+    parser.add_argument("--output", type=Path, default=MODEL_PATH)
+    args = parser.parse_args()
+    if not args.refresh:
+        parser.error("specify --refresh")
+    if args.download_doe or args.doe_zip:
+        download_and_extract_doe_outputs(source_zip=args.doe_zip)
+    model = write_prototype_model(args.output)
+    print(f"Wrote modeled carbon inputs for {len(model['by_typology'])} housing types")

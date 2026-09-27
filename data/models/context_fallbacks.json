@@ -1,0 +1,55 @@
+{
+  "model_id": "lotline:local-donor-fallbacks:v1",
+  "as_of": "2026-09-27",
+  "estimation_source_id": "lotline_context_estimates",
+  "source_sha256": {
+    "data/processed/parcels.json": "39f585da58096a6c9307d53143411e15730c4f3ee68d4d9cf674d3ff6ed3c0cd",
+    "data/processed/parcel_context.jsonl": "61ea1db35e5475b554563a1392d3fb31eae05eb281941ae738a8ae970044bc88"
+  },
+  "assumptions": {
+    "tract_median_household_income": {
+      "value": 65247.0,
+      "low": 32114.5,
+      "high": 103869.0,
+      "sample_size": 114,
+      "unit": "USD/yr",
+      "source_ids": [
+        "acs_5yr"
+      ],
+      "limitations": "Median of distinct matched Pittsburgh tract medians; donor 10th\u201390th percentiles are a geographic scenario range, not a citywide household median or confidence interval."
+    },
+    "tract_renter_cost_burden_share": {
+      "value": 0.46635,
+      "low": 0.28037999999999996,
+      "high": 0.72981,
+      "sample_size": 117,
+      "unit": "share of renter households",
+      "source_ids": [
+        "acs_5yr"
+      ],
+      "limitations": "Median of distinct matched Pittsburgh tract renter-burden shares; donor 10th\u201390th percentiles describe spatial variability, not the unmatched tract's confidence interval."
+    },
+    "jobs_access_index": {
+      "value": 0.516604787,
+      "low": 0.3018718122,
+      "high": 0.6978039283999999,
+      "sample_size": 263,
+      "unit": "index (regional max = 1)",
+      "source_ids": [
+        "epa_smart_location"
+      ],
+      "limitations": "Median of distinct matched local block-group EPA SLD D5DRI scores; donor range is a geographic proxy for unmatched parcels, not current route-level access."
+    },
+    "lot_depth_to_frontage_ratio": {
+      "value": 3.6363636363636362,
+      "low": 0.7550286636611567,
+      "high": 5.618974802207299,
+      "sample_size": 15718,
+      "unit": "depth / frontage",
+      "source_ids": [
+        "wprdc_assessments"
+      ],
+      "limitations": "Median depth/frontage ratio among matched legal-description dimensions in the vacant-parcel cohort; donor variation is a drawing and form-fit scenario, not legal frontage."
+    }
+  }
+}
