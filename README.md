@@ -323,7 +323,61 @@ can maintain the data without touching code.
 
 ## Team
 
-_TODO: team name, and each member's name, role and affiliation._
+Three people built Lotline during the build window. Who did what below is read
+from the commit history (`git log --no-merges`); everyone also reviewed and
+merged each other's work.
+
+_TODO: team name, affiliations, and Devin's full name._
+
+**Leona Chen** ([@leonac24](https://github.com/leonac24)): project lead,
+frontend and 3D city
+
+- Wrote the first working code: config system, citywide vacant-parcel pipeline,
+  evidence engine and API, then the first web app (map picker, compare view, weights and
+  SMAA, work backwards) and the Vercel deploy.
+- Built the 3D simulator: the city on real terrain with rivers, bridges,
+  streets and neighborhood names; the drag-and-drop lot sandbox with live plan
+  analysis and reviewed setbacks drawn as the buildable area; the intro screen;
+  tuck-away panels, a phone layout and touch controls.
+- Zoning and costs: captured Title Nine text, extracted rules for the R-family,
+  H and P districts, and sourced the construction cost, soft cost and grid
+  emissions assumptions.
+- Merged the Claude Code work (see [AI tool disclosure](#ai-tool-disclosure))
+  that added AI lot search, "Ask about this lot", grounded tradeoff
+  explanations, the Next steps tab with AI-drafted outreach, share links and the
+  first-run tour, and moved the LLM provider from Gemini to the Anthropic API.
+
+**Pranav Singhal** ([@s9kt](https://github.com/s9kt)): product direction,
+evidence and data pipeline
+
+- Set the product direction in the first commit: the product-decision record
+  ([.grill/cdc-housing-scenario-comparison.md](.grill/cdc-housing-scenario-comparison.md))
+  that fixed the CDC as the primary user, and the original project brief
+  (`CLAUDE.md`).
+- Built the Laya evidence pipeline (`dev/laya/`, `pipeline/laya_compile.py`):
+  it compiles versioned Pittsburgh zoning sources into a checked-in evidence
+  index with a freshness check and tests. A second stage asks the model for
+  numeric candidates that must quote their source and are never applied
+  automatically.
+- Added `pipeline/enrich_context.py`, which joins 2024 ACS tract income and
+  renter burden, frontage and depth estimated from parcel polygons, and EPA
+  Smart Location Database transit access to every vacant lot, replacing
+  placeholders with sourced values
+  ([docs/PLACEHOLDER_PIPELINE.md](docs/PLACEHOLDER_PIPELINE.md)).
+
+**Devin** (commits as `Devin-M5706`): backend and zoning engine
+
+- Hardened the API: hard requirements before weights, every input limit and
+  route bound taken from config with tests that keep it that way, the parcel-id
+  format in `city.yaml`, and the auditable contract in
+  [docs/BACKEND.md](docs/BACKEND.md).
+- Zoning engine: separate use and dimensional rules, a citywide ADU rule, the
+  height rule, and lot fit from building footprints.
+- The "what to find out" work plan: `core/inquiries.py` turns each parcel's
+  unknowns into questions, who can answer them and what to ask for, and
+  `web/src/lib/leverage.ts` orders them by how much each answer could move the
+  ranking.
+- Wrote the design for adding tax to the evidence layer.
 
 ## Originality
 
