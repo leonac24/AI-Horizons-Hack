@@ -421,7 +421,9 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 .pre-intro .topbar, .pre-intro .strip { transform: translateY(-100%); opacity: 0; }
 .pre-intro .city-panel { transform: translateX(-110%); opacity: 0; }
 .pre-intro .hint-pill { opacity: 0; }
-.shell .viewport .hood-label, .shell .viewport .pin-label { transition: opacity 0.8s ease 1.2s; }
+.shell .viewport .pin-label { transition: opacity 0.8s ease 1.2s; }
+.shell .viewport .hood-label { transition: opacity 0.6s ease; }
+.viewport .hoods-hidden .hood-label { opacity: 0; }
 .pre-intro .viewport .hood-label, .pre-intro .viewport .pin-label, .pre-intro .viewport .engine-pill { opacity: 0 !important; }
 
 /* Help: tiny ? buttons + their popover */
