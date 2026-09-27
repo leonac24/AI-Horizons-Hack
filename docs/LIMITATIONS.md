@@ -6,7 +6,7 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `17226496a2ed`._
+_Auto-generated for config `628e48c1d4fe`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
 - **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 54 districts reviewed).

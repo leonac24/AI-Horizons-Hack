@@ -3,6 +3,7 @@
 // Framework-free; React talks to it through the returned API and callbacks.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { frontage, loadBasemap, makeHoodLabels, makeLots, makeStreets, type BasemapConfig, type HoodLabels, type Lots, type Rect, type Streets } from './basemap'
 import { makeBridge } from './bridges'
 import { loadTerrain, type Terrain } from './terrain'
 import { box, house, makeBuilding, mat, mesh, type BuildingForm } from './typologyMeshes'
@@ -13,6 +14,7 @@ export interface SceneConfig {
   half_extent: number
   rivers: [number, number][][]
   bridges: [string, number, number, string, number][] // name, lat, lon, form, length_m
+  basemap?: BasemapConfig
 }
 
 export interface ParcelPoint {
@@ -237,10 +239,13 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   const parcelY = new Float32Array(parcels.length)
   const dots = new THREE.InstancedMesh(new THREE.CylinderGeometry(2.4, 2.4, 1, 8), new THREE.MeshBasicMaterial({ color: '#fff' }), Math.max(1, parcels.length))
   const dotVisible = new Uint8Array(parcels.length).fill(1)
+  // Zoomed in, lots with an outline keep only a small center marker.
+  const outlined = new Uint8Array(parcels.length)
+  let outlineMode = false
   const writeDots = () => {
     parcels.forEach((_p, i) => {
       const [x, z] = parcelXZ[i]
-      const s = dotVisible[i] ? 1 : 0
+      const s = dotVisible[i] ? (outlineMode && outlined[i] ? 0.08 : 1) : 0
       M4.compose(new THREE.Vector3(x, parcelY[i] + 0.8, z), Q, new THREE.Vector3(s, s, s))
       dots.setMatrixAt(i, M4)
     })
@@ -251,7 +256,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   city.add(dots)
 
   // Pins (suggested lots and search hits) with DOM labels.
-  interface Pin { g: THREE.Group; ring: THREE.Mesh; hit: THREE.Mesh; el: HTMLDivElement; lot: PinLot }
+  interface Pin { g: THREE.Group; ring: THREE.Mesh; hit: THREE.Mesh; el: HTMLDivElement; lot: PinLot; w: number; h: number }
   const pins = new Map<string, Pin>()
   let pinList: PinLot[] = []
   const pinGeo = {
@@ -293,7 +298,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     el.append(name, detail)
     el.addEventListener('click', () => opts.onSelectLot?.(lot.id))
     labels.appendChild(el)
-    pins.set(lot.id, { g, ring, hit, el, lot })
+    pins.set(lot.id, { g, ring, hit, el, lot, w: 0, h: 0 })
   }
   function renderPins(): void {
     for (const p of pins.values()) {
@@ -304,8 +309,19 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     pinList.forEach(addPin)
   }
 
-  function buildCity(t: Terrain): void {
+  let streets: Streets | null = null
+  let lots: Lots | null = null
+  let hoods: HoodLabels | null = null
+  let pendingVisible: Set<string> | null = null
+  const groundMeshes: THREE.Mesh[] = []
+  const setLineResolution = (w: number, h: number) => {
+    streets?.setResolution(w, h)
+    lots?.setResolution(w, h)
+  }
+
+  function buildCity(t: Terrain, base: Awaited<ReturnType<typeof loadBasemap>>): void {
     terrain = t
+    const bm = opts.scene.basemap
     // Water plane at the normal pool; land sits above it.
     const water = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.28, metalness: 0.1 }))
     water.position.y = 0.3
@@ -336,14 +352,20 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, flatShading: true }))
       m.receiveShadow = true
       city.add(m)
+      groundMeshes.push(m)
     }
-    // Hillside canopy on steep slopes, a few yard trees elsewhere.
+    // Orientation layers: real streets, vacant-lot outlines, neighborhood names.
+    if (bm && base.streets) {
+      streets = makeStreets(base.streets, bm, toXZ, heightAt)
+      city.add(streets.group)
+    }
+    // Hillside canopy on steep slopes, a few yard trees elsewhere; none over a street.
     const tpos: [number, number, boolean][] = []
     for (let x = -HALF + 4; x < HALF; x += 9)
       for (let z = -HALF + 4; z < HALF; z += 9) {
         const xx = x + (R() - 0.5) * 7
         const zz = z + (R() - 0.5) * 7
-        if (t.isWater(xx, zz)) continue
+        if (t.isWater(xx, zz) || streets?.near(xx, zz, 4)) continue
         const sl = t.slopeAt(xx, zz)
         if (sl > 0.16 ? R() < 0.38 : R() < 0.025) tpos.push([xx, zz, sl > 0.16])
       }
@@ -358,9 +380,45 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       trees.setColorAt(i, C.set(greens[Math.floor(R() * greens.length)]))
     })
     city.add(trees)
-    // Decorative city blocks — not buildings from data. Taller near the origin (Downtown).
+    if (bm && base.lots) {
+      const pub = new Map(parcels.map((p) => [p.id, p.public]))
+      const made = makeLots(base.lots, (id) => (pub.get(id) ? DOT_PUBLIC : DOT_OTHER), toXZ, heightAt)
+      made.obj.visible = false
+      parcels.forEach((p, i) => (outlined[i] = made.ids.has(p.id) ? 1 : 0))
+      if (pendingVisible) made.setVisible(pendingVisible)
+      city.add(made.obj)
+      lots = made
+    }
+    if (bm && base.hoods) hoods = makeHoodLabels(base.hoods, bm, labels, toXZ, heightAt)
+    setLineResolution(container.clientWidth, container.clientHeight)
+    // Decorative buildings — not buildings from data. Taller near the origin (Downtown).
+    // With street data they line the real streets and stay off vacant lots.
+    if (streets) {
+      const lotCell = new Set(parcelXZ.map(([x, z]) => `${Math.round(x / 2)},${Math.round(z / 2)}`))
+      const nearLot = (x: number, z: number) => {
+        for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) if (lotCell.has(`${Math.round(x / 2) + a},${Math.round(z / 2) + b}`)) return true
+        return false
+      }
+      const spots = frontage(streets,(x, z) => !inMap(x, z) || t.isWater(x, z) || t.slopeAt(x, z) > 0.3 || nearLot(x, z) || !!lots?.at(x, z), R)
+      const houses = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), mat('#ffffff'), Math.max(1, spots.length))
+      houses.castShadow = true
+      houses.receiveShadow = true
+      const hcol = ['#fff1d6', '#ffd9cc', '#d6ecff', '#e2f7d0', '#ffffff', '#fff0a8', '#ffb4a2', '#c9d6ff']
+      const tcol = ['#ff5d5d', '#ff9f1c', '#ffd23f', '#1f8bff', '#9b7bff', '#13c2c2', '#ffffff', '#ffe9b8']
+      const E = new THREE.Euler()
+      const rq = new THREE.Quaternion()
+      spots.forEach(([x, z, w, d, ang], i) => {
+        const core = Math.max(0, 1 - Math.hypot(x - 10, z + 5) / 55)
+        const s = 1 + core * 1.2
+        const h = 1.2 + R() * 1.6 + core * core * (25 + R() * 60)
+        M4.compose(new THREE.Vector3(x, heightAt(x, z) - 0.3, z), rq.setFromEuler(E.set(0, -ang, 0)), new THREE.Vector3(w * s, h, d * s))
+        houses.setMatrixAt(i, M4)
+        houses.setColorAt(i, C.set(core > 0.05 ? tcol[Math.floor(R() * tcol.length)] : hcol[Math.floor(R() * hcol.length)]))
+      })
+      city.add(houses)
+    }
     const cells: [number, number][] = []
-    for (let x = -HALF + 20; x <= HALF - 20; x += 22)
+    if (!streets) for (let x = -HALF + 20; x <= HALF - 20; x += 22)
       for (let z = -HALF + 20; z <= HALF - 20; z += 22) {
         if (R() < 0.3) continue
         if (t.isWater(x, z) || t.isWater(x + 12, z) || t.isWater(x - 12, z) || t.isWater(x, z + 12) || t.isWater(x, z - 12)) continue
@@ -474,7 +532,10 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     renderPins()
     loading.remove()
   }
-  void loadTerrain(opts.dataBase, opts.scene.rivers.map((r) => r.map(([lo, la]) => toXZ(lo, la))), HALF).then(buildCity)
+  void Promise.all([
+    loadTerrain(opts.dataBase, opts.scene.rivers.map((r) => r.map(([lo, la]) => toXZ(lo, la))), HALF),
+    loadBasemap(opts.dataBase),
+  ]).then(([t, b]) => buildCity(t, b))
 
   // ---------- lot ----------
   let lotScene: { scene: THREE.Scene; W: number; D: number } | null = null
@@ -680,7 +741,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   let mode: 'city' | 'lot' = 'city'
   let scene: THREE.Scene = city
   const setCityLimits = () => {
-    controls.minDistance = 160
+    controls.minDistance = 45
     controls.maxDistance = 1700
   }
   const setLotLimits = () => {
@@ -690,7 +751,6 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   camera.position.set(...(cityView()[0] as [number, number, number]))
   controls.target.set(...(cityView()[1] as [number, number, number]))
   setCityLimits()
-
   // ---------- pointer ----------
   function setNdc(cx: number, cy: number): DOMRect {
     const r = canvas.getBoundingClientRect()
@@ -732,6 +792,12 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     return best
   }
   const pinHits = () => [...pins.values()].map((p) => p.hit)
+  /** Vacant lot whose outline contains the terrain point under the cursor. */
+  function lotUnder(cx: number, cy: number): string | null {
+    if (!lots || !outlineMode) return null
+    const g = pick(cx, cy, groundMeshes)
+    return g ? lots.at(g.point.x, g.point.z) : null
+  }
 
   let drag: Drag | null = null
   function startGhost(typ: string, rot: number, uid: string | null): void {
@@ -837,7 +903,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     if (!still) return
     if (mode === 'city') {
       const h = pick(e.clientX, e.clientY, pinHits())
-      const id = (h?.object.userData.lotId as string | undefined) ?? nearestParcel(e.clientX, e.clientY)
+      const id = (h?.object.userData.lotId as string | undefined) ?? lotUnder(e.clientX, e.clientY) ?? nearestParcel(e.clientX, e.clientY)
       if (id) opts.onSelectLot?.(id)
     } else if (!drag) select(null)
   }
@@ -892,6 +958,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     const h = container.clientHeight
     if (!w || !h) return
     renderer.setSize(w, h, false)
+    setLineResolution(w, h)
     camera.aspect = w / h
     camera.updateProjectionMatrix()
   })
@@ -919,6 +986,17 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     if (mode === 'city') {
       const w = container.clientWidth
       const h = container.clientHeight
+      const dist = camera.position.distanceTo(controls.target)
+      streets?.update(dist)
+      if (lots) {
+        const on = dist < (opts.scene.basemap?.lots.outline_distance ?? 0)
+        lots.obj.visible = on
+        if (on !== outlineMode) {
+          outlineMode = on
+          writeDots()
+        }
+      }
+      const taken: Rect[] = []
       for (const [id, p] of pins) {
         p.ring.rotation.z = now / 900
         const s = id === selLot ? 1.25 + Math.sin(now / 250) * 0.1 : 1
@@ -926,8 +1004,17 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
         v3.set(p.g.position.x, p.g.position.y + 78, p.g.position.z).project(camera)
         const on = v3.z < 1
         p.el.style.display = on ? 'block' : 'none'
-        if (on) p.el.style.transform = `translate(${(v3.x * 0.5 + 0.5) * w}px, ${(-v3.y * 0.5 + 0.5) * h}px) translate(-50%,-100%)`
+        if (!on) continue
+        const sx = (v3.x * 0.5 + 0.5) * w
+        const sy = (-v3.y * 0.5 + 0.5) * h
+        p.el.style.transform = `translate(${sx}px, ${sy}px) translate(-50%,-100%)`
+        if (!p.w) {
+          p.w = p.el.offsetWidth
+          p.h = p.el.offsetHeight
+        }
+        taken.push({ x0: sx - p.w / 2, y0: sy - p.h, x1: sx + p.w / 2, y1: sy })
       }
+      hoods?.update(camera, w, h, taken)
     } else if (warnSet.size) {
       const o = 0.45 + 0.5 * (0.5 + 0.5 * Math.sin(now / 220))
       for (const uid of warnSet) {
@@ -1004,6 +1091,8 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     setVisibleParcels(ids) {
       parcels.forEach((p, i) => (dotVisible[i] = !ids || ids.has(p.id) ? 1 : 0))
       writeDots()
+      pendingVisible = ids
+      lots?.setVisible(ids)
     },
     setPins(list) {
       pinList = list
@@ -1049,6 +1138,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       window.removeEventListener('pointerup', onWinUp)
       window.removeEventListener('keydown', onKey)
       controls.dispose()
+      hoods?.dispose()
       renderer.dispose()
       container.innerHTML = ''
     },
