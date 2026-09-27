@@ -271,3 +271,14 @@ def test_public_revenue_is_not_a_restatement_of_another_criterion(cfg, lot):
                 worst = (r, c.id, str(p.get("id")))
     assert checked > 0
     assert worst[0] < max_r, f"{new.id} vs {worst[1]}: |r|={worst[0]:.4f} on parcel {worst[2]}"
+
+
+# --- API ---------------------------------------------------------------------------------
+def test_unknowns_lists_unreviewed_tax_terms():
+    from fastapi.testclient import TestClient
+
+    from server.app import app
+
+    u = TestClient(app).get("/api/unknowns").json()
+    assert "unreviewed_tax_terms" in u
+    assert all({"id", "label"} <= set(t) for t in u["unreviewed_tax_terms"])

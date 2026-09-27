@@ -310,6 +310,8 @@ def unknowns() -> dict:
             {"id": k, "name": s.name, "note": s.note} for k, s in cfg.sources.sources.items() if s.verified is False],
         "unreviewed_districts": [
             {"district": d, "vacant_parcels": n} for d, n in by_district.most_common() if d not in reviewed],
+        "unreviewed_tax_terms": [
+            {"id": a.id, "label": a.label, "note": a.note} for a in cfg.tax.abatements if not a.reviewed],
         "vacant_parcels": total,
         "share_covered_by_reviewed_rules": round(covered / total, 4),
         "pipeline": json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None,

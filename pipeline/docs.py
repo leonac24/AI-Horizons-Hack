@@ -62,6 +62,17 @@ def limitations_auto(cfg) -> str:
     placeholders = [k for k, a in cfg.assumptions.items() if a.provenance == "placeholder"]
     unverified = [s.name for s in cfg.sources.sources.values() if s.verified is False]
     top_unreviewed = [f"{d} ({n:,})" for d, n in by_district.most_common() if d not in reviewed][:12]
+    tax_unreviewed = [a.label for a in cfg.tax.abatements if not a.reviewed]
+    comps_path = ROOT / cfg.tax.comps.file
+    comps = json.loads(comps_path.read_text(encoding="utf-8")) if comps_path.exists() else None
+    if comps:
+        cov = "; ".join(f"{tid}: {len(t['neighborhoods'])} neighborhoods"
+                        + ("" if t["citywide"] else ", no citywide row")
+                        for tid, t in comps["by_typology"].items())
+        comps_line = (f"- **Assessment comps (buildings since {comps['built_since_year']}, at least "
+                      f"{comps['min_comps']} per neighborhood):** {cov}.")
+    else:
+        comps_line = "- **Assessment comps:** not built; per-home assessed values are placeholders."
     return "\n".join([
         START,
         f"_Auto-generated for config `{cfg.hash}`._",
@@ -81,6 +92,9 @@ def limitations_auto(cfg) -> str:
         (f"- **2018 PWSA combined sewersheds:** {counts.get('combined_sewershed_matched', 0):,} "
          "indexed lots have a point match."),
         f"- **Sources not yet connected ({len(unverified)}):** {', '.join(unverified) or 'none'}.",
+        (f"- **Tax terms not yet reviewed ({len(tax_unreviewed)}):** {', '.join(tax_unreviewed) or 'none'}. "
+         "Millage and homestead figures stay placeholders until sourced (listed above)."),
+        comps_line,
         END,
     ])
 
