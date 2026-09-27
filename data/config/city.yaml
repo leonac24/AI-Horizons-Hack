@@ -92,6 +92,10 @@ parcels:
   # Whitespace-tolerant: the county writes "1st Ward  - PITTSBURGH" with two
   # spaces and the other wards with one (checked 2026-09-26).
   municipality_pattern: "Ward\\s+-\\s+PITTSBURGH$"
+  # The word to ask the datastore's full-text search for so it returns only
+  # city rows of a large table server-side (pipeline/build_comps.py); the
+  # pattern above is still applied to what comes back.
+  municipality_search_term: PITTSBURGH
   # What counts as "vacant" (decision 2026-09-26: vacant land use classes only).
   vacant_use_field: USEDESC
   vacant_use_values:

@@ -28,25 +28,22 @@ def build(cfg: Config) -> dict:
     comps = cfg.tax.comps
     use_col = next(k for k, v in comps.fields.items() if v == "use_class")
     muni_col = pc["municipality_field"]
-    muni = re.compile(pc["municipality_pattern"])
-    # The county table is large and WPRDC resets deep offsets, so the pull is split
-    # into one small query per (use class, city municipality). Each caches on its
-    # own; a dropped connection costs one small query, not the table.
-    table_all = CkanDatastore(pc["assessments_source"], list(comps.fields))
-    munis = [m for m in table_all.distinct_values(cfg, muni_col) if muni.search(m)]
-    if not munis:
-        raise SystemExit(f"no values of {muni_col} match city.yaml municipality_pattern — cannot build comps")
-    log.info("%d city municipalities x %d use classes", len(munis), len(comps.use_classes))
+    # The county table is large and WPRDC resets deep offsets, so each use class is
+    # pulled on its own and the server is asked for city rows only (full-text `q`
+    # on the municipality column). Each query caches on its own; a dropped
+    # connection costs one class, not the table.
     raw_rows: list[dict] = []
     for uc in comps.use_classes:
-        for m in munis:
-            res = CkanDatastore(pc["assessments_source"], list(comps.fields), {use_col: [uc], muni_col: [m]}).fetch(cfg)
-            if not res.ok:
-                raise SystemExit(f"assessments unavailable for {uc!r} in {m!r} — cannot build comps")
-            raw_rows.extend(res.data)
+        res = CkanDatastore(pc["assessments_source"], list(comps.fields), {use_col: [uc]},
+                            q={muni_col: pc["municipality_search_term"]}).fetch(cfg)
+        if not res.ok:
+            raise SystemExit(f"assessments unavailable for use class {uc!r} — cannot build comps")
+        raw_rows.extend(res.data)
     if not raw_rows:
         raise SystemExit("no assessment rows for any declared use class — cannot build comps")
-    df = pd.DataFrame(raw_rows).rename(columns=comps.fields).drop(columns=["municipality"])
+    df = pd.DataFrame(raw_rows).rename(columns=comps.fields)
+    muni = re.compile(pc["municipality_pattern"])
+    df = df[df["municipality"].fillna("").str.contains(muni)].drop(columns=["municipality"])
 
     cf = pc["centroid_fields"]
     cent = CkanDatastore(pc["centroids_source"], list(cf), pc["centroids_filter"]).fetch(cfg)

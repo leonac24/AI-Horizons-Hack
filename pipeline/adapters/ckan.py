@@ -13,7 +13,9 @@ from core.config import ROOT, Config
 from pipeline.adapters.base import AdapterResult, log, placeholder
 
 RAW_DIR = ROOT / "data" / "raw"
-PAGE = 32000  # WPRDC datastore_search max page size
+# Well under WPRDC's 32,000-row cap on purpose: smaller pages keep offsets shallow,
+# and the datastore resets connections on deep offsets into large tables.
+PAGE = 10000
 TIMEOUT = 120
 # WPRDC resets long paged pulls now and then. A page is retried with backoff
 # so one reset costs a page, not the whole table.
@@ -40,37 +42,25 @@ def _get(url: str, params: dict | None, source_id: str, what: str) -> requests.R
 class CkanDatastore:
     """Rows from a datastore table, with only the requested fields."""
 
-    def __init__(self, source_id: str, fields: list[str], filters: dict | None = None):
+    def __init__(self, source_id: str, fields: list[str], filters: dict | None = None,
+                 q: dict[str, str] | None = None):
+        """`filters` are exact matches per column; `q` is CKAN's per-column full-text
+        search ({column: word}), the only server-side way to ask for rows whose
+        text column *contains* a word."""
         self.source_id = source_id
         self.fields = fields
         self.filters = filters or {}
+        self.q = q or {}
 
     def describe(self) -> str:
-        return f"CKAN datastore {self.source_id} fields={self.fields} filters={self.filters}"
-
-    def distinct_values(self, config: Config, field: str, page: int = 100) -> list[str]:
-        """Every distinct value of one column, paged in small sorted batches. Lets a
-        caller split a large pull into shallow per-value queries, which the WPRDC
-        datastore serves reliably where deep offsets get reset."""
-        src = config.sources.sources[self.source_id]
-        url = f"{config.sources.ckan_api}/datastore_search"
-        out: list[str] = []
-        offset = 0
-        while True:
-            params = {"resource_id": src.resource_id, "fields": field, "distinct": "true", "sort": field,
-                      "limit": page, "offset": offset}
-            recs = _get(url, params, self.source_id, f"distinct {field} at offset {offset}").json()["result"]["records"]
-            out.extend(str(r[field]) for r in recs if r.get(field) is not None)
-            if len(recs) < page:
-                return out
-            offset += page
+        return f"CKAN datastore {self.source_id} fields={self.fields} filters={self.filters} q={self.q}"
 
     def fetch(self, config: Config) -> AdapterResult:
         src = config.sources.sources[self.source_id]
         # Two callers can read the same table with different columns or filters
         # (the parcel index wants vacant lots; comps want built ones). A cache keyed
         # on the source alone would hand the second caller the first one's rows.
-        sig = hashlib.sha256(json.dumps([sorted(self.fields), self.filters], sort_keys=True).encode()).hexdigest()[:8]
+        sig = hashlib.sha256(json.dumps([sorted(self.fields), self.filters, self.q], sort_keys=True).encode()).hexdigest()[:8]
         cache = RAW_DIR / f"{self.source_id}-{sig}.json"
         if cache.exists():
             log.info("%s: using cached %s", self.source_id, cache.name)
@@ -88,6 +78,8 @@ class CkanDatastore:
                 }
                 if self.filters:
                     params["filters"] = json.dumps(self.filters)
+                if self.q:
+                    params["q"] = json.dumps(self.q)
                 result = _get(url, params, self.source_id, f"page at offset {offset}").json()["result"]
                 batch = result["records"]
                 rows.extend(batch)
