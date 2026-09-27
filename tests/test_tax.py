@@ -172,3 +172,102 @@ def test_homestead_exclusion_applies_to_owner_tenure_only(config_copy, lot):
     renter = scenario_tax(cfg, S, typ.model_copy(update={"tenure_default": "renter"}), 2, lot, comps)
     assert owner.metrics[HOME_TAX].value < renter.metrics[HOME_TAX].value
     assert owner.metrics[STABILIZED].value < renter.metrics[STABILIZED].value
+
+
+# --- tension flags ------------------------------------------------------------------
+from core.engine import tension_flags
+from core.metrics import Metric
+
+
+def _m(mid, v):
+    return Metric(id=mid, label=mid, value=v, low=v, high=v, unit="x", provenance="modeled", sourceIds=[])
+
+
+def test_tension_flag_fires_only_when_top_and_bottom_coincide(cfg):
+    flag = cfg.tension_flags[0]
+    crit = {c.id: c for c in cfg.criteria}
+    top, bottom = crit[flag.top_on], crit[flag.bottom_on[0]]
+    others = [c for c in cfg.criteria if c.id not in (top.id, bottom.id)]
+
+    def option(top_v, bottom_v):
+        ms = {top.metric_id: _m(top.metric_id, top_v), bottom.metric_id: _m(bottom.metric_id, bottom_v)}
+        for c in others:
+            ms[c.metric_id] = _m(c.metric_id, 1.0)
+        return ms
+
+    hi_top, lo_top = (10, 1) if top.direction == "higher_is_better" else (1, 10)
+    worst_bottom, best_bottom = (10, 1) if bottom.direction == "lower_is_better" else (1, 10)
+
+    got = tension_flags(cfg, {"a": option(hi_top, worst_bottom), "b": option(lo_top, best_bottom)})
+    assert [(f.id, f.typology_id, f.bottom_on) for f in got] == [(flag.id, "a", [bottom.id])]
+    assert tension_flags(cfg, {"a": option(hi_top, best_bottom), "b": option(lo_top, worst_bottom)}) == []
+    assert tension_flags(cfg, {"a": option(hi_top, worst_bottom)}) == []
+
+
+def test_analysis_carries_tension_flags(cfg, lot):
+    a = analyze(cfg, lot)
+    assert isinstance(a.tension_flags, list)
+    for f in a.tension_flags:
+        assert f.typology_id in a.rankable_typology_ids
+
+
+# --- mixed plans -----------------------------------------------------------------------
+def test_plan_sums_revenue_across_building_types(cfg, lot):
+    from core.plan import Placement, analyze_plan
+
+    a, b = cfg.typologies[0], cfg.typologies[-1]
+    r = analyze_plan(cfg, lot, [Placement(typology_id=a.id, count=1), Placement(typology_id=b.id, count=1)])
+    parts = analyze(cfg, lot, homes_override={a.id: a.building.homes, b.id: b.building.homes})
+    assert r.metrics[REVENUE].value == pytest.approx(sum(s.metrics[REVENUE].value for s in parts.scenarios), rel=1e-6)
+    assert r.revenue.value[-1] == pytest.approx(sum(s.revenue.value[-1] for s in parts.scenarios), abs=2)
+    assert len(r.revenue.years) == len(r.carbon.years)
+
+
+# --- independence guardrail ------------------------------------------------------------
+import json
+import random
+
+import numpy as np
+
+from core.config import ROOT
+from core.scoring import normalize
+
+PARCELS = ROOT / "data" / "processed" / "parcels.json"
+
+
+def _lots(lot):
+    if PARCELS.exists():
+        parcels = list(json.loads(PARCELS.read_text(encoding="utf-8"))["parcels"].values())
+        return random.Random(7).sample(parcels, 60)
+    return [{**lot, "lot_area_sf": a, "land_value_usd": v}
+            for a, v in ((3000, 5000), (5000, 10000), (9000, 30000), (20000, 80000))]
+
+
+def test_public_revenue_is_not_a_restatement_of_another_criterion(cfg, lot):
+    """Per lot, not pooled: the `opportunity` failure was a within-lot cancellation,
+    and pooling across lots would average it away."""
+    max_r = cfg.assumption("criterion_independence_max_corr").value
+    new = next(c for c in cfg.criteria if c.metric_id == REVENUE)
+    others = [c for c in cfg.criteria if c.id != new.id]
+    crits = [new, *others]
+    hib = np.array([c.direction == "higher_is_better" for c in crits])
+    worst: tuple[float, str, str] = (0.0, "", "")
+    checked = 0
+    for p in _lots(lot):
+        rows = [s for s in analyze(cfg, p).scenarios if s.eligible and s.form_fits]
+        if len(rows) < 3:
+            continue
+        n = normalize(np.array([[s.metrics[c.metric_id].value for c in crits] for s in rows]), hib)
+        x = n[:, 0]
+        if x.max() == x.min():
+            continue
+        for j, c in enumerate(others, start=1):
+            y = n[:, j]
+            if y.max() == y.min():
+                continue
+            r = abs(float(np.corrcoef(x, y)[0, 1]))
+            checked += 1
+            if r > worst[0]:
+                worst = (r, c.id, str(p.get("id")))
+    assert checked > 0
+    assert worst[0] < max_r, f"{new.id} vs {worst[1]}: |r|={worst[0]:.4f} on parcel {worst[2]}"

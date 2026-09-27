@@ -19,11 +19,13 @@ from pydantic import BaseModel
 from core.config import Config
 from core.engine import CarbonSeries, HouseholdCheck, analyze
 from core.metrics import Metric, Samples, weakest
+from core.tax import RevenueSeries
 from core.zoning import Check, ZoningResult, evaluate, load_rules
 
 # Which metrics add up across building types; everything else is a per-home
-# measure and is averaged by homes.
-SUMMED = {"demand.units_serving_need", "infrastructure.load_index", "units.count"}
+# measure and is averaged by homes. Revenue is what the whole lot yields.
+SUMMED = {"demand.units_serving_need", "infrastructure.load_index", "units.count",
+          "revenue.public_horizon", "revenue.annual_stabilized"}
 # Most restrictive first. Roles come from zoning.yaml, so no status id appears here.
 ROLE_ORDER = ["prohibited", "unreviewed", "variance", "discretionary", "permitted"]
 
@@ -43,6 +45,7 @@ class PlanResult(BaseModel):
     failed_typologies: list[str]  # building types whose use is prohibited here
     households: list[HouseholdCheck]
     carbon: CarbonSeries
+    revenue: RevenueSeries
     eligible: bool
     ineligible_reason: str | None = None
     notes: list[str] = []
@@ -112,6 +115,14 @@ def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> Plan
     carbon = CarbonSeries(years=series[0][1].years, value=wavg("value"), low=wavg("low"), high=wavg("high"),
                           provenance=weakest(*(c.provenance for _, c in series)))
 
+    # Revenue: the lot's total, so the per-type series add.
+    rev = [by_id[tid].revenue for tid in homes]
+    def rsum(attr: str) -> list[float]:
+        return [round(sum(getattr(r, attr)[i] for r in rev)) for i in range(len(rev[0].years))]
+    revenue = RevenueSeries(years=rev[0].years, value=rsum("value"), low=rsum("low"), high=rsum("high"),
+                            provenance=weakest(*(r.provenance for r in rev)),
+                            abated_years=max(r.abated_years for r in rev))
+
     # Households: can they afford the plan's average home?
     cost = metrics["affordability.monthly_cost"]
     households = []
@@ -130,5 +141,5 @@ def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> Plan
     return PlanResult(
         units=total, by_typology=counts, homes_by_typology=homes, metrics=metrics, zoning=zoning,
         zoning_by_typology=zres, failed_typologies=failed, households=households, carbon=carbon,
-        eligible=not failed, ineligible_reason=zoning.status_label if failed else None, notes=notes,
+        revenue=revenue, eligible=not failed, ineligible_reason=zoning.status_label if failed else None, notes=notes,
     )

@@ -44,6 +44,18 @@ class SiteFact(BaseModel):
     note: str
 
 
+class TensionFlagResult(BaseModel):
+    """One option best on one criterion and worst on another (criteria.yaml
+    tension_flags). Single-criterion ranks involve no weights: this is evidence."""
+
+    id: str
+    label: str
+    message: str
+    typology_id: str
+    top_on: str
+    bottom_on: list[str]
+
+
 class Scenario(BaseModel):
     typology_id: str
     units: int
@@ -85,6 +97,7 @@ class Analysis(BaseModel):
     # Server-side answer to "what may be ranked". The browser scores only these.
     rankable_typology_ids: list[str] = []
     excluded_typology_ids: list[str] = []
+    tension_flags: list[TensionFlagResult] = []
 
 
 def _hazard_flags(cfg: Config, parcel: dict) -> dict[str, bool | None]:
@@ -381,6 +394,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                                   eligible=not zres.disqualified,
                                   ineligible_reason=zres.disqualified_reason))
 
+    flags = tension_flags(cfg, {s.typology_id: s.metrics for s in scenarios if s.eligible and s.form_fits})
     n_placeholder = sum(m.provenance == "placeholder" for m in site_context) + sum(
         f.provenance == "placeholder" for f in site_facts) + sum(
         m.provenance == "placeholder" for s in scenarios for m in s.metrics.values())
@@ -388,7 +402,35 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                     site_context=site_context, site_facts=site_facts, scenarios=scenarios,
                     placeholder_count=n_placeholder,
                     rankable_typology_ids=[s.typology_id for s in scenarios if s.eligible],
-                    excluded_typology_ids=[s.typology_id for s in scenarios if not s.eligible])
+                    excluded_typology_ids=[s.typology_id for s in scenarios if not s.eligible],
+                    tension_flags=flags)
+
+
+def tension_flags(cfg: Config, metrics_by_option: dict[str, dict[str, Metric]]) -> list[TensionFlagResult]:
+    """Options best on `top_on` that are also worst on any of `bottom_on`, for
+    every flag criteria.yaml declares. Needs at least two options to compare."""
+    if len(metrics_by_option) < 2:
+        return []
+    crit = {c.id: c for c in cfg.criteria}
+
+    def best_worst(cid: str) -> tuple[set[str], set[str]]:
+        c = crit[cid]
+        vals = {oid: m[c.metric_id].value for oid, m in metrics_by_option.items()}
+        lo, hi = min(vals.values()), max(vals.values())
+        if lo == hi:
+            return set(), set()
+        best_v, worst_v = (hi, lo) if c.direction == "higher_is_better" else (lo, hi)
+        return {o for o, v in vals.items() if v == best_v}, {o for o, v in vals.items() if v == worst_v}
+
+    out: list[TensionFlagResult] = []
+    for f in cfg.tension_flags:
+        best, _ = best_worst(f.top_on)
+        for oid in sorted(best):
+            hit = [cid for cid in f.bottom_on if oid in best_worst(cid)[1]]
+            if hit:
+                out.append(TensionFlagResult(id=f.id, label=f.label, message=f.message, typology_id=oid,
+                                             top_on=f.top_on, bottom_on=hit))
+    return out
 
 
 def work_backwards(cfg: Config, parcel: dict, typology_id: str, units: int, target_ami_pct: float) -> dict:
