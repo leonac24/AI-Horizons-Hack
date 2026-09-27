@@ -3,8 +3,8 @@ import { api } from '../api'
 import { PLAN_ID, type Option, type Ranking } from '../lib/plan'
 import type { Placement } from '../three/engine'
 import type { Analysis, Config, Explanation, Unknowns, WorkBackwardsResult } from '../types'
-import { fmt, ROLE_COLOR, roleOf, usd } from '../lib/format'
-import { MetricBox, ProvTag } from './ui'
+import { ROLE_COLOR, roleOf, usd } from '../lib/format'
+import { MetricBox, ProvTag, SourceRefs } from './ui'
 
 export type Tab = 'compare' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
 const TABS: [Tab, string][] = [
@@ -40,7 +40,7 @@ export function AnalysisPanel(p: Props) {
     <section className="panel" style={{ top: L.pTop, right: L.pRight, bottom: L.pBottom, left: L.pLeft, width: L.pWidth, height: L.pHeight, borderRadius: L.pRadius }}>
       <div className="tabs">
         {TABS.map(([id, label]) => (
-          <button key={id} className={p.tab === id ? 'on' : ''} onClick={() => p.setTab(id)}>
+          <button key={id} className={`tab-${id} ${p.tab === id ? 'on' : ''}`} onClick={() => p.setTab(id)}>
             {label}
           </button>
         ))}
@@ -99,6 +99,15 @@ function CompareTab(p: Props) {
             </span>
             {par.public && <span className="pub-badge">publicly held</span>}
           </div>
+          <div className="dim small">
+            Confirm this lot against{' '}
+            {config.city.zoning_links.map((id, index) => {
+              const source = config.sources.sources[id]
+              return source?.url ? <span key={id}>{index > 0 ? ' · ' : ''}<a href={source.url} target="_blank" rel="noreferrer">{source.name}</a></span> : null
+            })}
+            {typeof par.zoning_code_url === 'string' && par.zoning_code_url && <span> · <a href={par.zoning_code_url} target="_blank" rel="noreferrer">district code section</a></span>}
+            . The mapped base district does not establish what can be built.
+          </div>
           {analysis.placeholder_count > 0 && (
             <div className="hatched note-box small">
               {analysis.placeholder_count} values for this lot are placeholders. {config.app.placeholder_notice}
@@ -150,13 +159,13 @@ function CompareTab(p: Props) {
         <div className="col tight">
           {ranking.ranked.map((o, i) => (
             <div key={o.id} className={`rank-row ${o.isPlan ? 'mine' : ''}`}>
-              <span className="rank-n">{i + 1}</span>
+              <span className={`medal m${Math.min(i, 3)}`}>{i + 1}</span>
               <span className="swatch" style={{ background: o.color }} />
               <span className="rank-label">
                 {o.label} <span className="dim small">· {o.units} homes</span>
               </span>
               <span className="rank-score">{ranking.score[o.id].toFixed(2)}</span>
-              {o.isPlan ? <span className="yours">yours</span> : <button className="place-btn" onClick={() => o.placements && p.onPlace(o.placements)}>Place</button>}
+              {o.isPlan ? <span className="yours">yours</span> : <button className="go-btn sm" onClick={() => o.placements && p.onPlace(o.placements)}>Place</button>}
             </div>
           ))}
           {ranking.ranked.length === 0 && (
@@ -205,7 +214,7 @@ function CompareTab(p: Props) {
         </div>
         <div>
           <button
-            className="solid-btn"
+            className="go-btn"
             disabled={loading}
             onClick={() => {
               setLoading(true)
@@ -252,13 +261,13 @@ function CompareTab(p: Props) {
               {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft
             </strong>
           </div>
-          {analysis.site_context.map((m) => (
-            <div key={m.id} className={`mbox prov-${m.provenance}`} title={m.note ?? undefined}>
-              <div className="mbox-head">
-                <span className="mbox-label">{m.label}</span>
-                <ProvTag p={m.provenance} />
-              </div>
-              <strong>{fmt(m.value, m.unit)}</strong>
+          {analysis.site_context.map((m) => <MetricBox key={m.id} m={m} sources={config.sources.sources} />)}
+          {analysis.site_facts.map((fact) => (
+            <div key={fact.id} className={`mbox prov-${fact.provenance}`}>
+              <div className="mbox-head"><span className="mbox-label">{fact.label}</span><ProvTag p={fact.provenance} /></div>
+              <strong>{fact.value}</strong>
+              <div className="dim small">{fact.note}</div>
+              <SourceRefs ids={fact.sourceIds} sources={config.sources.sources} provenance={fact.provenance} />
             </div>
           ))}
         </div>
@@ -292,7 +301,7 @@ function Households({ config, pool }: Props) {
   const cols = pool.filter((o) => o.fits)
   const plan = cols.find((o) => o.isPlan)
   const ordered = plan ? [plan, ...cols.filter((o) => !o.isPlan)] : cols
-  const V = { yes: ['●', 'Yes', '#5fd49a'], maybe: ['◐', 'Maybe', '#ffc53d'], no: ['○', 'No', '#ff7a5c'] } as const
+  const V = { yes: ['●', 'Yes', '#2fd06b'], maybe: ['◐', 'Maybe', '#ffb800'], no: ['○', 'No', '#ff7a45'] } as const
   return (
     <div>
       <div className="h-tab">Could this household afford it?</div>
@@ -375,14 +384,14 @@ function Carbon({ pool, year, setYear, config }: Props) {
           <svg viewBox="0 0 360 200" className={`chart prov-${prov}`}>
             {[0, 0.25, 0.5, 0.75, 1].map((k) => (
               <g key={k}>
-                <line x1={40} x2={352} y1={Y(vmax * k)} y2={Y(vmax * k)} stroke="#212b34" strokeDasharray="2 4" />
-                <text x={34} y={Y(vmax * k) + 3} fill="#6b7985" fontSize={9} textAnchor="end" fontFamily="Chakra Petch">
+                <line x1={40} x2={352} y1={Y(vmax * k)} y2={Y(vmax * k)} stroke="#1f3a5a" strokeDasharray="2 4" />
+                <text x={34} y={Y(vmax * k) + 3} fill="#7d9cc0" fontSize={9} textAnchor="end" fontFamily="Fredoka">
                   {Math.round(vmax * k)}
                 </text>
               </g>
             ))}
             {[0, Math.round(last / 3), Math.round((2 * last) / 3), last].map((t) => (
-              <text key={t} x={X(t)} y={190} fill="#6b7985" fontSize={9} textAnchor="middle" fontFamily="Chakra Petch">
+              <text key={t} x={X(t)} y={190} fill="#7d9cc0" fontSize={9} textAnchor="middle" fontFamily="Fredoka">
                 yr {t}
               </text>
             ))}
@@ -391,12 +400,12 @@ function Carbon({ pool, year, setYear, config }: Props) {
                 key={l.id}
                 d={l.carbon.value.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('')}
                 fill="none"
-                stroke={l.isPlan ? '#b6f23e' : lighten(l.color)}
+                stroke={l.isPlan ? '#2fd06b' : l.color}
                 strokeWidth={l.isPlan ? 3 : 1.6}
                 strokeDasharray={l.isPlan ? undefined : '5 3'}
               />
             ))}
-            <line x1={X(y)} x2={X(y)} y1={8} y2={176} stroke="#b6f23e" strokeWidth={1} />
+            <line x1={X(y)} x2={X(y)} y1={8} y2={176} stroke="#2fd06b" strokeWidth={1} />
           </svg>
           <label className="year-row">
             <span>
@@ -411,7 +420,7 @@ function Carbon({ pool, year, setYear, config }: Props) {
             .sort((a, b) => a.carbon.value[y] - b.carbon.value[y])
             .map((l) => (
               <div key={l.id} className="read-row">
-                <span className="line-key" style={{ background: l.isPlan ? '#b6f23e' : lighten(l.color) }} />
+                <span className="line-key" style={{ background: l.isPlan ? '#2fd06b' : l.color }} />
                 <span className="grow">{l.label}</span>
                 <span className="num">{Math.round(l.carbon.value[y])} t</span>
               </div>
@@ -425,16 +434,6 @@ function Carbon({ pool, year, setYear, config }: Props) {
       </div>
     </div>
   )
-}
-
-/** Dark typology colors disappear on the dark chart; lift them toward white. */
-function lighten(hex: string): string {
-  const n = parseInt(hex.slice(1), 16)
-  const mix = (c: number) => Math.round(c + (255 - c) * 0.35)
-  const r = mix((n >> 16) & 255)
-  const g = mix((n >> 8) & 255)
-  const b = mix(n & 255)
-  return `rgb(${r},${g},${b})`
 }
 
 function Backwards({ config, analysis, wb, setWb }: Props) {
@@ -554,6 +553,18 @@ function UnknownsTab() {
           ))}
         </div>
       </details>
+      <div className="h-card">Coverage of connected data</div>
+      <p className="muted small">Counts describe indexed vacant lots, not every property in Pittsburgh.</p>
+      {([
+        ['acs_income_values', '2024 ACS tract median income'],
+        ['acs_renter_burden_values', '2024 ACS tract renter cost burden'],
+        ['parcel_polygons_matched', 'County parcel boundaries'],
+        ['fema_classified', 'Matched FEMA flood zones'],
+        ['combined_sewershed_matched', 'Matched combined sewersheds'],
+      ] as const).map(([key, label]) => (
+        <div key={key} className="small unk-row">{label}: {(u.pipeline?.counts?.[key] ?? 0).toLocaleString()} of {u.vacant_parcels.toLocaleString()}</div>
+      ))}
+      <p className="muted small">ACS gaps include special-use tracts. FEMA is a point screen that can miss a hazard on another part of a lot. A missing sewershed match does not establish sewer type or available capacity.</p>
       <div className="h-card">Placeholder numbers ({u.placeholder_assumptions.length})</div>
       {u.placeholder_assumptions.map((a) => (
         <div key={a.id} className="small unk-row">
@@ -569,7 +580,7 @@ function UnknownsTab() {
       ))}
       <div className="h-card">Always true</div>
       {[
-        'Hazard flags are tested at each parcel’s centroid, so part of a lot can be steep or flood-prone without a flag.',
+        'Slope, landslide and undermining flags use parcel centroids. FEMA uses a point inside the parcel boundary where available. These screens can miss a hazard on another part of a lot.',
         'Assessed land values are not market prices.',
         'The 3D city and the neighbors around a lot are stylized; lot positions and dimensions come from county records.',
         'City limits only — other Allegheny County municipalities have their own zoning codes.',

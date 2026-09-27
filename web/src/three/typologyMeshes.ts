@@ -34,9 +34,9 @@ export function box(w: number, h: number, d: number, color: string): THREE.Mesh 
 }
 
 const FLOOR_FT = 10
-const WINDOW = '#2b2826'
-const DOOR = '#4a3326'
-const TRIM = '#8d8a84'
+const WINDOW = '#2e4a66'
+const DOOR = '#3f4f63'
+const TRIM = '#a9b6c4'
 
 function gable(w: number, d: number, rise: number, color: string): THREE.Mesh {
   const s = new THREE.Shape()
@@ -74,9 +74,10 @@ interface HouseOpts {
   roof: string
   flat?: boolean
   doors?: number
+  windows?: boolean
 }
 
-export function house(g: THREE.Group, { w, d, floors, x = 0, z = 0, body, roof, flat = false, doors = 1 }: HouseOpts): void {
+export function house(g: THREE.Group, { w, d, floors, x = 0, z = 0, body, roof, flat = false, doors = 1, windows = true }: HouseOpts): void {
   const h = floors * FLOOR_FT
   const b = box(w, h, d, body)
   b.position.set(x, h / 2, z)
@@ -90,7 +91,7 @@ export function house(g: THREE.Group, { w, d, floors, x = 0, z = 0, body, roof, 
     r.position.set(x, h, z)
     g.add(r)
   }
-  windowsOn(g, w, d, Math.floor(floors), x, z)
+  if (windows) windowsOn(g, w, d, Math.floor(floors), x, z)
   for (let i = 0; i < doors; i++) {
     const dr = box(3.5, 7, 0.7, DOOR)
     const dx = doors === 1 ? w * 0.25 : i ? w * 0.3 : -w * 0.3
@@ -103,11 +104,11 @@ function flatBlock(g: THREE.Group, f: BuildingForm, podium: boolean): void {
   const h = f.stories * FLOOR_FT
   const base = podium ? 12 : 0
   if (podium) {
-    const p = box(f.w, base, f.d, '#3c464b')
+    const p = box(f.w, base, f.d, '#4a5f78')
     p.position.y = base / 2
     g.add(p)
     for (let i = 0, n = Math.max(1, Math.floor(f.w / 16)); i < n; i++) {
-      const sf = box(12, 8, 0.6, '#9ec3cf')
+      const sf = box(12, 8, 0.6, '#9fe0ff')
       sf.position.set(-f.w / 2 + (i + 0.5) * (f.w / n), 5, f.d / 2 + 0.2)
       g.add(sf)
     }
@@ -145,7 +146,7 @@ export function makeBuilding(f: BuildingForm): THREE.Group {
       break
     case 'flat_rowhouse': {
       house(g, { w: f.w, d: f.d, floors: f.stories, flat: true, body: f.body, roof: f.roof })
-      const stoop = box(6, 2, 4, '#b9ad98')
+      const stoop = box(6, 2, 4, '#dfe6ee')
       stoop.position.set(f.w * 0.25, 1, f.d / 2 + 2)
       g.add(stoop)
       break

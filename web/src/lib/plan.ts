@@ -65,7 +65,7 @@ export function buildPool(config: Config, analysis: Analysis, plan: PlanResult |
   })
   if (!plan || plan.units === 0) return pure
   const own: Option = {
-    id: PLAN_ID, label: 'Your plan', short: 'Your plan', color: '#b6f23e', units: plan.units, metrics: plan.metrics,
+    id: PLAN_ID, label: 'Your plan', short: 'Your plan', color: '#2fd06b', units: plan.units, metrics: plan.metrics,
     zoning: plan.zoning, households: plan.households, carbon: plan.carbon, eligible: plan.eligible,
     reason: plan.ineligible_reason, fits: true, isPlan: true, zoningByType: plan.zoning_by_typology, notes: plan.notes,
   }

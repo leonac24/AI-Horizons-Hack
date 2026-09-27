@@ -265,7 +265,7 @@ class Source(_Model):
     name: str
     publisher: str
     url: str | None
-    access: Literal["ckan_datastore", "ckan_download", "manual"]
+    access: Literal["ckan_datastore", "ckan_download", "census_bulk", "arcgis", "manual"]
     resource_id: str | None = None
     vintage: str
     license: str
@@ -334,6 +334,11 @@ class DistrictCode(_Model):
         return code, None
 
 
+class DistrictColor(_Model):
+    prefix: str
+    color: str
+
+
 class ZoningConfig(_Model):
     code: ZoningCode
     rules_file: str
@@ -341,6 +346,7 @@ class ZoningConfig(_Model):
     district_code: DistrictCode
     statuses: dict[str, ZoningStatus]
     extraction_targets: ExtractionTargets
+    district_colors: list[DistrictColor] = []
 
     @model_validator(mode="after")
     def _roles_resolvable(self) -> ZoningConfig:

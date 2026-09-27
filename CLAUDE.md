@@ -118,7 +118,7 @@ and chart series.
 - **Pipeline:** pandas, GeoPandas, shapely, numpy, pydantic, PyYAML. `pipeline/`. Runs locally, never deployed.
 - **Shared engine:** `core/` — config loading, metrics, zoning evaluation, scoring/SMAA mirror. Imported by pipeline, server, and tests.
 - **Backend:** FastAPI (`server/`) — serves data, computes per-parcel metrics on demand, proxies LLM calls. No GeoPandas at runtime.
-- **Frontend:** Vite + React + TypeScript (strict), three.js (3D city diorama + lot sandbox, `web/src/three/`). `web/`.
+- **Frontend:** Vite + React + TypeScript (strict), three.js (3D city on real terrain + lot sandbox, `web/src/three/`). `web/`. Terrain is baked by `pipeline/build_terrain.py` into `web/public/data/terrain.*` — the browser never calls the tile server.
 - **LLM:** provider interface in `server/llm.py`; provider from env `LLM_PROVIDER` (`gemini` | `none`). Gemini free tier via `google-genai`; models from `LLM_MODEL` (runtime) and `ZONING_EXTRACT_MODEL` (offline). `none` → deterministic templates.
 - **SMAA:** TypeScript in the browser for live updates; mirrored in Python for tests.
 - **Hosting:** Vercel. Static web build + `api/index.py` (FastAPI) as a Python function; `/api/*` rewritten to it. Parcel points are a static file on the CDN (`web/public/data/`).
@@ -256,10 +256,10 @@ typologies proving nothing is enumerated in code.
 
 ## 10. UI
 
-Plain language ("Could this household afford it?"). Dark "simulator" look from
-the 3D design handoff (tokens in `web/src/index.css`): lime for the user's plan,
-pink only for the values layer, amber hatch for placeholders. The printed memo
-stays white.
+Plain language ("Could this household afford it?"). Game-like dark theme from the
+v2 3D design handoff (tokens in `web/src/index.css`, Fredoka + Nunito): green for
+the user's plan and primary actions, pink only for the values layer, amber hatch
+for placeholders, chunky buttons. The printed memo stays white.
 
 1. **Pick a lot** — citywide map, vacant lots highlighted. Address / parcel ID search, jump to neighborhood, filters (size, zoning, publicly held, flood, slope, transit access), suggested lots.
 2. **Compare** — all typologies from config by default; the user can pin **up to 3** for side-by-side comparison. Scenario cards with tradeoff receipt, household rows, carbon line, zoning status with citations; SMAA bars; ranking-flip sentence; optional grounded explanation. *(Next: editable scenarios — tenure, affordability mix, parking.)*

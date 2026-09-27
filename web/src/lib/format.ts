@@ -2,12 +2,20 @@ import type { Config } from '../types'
 
 // Zoning path colors keyed by the semantic role from zoning.yaml.
 export const ROLE_COLOR: Record<string, string> = {
-  permitted: '#5fd49a',
-  staff_review: '#a8d98a',
-  discretionary: '#ffc53d',
-  variance: '#ff7a5c',
-  prohibited: '#ff4a3a',
-  unreviewed: '#a9b8c4',
+  permitted: '#2fd06b',
+  // Staff review, no hearing: nearly permitted, so it sits between the
+  // permitted green and the discretionary amber rather than beside either.
+  staff_review: '#8ed14a',
+  discretionary: '#ffb800',
+  variance: '#ff7a45',
+  prohibited: '#ff3b3b',
+  unreviewed: '#9db4cc',
+}
+
+/** Pill color for a zoning district code (zoning.yaml district_colors, first prefix match). */
+export function districtColor(config: Config, code: string | null): string {
+  const hit = config.zoning.district_colors.find((d) => (code ?? '').startsWith(d.prefix))
+  return hit?.color ?? '#1f8bff'
 }
 
 export function roleOf(config: Config, status: string): string {

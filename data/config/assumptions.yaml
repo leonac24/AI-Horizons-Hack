@@ -10,16 +10,16 @@ assumptions:
 
   # --- Income -----------------------------------------------------------------
   ami_4person:
-    value: 100000
-    low: 95000
-    high: 110000
+    value: 110400
+    low: 110400
+    high: 110400
     unit: USD/yr
-    provenance: placeholder
+    provenance: observed
     source: hud_income_limits
     rationale: >-
-      HUD median family income for the Pittsburgh, PA HUD Metro FMR Area. HUD's
-      site blocked scripted download on 2026-09-26; fill in the current fiscal
-      year value by hand from huduser.gov and flip provenance.
+      HUD FY2026 median family income for the Pittsburgh, PA HMFA, area code
+      METRO38300M38300. This is an area baseline, not a household observation.
+      Published income limits use HUD adjustments and are not simple multiples.
 
   household_size_factor:
     # HUD income-limit adjustment relative to a 4-person household.
