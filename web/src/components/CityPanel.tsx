@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import type { ParcelFeature } from '../App'
 import { districtColor } from '../lib/format'
+import { HelpTip } from './help'
 import { MARKER_COLORS } from '../three/engine'
 import type { Config, ParcelSummary } from '../types'
 
@@ -46,11 +47,18 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
     <>
       <aside className="city-panel">
         <div className="cp-hero">
-          <div className="h-title">Pick a lot</div>
+          <div className="h-title">Pick a lot<HelpTip id="pick_lot" /></div>
           <p>Every vacant lot in the City of Pittsburgh is on the map. Click one, search an address or parcel ID, or start from a suggested lot.</p>
         </div>
         <div className="cp-head">
-          {aiBox}
+          {aiBox && (
+            <div data-tour="ai-search">
+              <div className="eyebrow cp-label">Find lots with AI<HelpTip id="ai_search" /></div>
+              {aiBox}
+            </div>
+          )}
+          <div data-tour="filters">
+          <div className="eyebrow cp-label">Search and filter<HelpTip id="filters" /></div>
           <input className="field" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search address or parcel ID" />
           <div className="cp-grid">
             <label>
@@ -86,16 +94,19 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
             </label>
             <span className="dim small">Unmatched flood locations stay visible; transit job access is not measured yet.</span>
           </div>
+          </div>
         </div>
-        <div className="cp-legend">
+        <div className="cp-legend" data-tour="legend">
           <span><i style={{ background: MARKER_COLORS.pin }} />suggested / search hit</span>
           <span><i style={{ background: MARKER_COLORS.public }} />publicly held</span>
           <span><i style={{ background: MARKER_COLORS.other }} />other vacant</span>
+          <HelpTip id="legend" />
         </div>
         <div className="eyebrow cp-count">
           {cardsTitle ?? (cardsAreHits ? 'Search results' : 'Suggested starting points')} · {visibleCount.toLocaleString()} of {features.length.toLocaleString()} lots shown
+          <HelpTip id="suggested" />
         </div>
-        <div className="cp-cards">
+        <div className="cp-cards" data-tour="lot-cards">
           {cards.map((c) => {
             const haz = hazardsOf(c.id)
             return (
@@ -114,7 +125,7 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
         </div>
         <div className="cp-foot hatched small">Suggested lots are spread across neighborhoods, zoning and site conditions — not recommendations. The city model is stylized; lot positions are real.</div>
       </aside>
-      <div className="hint-pill">Drag to orbit · right-drag to pan · scroll to zoom · click a lot to zoom in</div>
+      <div className="hint-pill" data-tour="map-hint">Drag to orbit · right-drag to pan · scroll to zoom · click a lot to zoom in</div>
     </>
   )
 }

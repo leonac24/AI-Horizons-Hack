@@ -111,6 +111,37 @@ class EvidenceSettings(_Model):
     topics: dict[str, EvidenceTopic] = Field(min_length=1)
 
 
+class TutorialStep(_Model):
+    """One card of the walk-through. `target` names a `data-tour` anchor in the
+    UI; without one the card is centered on screen."""
+
+    title: str
+    body: str
+    target: str | None = None
+
+
+class TutorialSettings(_Model):
+    # Where the browser remembers that someone finished or skipped the tour.
+    # Change it to show the tour to everyone again.
+    storage_key: str = Field(min_length=1)
+    # One chapter per screen: `city` on first visit, `lot` on first lot opened.
+    chapters: dict[Literal["city", "lot"], list[TutorialStep]]
+
+    @model_validator(mode="after")
+    def _non_empty(self) -> TutorialSettings:
+        for name, steps in self.chapters.items():
+            if not steps:
+                raise ValueError(f"tutorial chapter {name!r} has no steps")
+        return self
+
+
+class HelpTip(_Model):
+    """Text behind one of the small ? buttons."""
+
+    title: str
+    body: str
+
+
 class AppConfig(_Model):
     name: str
     tagline: str
@@ -122,6 +153,8 @@ class AppConfig(_Model):
     explanation: ExplanationSettings
     ask: AskSettings
     evidence: EvidenceSettings
+    tutorial: TutorialSettings
+    help: dict[str, HelpTip] = Field(default_factory=dict)
 
 
 # --- typologies.yaml -------------------------------------------------------------

@@ -5,6 +5,7 @@ import type { Placement } from '../three/engine'
 import type { Analysis, Config, EvidenceLeads, Explanation, Unknowns, WorkBackwardsResult } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
 import { AskLot, Dots, TypedSentences } from './ai'
+import { HelpTip } from './help'
 import { MetricBox, ProvTag, SourceRefs } from './ui'
 
 export type Tab = 'compare' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
@@ -41,7 +42,7 @@ export function AnalysisPanel(p: Props) {
   const { L } = p
   return (
     <section className="panel" style={{ top: L.pTop, right: L.pRight, bottom: L.pBottom, left: L.pLeft, width: L.pWidth, height: L.pHeight, borderRadius: L.pRadius }}>
-      <div className="tabs">
+      <div className="tabs" data-tour="tabs">
         {TABS.map(([id, label]) => (
           <button key={id} className={`tab-${id} ${p.tab === id ? 'on' : ''}`} onClick={() => p.setTab(id)}>
             {label}
@@ -62,7 +63,7 @@ export function AnalysisPanel(p: Props) {
 
 function Presets({ config, profileId, onWeights }: Pick<Props, 'config' | 'profileId' | 'onWeights'>) {
   return (
-    <div className="presets">
+    <div className="presets" data-tour="presets">
       {config.stakeholders.profiles.map((pr) => (
         <button key={pr.id} className={pr.id === profileId ? 'on' : ''} onClick={() => onWeights({ ...pr.weights }, pr.id)}>
           {pr.label}
@@ -132,7 +133,7 @@ function CompareTab(p: Props) {
             </div>
           )}
         </div>
-        <div className="h-sec">Your plan</div>
+        <div className="h-sec">Your plan<HelpTip id="your_plan" /></div>
         {!plan ? (
           <div className="empty-box">Nothing placed yet. Drag a building from the palette, or place one of the ranked options.</div>
         ) : (
@@ -183,7 +184,7 @@ function CompareTab(p: Props) {
 
       <div className="col">
         <Presets {...p} />
-        <div className="h-sec">Ranking under these priorities</div>
+        <div className="h-sec">Ranking under these priorities<HelpTip id="ranking" /></div>
         <div className="col tight">
           {ranking.ranked.map((o, i) => (
             <div key={o.id} className={`rank-row ${o.isPlan ? 'mine' : ''}`}>
@@ -218,10 +219,11 @@ function CompareTab(p: Props) {
               : ranking.ranked.length === 1
                 ? 'Only one option can be ranked on this lot.'
                 : 'No option can be ranked on this lot, so there is nothing to flip.'}
+          <HelpTip id="flip" />
         </div>
         {ranking.ranked.length > 0 && (
           <>
-            <div className="h-sec">How often does each option come out on top?</div>
+            <div className="h-sec">How often does each option come out on top?<HelpTip id="smaa" /></div>
             <div className="dim small">
               {config.app.smaa.samples.toLocaleString()} runs, each with different weights near your current priorities and every value drawn from its uncertainty range. Darker = better rank.
             </div>
@@ -273,7 +275,7 @@ function CompareTab(p: Props) {
               <TypedSentences key={expl.sentences.map((s) => s.text).join('|')} sentences={expl.sentences} chip={chip} />
             </div>
           )}
-          <div className="h-sec">Ask about this lot</div>
+          <div className="h-sec">Ask about this lot<HelpTip id="ask" /></div>
           <AskLot
             key={par.id}
             parcelId={par.id}
@@ -284,7 +286,7 @@ function CompareTab(p: Props) {
             chip={chip}
           />
         </div>
-        <div className="h-sec">About this lot</div>
+        <div className="h-sec">About this lot<HelpTip id="about_lot" /></div>
         <div className="ctx-grid">
           <div className={`mbox prov-${analysis.lot_shape.provenance}`}>
             <div className="mbox-head">
@@ -315,7 +317,7 @@ function Priorities(p: Props) {
   const tot = config.criteria.reduce((a, c) => a + (weights[c.id] ?? 0), 0) || 1
   return (
     <div className="values-box">
-      <div className="h-values">Whose priorities?</div>
+      <div className="h-values">Whose priorities?<HelpTip id="priorities" /></div>
       <p className="muted small">These are values, not evidence. Pick a starting point or move the sliders — the evidence doesn’t change, only how it’s weighed. Presets are illustrative, not positions of real organizations.</p>
       <Presets {...p} />
       <div className="col">
@@ -338,7 +340,7 @@ function Households({ config, pool }: Props) {
   const V = { yes: ['●', 'Yes', '#2fd06b'], maybe: ['◐', 'Maybe', '#ffb800'], no: ['○', 'No', '#ff7a45'] } as const
   return (
     <div>
-      <div className="h-tab">Could this household afford it?</div>
+      <div className="h-tab">Could this household afford it?<HelpTip id="households" /></div>
       <p className="muted small">Illustrative households, not real people. “Yes” = affordable at 30% of income across the whole cost range; “Maybe” = only at the low end; “No” = not without subsidy.</p>
       <div className="table-wrap">
         <table className="dtable">
@@ -409,7 +411,7 @@ function Carbon({ pool, year, setYear, config }: Props) {
   return (
     <div>
       <div className="row-between">
-        <div className="h-tab">Carbon per household over time</div>
+        <div className="h-tab">Carbon per household over time<HelpTip id="carbon_over_time" /></div>
         <ProvTag p={prov} />
       </div>
       <p className="muted small">Building materials at year 0, then home energy (PA grid, decarbonizing) and travel each year. Tonnes CO₂e.</p>
@@ -490,7 +492,7 @@ function Backwards({ config, analysis, wb, setWb }: Props) {
   const role = res ? roleOf(config, res.zoning.status) : 'unreviewed'
   return (
     <div>
-      <div className="h-tab">Work backwards</div>
+      <div className="h-tab">Work backwards<HelpTip id="backwards" /></div>
       <p className="muted small">Pick a target. See what would have to change on this lot to get there.</p>
       <div className="wb-controls">
         <label>
@@ -583,7 +585,7 @@ function UnknownsTab({ config }: Pick<Props, 'config'>) {
   if (!u) return <div className="muted">Loading…</div>
   return (
     <div className="unknowns">
-      <div className="h-tab">What we don’t know</div>
+      <div className="h-tab">What we don’t know<HelpTip id="unknowns" /></div>
       <p className="muted">
         This tool is decision support. Here is everything it is not yet sure about. Values marked <ProvTag p="placeholder" /> are stand-ins that show how the tool works — not facts about Pittsburgh.
       </p>
