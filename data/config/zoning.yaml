@@ -16,6 +16,14 @@ code:
   raw_text_dir: data/raw/zoning
 
 rules_file: pipeline/zoning/rules_review.yaml
+# false: every extracted rule is in force as soon as its quote verifies against
+# the saved code text, and the UI labels it "AI-extracted, not checked by a
+# planner". true: only rules a person marked `reviewed: true` give an answer.
+require_human_review: false
+# Section letting new development match neighbouring setbacks. Full § 903.03
+# yards are reported and drawn, but a form that fits the lot is not ruled out
+# by them; its note cites this section instead.
+contextual_setbacks_section: "925.06"
 priority_file: pipeline/zoning/review_priority.json
 
 # A zoning map code carries two separate things. Use is set by the base district

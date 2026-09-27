@@ -129,6 +129,9 @@ class Building(_Model):
     body: str
     roof: str
     max_in_a_row: int = Field(ge=1)
+    # Attached by party walls to homes on neighbouring lots: § 903.03(c) sets the
+    # interior side yard to zero on the party-wall side, so side setbacks don't apply.
+    party_walls: bool = False
 
     @model_validator(mode="after")
     def _positive(self) -> Building:
@@ -358,6 +361,8 @@ class ZoningConfig(_Model):
     code: ZoningCode
     rules_file: str
     priority_file: str
+    require_human_review: bool
+    contextual_setbacks_section: str
     district_code: DistrictCode
     statuses: dict[str, ZoningStatus]
     extraction_targets: ExtractionTargets

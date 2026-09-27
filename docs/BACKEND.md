@@ -43,7 +43,7 @@ status codes, cacheability — not at ceremony.
 | `/api/parcels/{id}` | GET | One parcel's index record |
 | `/api/analysis/{id}` | GET | Every typology scored on that parcel |
 | `/api/work-backwards/{id}` | GET | What would have to change to hit a target |
-| `/api/unknowns` | GET | Placeholders, unverified sources, unreviewed districts |
+| `/api/unknowns` | GET | Placeholders, unverified sources, districts with no zoning rules |
 | `/api/explain` | POST | Grounded prose over already-computed metrics |
 
 **Status codes carry meaning.** `200` success · `304` your copy is current ·
@@ -356,7 +356,8 @@ curl -s "$BASE/api/analysis/$PID" \
 # Anything the tool refuses to claim
 curl -s "$BASE/api/unknowns" | jq '{
   placeholders: (.placeholder_assumptions | length),
-  coverage: .share_covered_by_reviewed_rules
+  coverage: .share_covered_by_rules,
+  human_checked: .share_covered_by_human_reviewed_rules
 }'
 
 # Work backwards from a target
@@ -410,9 +411,10 @@ What each group is actually protecting:
 - **Config** — cross-reference validation and loud failure on bad config.
 - **Scoring** — direction-aware normalization, SMAA indices summing to 1,
   ranking flip on a toy example.
-- **Zoning** — rule evaluation, and that unreviewed means unreviewed.
-- **Eligibility** — a prohibited use is excluded from the ranking, an unreviewed
-  one is not, and an unresolvable status role fails at startup.
+- **Zoning** — rule evaluation; with `require_human_review` on, unreviewed means
+  unreviewed; with it off, extracted rules answer but report `human_reviewed: false`.
+- **Eligibility** — a prohibited use is excluded from the ranking, a rule not in
+  force excludes nothing, and an unresolvable status role fails at startup.
 - **No-hardcoding** — fake typologies work end to end; no config-declared id is
   quoted in code.
 - **Coverage** — random real parcels across the city all return complete

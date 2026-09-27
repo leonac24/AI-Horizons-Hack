@@ -16,8 +16,9 @@ all fifty-four district codes in the city and no use rule is transcribed twice.
 
 Every rule the model returns must quote the source text verbatim (< 25 words);
 rules whose quote is not found in the supplied text are dropped. Output merges
-into rules_review.yaml with `reviewed: false` — a teammate reviews each rule and
-flips it to true. Existing reviewed rules are never overwritten.
+into rules_review.yaml with `reviewed: false`; such rules are in force, labelled
+as not checked by a planner, unless zoning.yaml sets require_human_review. A
+person can flip a rule to true. Existing reviewed rules are never overwritten.
 """
 
 from __future__ import annotations

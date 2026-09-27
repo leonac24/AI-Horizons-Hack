@@ -2,7 +2,8 @@
 
 Tick a box **only after checking the fact against the linked code section**.
 Then run `uv run python -m pipeline.zoning.build_rules --apply`.
-Unticked facts stay out of the app (lots show *Needs planner review*).
+Unticked facts are still used, labelled *not checked by a planner* (unless
+`require_human_review` is on in zoning.yaml, which keeps them out of the app).
 
 Legend for use cells: P = by right · A = administrator exception · S = special exception (ZBA) ·
 C = conditional use (Council) · - = not permitted (§ 911.01).

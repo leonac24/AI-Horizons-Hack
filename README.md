@@ -61,10 +61,14 @@ provenance:
 
 Weights are shown in their own color and never enter a metric.
 
-**Human in the loop.** Zoning rules are extracted by an LLM, and each must quote
-the code verbatim. A teammate then reviews every rule before it can affect the
-app (`pipeline/zoning/rules_review.yaml`). Until then, the lot shows
-"Needs planner review".
+**AI-extracted zoning, labelled as such.** Zoning rules are extracted by AI from
+saved Title Nine text, and each must quote the code verbatim or the build
+refuses it (`pipeline/zoning/rules_review.yaml`). Those rules are in force and
+the app says so on every answer: "AI-extracted from Title Nine with a verbatim
+quote; not checked by a planner." A lot in a district with no extracted rules
+shows "Needs planner review". Setting `require_human_review: true` in
+`data/config/zoning.yaml` restricts answers to rules a person has ticked in
+`pipeline/zoning/REVIEW.md`.
 
 ## Run it
 
@@ -109,7 +113,9 @@ To extract zoning rules, save the Title Nine sections as text in
 uv run python -m pipeline.zoning.extract --districts R1D-H RM-M R2-L
 ```
 
-Afterwards, review `pipeline/zoning/rules_review.yaml` by hand.
+Rules are in force once their quotes verify. To have a person confirm them,
+tick facts in `pipeline/zoning/REVIEW.md` and run
+`uv run python -m pipeline.zoning.build_rules --apply`.
 
 ### Compile source documents with Laya locally
 
@@ -181,8 +187,9 @@ whatever that folder declares.
 
 ## Next steps
 
-1. Review zoning rules for the districts with the most vacant lots: H, R1D-H,
-   RM-M, R1D-L, R2-L.
+1. Have a planner check the AI-extracted zoning rules, starting with the
+   districts with the most vacant lots: R1D, R2, H, R1A, RM. Then turn on
+   `require_human_review`.
 2. Replace remaining cost and carbon placeholders with verified local evidence;
    evaluate CHAS for income-tier detail.
 3. Build a measured PRT travel-time matrix with a walking network and job

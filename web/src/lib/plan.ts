@@ -43,11 +43,12 @@ export function purePlacements(config: Config, typId: string, buildings: number,
   if (!t) return []
   const [w, d] = t.building.footprint_ft
   const D = shape.depth_ft
-  // With reviewed setbacks, sit on the front setback line and centre in the buildable width;
+  // With setbacks in force, sit on the front setback line and centre in the buildable width
+  // (party-wall forms ignore side yards, so they centre on the lot);
   // otherwise keep the old 6 ft stand-in front yard (falling back to the lot edge on shallow lots).
   const front = env ? env.front : 6
   const z = env || D / 2 - front - d / 2 > -D / 2 + d / 2 ? D / 2 - front - d / 2 : D / 2 - d / 2
-  const cx = env ? (env.left - env.right) / 2 : 0
+  const cx = env && !t.building.party_walls ? (env.left - env.right) / 2 : 0
   const x0 = cx - (buildings * w) / 2 + w / 2
   return Array.from({ length: buildings }, (_, i) => ({ uid: `o_${typId}_${i}`, typ: typId, x: x0 + i * w, z, rot: 0 }))
 }
@@ -163,8 +164,11 @@ export function setbackCrossings(config: Config, list: Placement[], shape: LotSh
     const sides: string[] = []
     if (p.z + fd / 2 > D / 2 - env.front + 0.01) sides.push('front')
     if (p.z - fd / 2 < -D / 2 + env.rear - 0.01) sides.push('rear')
-    if (p.x - fw / 2 < -W / 2 + env.left - 0.01) sides.push('side')
-    else if (p.x + fw / 2 > W / 2 - env.right + 0.01) sides.push('side')
+    // Party-wall forms have no interior side yard (Pittsburgh Code § 903.03(c)).
+    if (!t.building.party_walls) {
+      if (p.x - fw / 2 < -W / 2 + env.left - 0.01) sides.push('side')
+      else if (p.x + fw / 2 > W / 2 - env.right + 0.01) sides.push('side')
+    }
     if (sides.length) out.push({ uid: p.uid, typ: p.typ, sides })
   }
   return out

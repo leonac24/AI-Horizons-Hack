@@ -43,6 +43,7 @@ export interface Typology {
     body: string
     roof: string
     max_in_a_row: number
+    party_walls: boolean
   }
 }
 
@@ -162,6 +163,7 @@ export interface ZoningResult {
   status: string
   status_label: string
   reviewed: boolean
+  human_reviewed: boolean
   use_citation: string | null
   use_quote: string | null
   checks: ZoningCheck[]
@@ -232,9 +234,11 @@ export interface Explanation {
 export interface Unknowns {
   placeholder_assumptions: { id: string; unit: string; rationale: string; source: string | null }[]
   unverified_sources: { id: string; name: string; note: string | null }[]
-  unreviewed_districts: { district: string; vacant_parcels: number }[]
+  uncovered_districts: { district: string; vacant_parcels: number }[]
   vacant_parcels: number
-  share_covered_by_reviewed_rules: number
+  share_covered_by_rules: number
+  share_covered_by_human_reviewed_rules: number
+  require_human_review: boolean
   pipeline?: { counts?: Record<string, number>; context?: Record<string, unknown> } | null
 }
 

@@ -2,8 +2,10 @@
 # pipeline/zoning/facts.yaml (hand-extracted from the Title Nine snapshots in
 # data/sources/zoning/; review per fact in REVIEW.md), or by extract.py, then
 # reviewed line by line by a teammate who sets `reviewed: true` per rule.
-# Only reviewed rules drive a definite zoning status in the app; everything
-# else shows "Needs planner review".
+# With require_human_review: false (data/config/zoning.yaml) every rule here is
+# in force and labelled "not checked by a planner" unless reviewed: true; with it
+# on, only reviewed rules drive a status and everything else shows "Needs
+# planner review".
 #
 # Title Nine governs the two questions in different places, so this file keeps
 # them apart and core/zoning.py recombines them per parcel:

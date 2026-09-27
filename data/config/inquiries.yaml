@@ -8,7 +8,7 @@
 #
 # `trigger` is a role, not a name:
 #   public_parcel        the lot is publicly held, so availability is in question
-#   zoning_use           the district's use rule has not been reviewed yet
+#   zoning_use           no use rule is in force for the district yet
 #   zoning_dimensional   keyed by a rule id from zoning.yaml extraction_targets
 #   assumption           keyed by an assumption id from assumptions.yaml
 #
@@ -138,7 +138,7 @@ inquiries:
     pins: zoning_status_score
     question: In {district}, which of these housing types is allowed — and by right or by hearing?
     why: >-
-      Lotline has not reviewed the use rules for {district} yet, so every approval
+      Lotline has no use rules in force for {district} yet, so every approval
       path shown for this lot spans the full range from by-right to prohibited.
       This is the single answer that most changes what this lot can be, and it is
       usually one phone call.
@@ -157,7 +157,7 @@ inquiries:
     pins: zoning_status_score
     question: How many homes will {district} actually allow on {lot_area_sf} sf here?
     why: >-
-      The reviewed rule requires {required} {rule_unit} and this plan works out at
+      The rule requires {required} {rule_unit} and this plan works out at
       {actual}. That makes it a variance request rather than an over-the-counter
       permit, which adds a hearing, a timeline and a real chance of refusal.
     resolver: zoning_board
@@ -176,7 +176,7 @@ inquiries:
     pins: zoning_status_score
     question: Is this lot large enough for this use in {district}, or does it need a variance?
     why: >-
-      The reviewed minimum is {required} {rule_unit} and this lot is {actual}.
+      The minimum is {required} {rule_unit} and this lot is {actual}.
       Undersized lots are common in Pittsburgh and are often still buildable — but
       through a variance, not by right.
     resolver: zoning_board
@@ -194,7 +194,7 @@ inquiries:
     pins: zoning_status_score
     question: Can this building be as tall as modelled in {district}?
     why: >-
-      The reviewed height limit is {required} {rule_unit} and this form is
+      The height limit is {required} {rule_unit} and this form is
       {actual}. Losing a storey usually removes homes, which changes both the cost
       per home and who can afford to live here.
     resolver: city_planning
@@ -210,7 +210,7 @@ inquiries:
     pins: zoning_status_score
     question: How many storeys does {district} allow on this lot?
     why: >-
-      The reviewed limit is {required} {rule_unit} and this form is {actual}.
+      The limit is {required} {rule_unit} and this form is {actual}.
       Fewer storeys means fewer homes and a higher cost per home.
     resolver: city_planning
     ask_for: Confirmation of the permitted number of storeys for residential use

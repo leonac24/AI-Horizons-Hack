@@ -86,9 +86,9 @@ def test_reviewed_setbacks_are_reported_not_scored(cfg, facts):
     assert r.status == "by_right"
 
 
-def test_options_are_sized_to_the_buildable_area_once_setbacks_are_reviewed(cfg, facts):
+def test_options_are_sized_to_the_buildable_area_once_setbacks_are_reviewed(cfg, strict_cfg, facts):
     rules = expand(facts, ["R2-L"])
-    assert buildable_margins(cfg, rules, "R2-L") == {}  # unreviewed setbacks change nothing
+    assert buildable_margins(strict_cfg, rules, "R2-L") == {}  # unreviewed setbacks change nothing when review is required
     d = rules["subdistricts"]["R2-L"]["dimensional"]
     for k in d:
         d[k] = _reviewed(d[k])
@@ -104,3 +104,16 @@ def test_options_are_sized_to_the_buildable_area_once_setbacks_are_reviewed(cfg,
     area = 10 * typ.min_lot_sf_for_form + 1
     assert pure_buildings(typ, shape, area)[0] == 2
     assert pure_buildings(typ, shape, area, m) == (1, True)
+
+
+def test_party_wall_forms_skip_side_yards(cfg):
+    """§ 903.03(c): an attached home has no interior side yard on the party-wall
+    side, so side setbacks must not squeeze a rowhouse off a narrow lot."""
+    attached = next(t for t in cfg.typologies if t.building.party_walls)
+    w, depth = attached.building.footprint_ft
+    shape = LotShape(frontage_ft=w + 1, depth_ft=depth + 60, provenance="observed", sourceIds=[], note="")
+    m = {"front": 15, "rear": 15, "left": 5, "right": 5}
+    area = attached.min_lot_sf_for_form + 1
+    assert pure_buildings(attached, shape, area, m)[1]
+    detached = attached.model_copy(update={"building": attached.building.model_copy(update={"party_walls": False})})
+    assert not pure_buildings(detached, shape, area, m)[1]

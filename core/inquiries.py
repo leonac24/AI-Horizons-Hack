@@ -194,7 +194,7 @@ def build(cfg: Config, analysis: Analysis) -> list[Inquiry]:
         key, rec = inq.by_trigger("public_parcel")
         out.append(make(key, key, rec, base))
 
-    # 2. Districts whose use rule has not been reviewed. Everything about such a
+    # 2. Districts with no use rule in force yet. Everything about such a
     #    lot is provisional, so this is asked once per district, not per typology.
     if any(not s.zoning.reviewed for s in analysis.scenarios):
         key, rec = inq.by_trigger("zoning_use")

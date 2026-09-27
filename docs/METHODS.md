@@ -90,7 +90,7 @@ facts appear once, under "About this lot".
 | Criterion | Formula | Direction |
 |---|---|---|
 | Serves local housing need | `homes × renter_cost_burden_share × min(1, tract_median_income / income_needed)` | higher better |
-| Zoning path | reviewed status → score (`zoning_status_score.by_key`); unreviewed → placeholder spanning all outcomes | higher better |
+| Zoning path | status from a rule in force → score (`zoning_status_score.by_key`); no rule → placeholder spanning all outcomes | higher better |
 | Income needed | `ami_needed_pct` | lower better |
 | Share priced above nearby renter incomes | `1 − min(1, tract_median_income / income_needed)` | lower better |
 | Strain on infrastructure | `homes × (1 + Σ hazard weights present) × sewer_stress_index` | lower better |
@@ -163,11 +163,15 @@ The sentence reports the criterion j with t* in [0, 1] that needs the smallest
 `pipeline/zoning/extract.py` sends Title Nine text to an LLM (Claude, via the Anthropic API). Each rule
 it returns must quote the supplied text verbatim, in fewer than 25 words.
 Otherwise the rule is dropped. Rules land in `rules_review.yaml` with
-`reviewed: false`. Only rules a person marks `reviewed: true` affect the app.
+`reviewed: false`. They are in force once their quotes verify (`require_human_review:
+false` in `zoning.yaml`), labelled in the UI as AI-extracted and not checked by a
+planner; with `require_human_review: true`, only rules a person marks
+`reviewed: true` affect the app.
 
 - A use rule sets the approval path.
-- Reviewed dimensional rules (minimum lot area, lot area per unit, stories) are
-  checked against the lot.
+- Dimensional rules in force (minimum lot area, lot area per unit, stories) are
+  checked against the lot. Setbacks shrink the buildable area, except the
+  interior side yards of party-wall forms such as rowhouses (§ 903.03(c)).
 - Any failed dimensional rule turns the status into "variance needed", with its
   citation.
 

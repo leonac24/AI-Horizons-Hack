@@ -126,7 +126,8 @@ function CompareTab(p: Props) {
                 <strong style={{ color: ROLE_COLOR[zRole] }}>{z!.status_label}</strong>
                 <span className="eyebrow">Title Nine</span>
               </div>
-              {!z!.reviewed && <div className="muted small">Rules for {par.zoning} haven’t been extracted and reviewed by a person yet, so no approval path is claimed.</div>}
+              {!z!.reviewed && <div className="muted small">{z!.note ?? `No zoning rules for ${par.zoning} yet.`} No approval path is claimed.</div>}
+              {z!.reviewed && !z!.human_reviewed && <div className="muted small">AI-extracted from Title Nine with a verbatim quote; not checked by a planner.</div>}
               {Object.entries(plan.zoningByType ?? {}).map(([tid, zt]) => (
                 <div key={tid} className="small" style={{ color: zt.disqualified ? '#ff7a5c' : '#c5d0d8' }}>
                   {zt.disqualified ? '✗' : '·'} {config.typologies.find((t) => t.id === tid)?.short_label} use: {zt.status_label}
@@ -189,7 +190,7 @@ function CompareTab(p: Props) {
           {ranking.notFitting.length > 0 && <div className="dim small">Doesn’t fit this lot: {ranking.notFitting.map((o) => o.label).join(', ')}</div>}
           {ranking.excluded.length > 0 && (
             <div className="warn small">
-              Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}`).join('; ')}
+              Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}${o.zoning?.human_reviewed ? '' : ' (AI-extracted rule, not checked by a planner)'}`).join('; ')}
             </div>
           )}
         </div>
@@ -413,8 +414,8 @@ function Carbon({ pool, year, setYear, config }: Props) {
                 </text>
               </g>
             ))}
-            {[0, Math.round(last / 3), Math.round((2 * last) / 3), last].map((t) => (
-              <text key={t} x={X(t)} y={190} fill="#7d9cc0" fontSize={9} textAnchor="middle" fontFamily="Fredoka">
+            {[0, Math.round(last / 3), Math.round((2 * last) / 3), last].map((t, i) => (
+              <text key={i} x={X(t)} y={190} fill="#7d9cc0" fontSize={9} textAnchor="middle" fontFamily="Fredoka">
                 yr {t}
               </text>
             ))}
@@ -522,7 +523,7 @@ function Backwards({ config, analysis, wb, setWb }: Props) {
                 {c.label}: needs {c.required.toLocaleString()} {c.unit}, has {c.actual.toLocaleString()} → variance or special exception {c.citation ? `(${c.citation})` : ''}
               </div>
             ))}
-            {!res.failed_rules.length && <div className="dim small">{res.zoning.note ?? 'No reviewed dimensional rule fails.'}</div>}
+            {!res.failed_rules.length && <div className="dim small">{res.zoning.note ?? 'No dimensional rule fails.'}</div>}
             {scen && !scen.form_fits && <div className="warn small">This building form doesn’t physically fit the lot.</div>}
           </div>
           <div className={`card-box prov-${res.subsidy_per_unit.provenance}`}>
@@ -578,12 +579,14 @@ function UnknownsTab({ config }: Pick<Props, 'config'>) {
       </p>
       <div className="h-card">Zoning rules</div>
       <p className="small">
-        {Math.round(u.share_covered_by_reviewed_rules * 100)}% of the city’s {u.vacant_parcels.toLocaleString()} vacant lots are in a district whose rules a person has reviewed. Every other lot shows “Needs planner review.”
+        {Math.round(u.share_covered_by_rules * 100)}% of the city’s {u.vacant_parcels.toLocaleString()} vacant lots are in a district with zoning rules
+        {u.require_human_review ? ' a person has reviewed.' : `; ${Math.round(u.share_covered_by_human_reviewed_rules * 100)}% by rules a person has checked. The rest were extracted by AI from the code text, each with a verbatim quote, and are labelled that way.`}
+        {' '}Lots in other districts show “Needs planner review.”
       </p>
       <details className="small">
-        <summary>{u.unreviewed_districts.length} districts not yet reviewed (by vacant lots)</summary>
+        <summary>{u.uncovered_districts.length} districts with no rules yet (by vacant lots)</summary>
         <div className="columns">
-          {u.unreviewed_districts.map((d) => (
+          {u.uncovered_districts.map((d) => (
             <div key={d.district}>
               {d.district}: {d.vacant_parcels.toLocaleString()}
             </div>
