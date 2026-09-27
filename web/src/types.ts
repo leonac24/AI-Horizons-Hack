@@ -1,3 +1,5 @@
+import type { BasemapConfig } from './three/basemap'
+
 // Shapes served by the FastAPI server. Config mirrors data/config/*.yaml.
 
 export type Provenance = 'observed' | 'modeled' | 'assumption' | 'placeholder'
@@ -97,6 +99,7 @@ export interface Config {
       half_extent: number
       rivers: [number, number][][]
       bridges: [string, number, number, string, number][]
+      basemap?: BasemapConfig
     }
     hazards: Record<string, { source: string; label: string; lot_scene?: string }>
     zoning_links: string[]

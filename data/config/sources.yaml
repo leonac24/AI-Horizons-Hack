@@ -159,7 +159,18 @@ sources:
     vintage: cached ArcGIS extract (remove raw cache to refetch)
     license: see Allegheny County GIS terms
     verified: "2026-09-26"
-    note: PIN-matched polygons provide an interior sample point for mapped context; polygons are not published in the app.
+    note: PIN-matched polygons provide an interior sample point for mapped context. Vacant-lot outlines only are baked into web/public/data/basemap/lots.json for the 3D city; no other parcel geometry is published.
+
+  wprdc_street_centerlines:
+    name: Pittsburgh Street Centerline
+    publisher: City of Pittsburgh via WPRDC
+    url: https://data.wprdc.org/dataset/pittsburgh-street-centerlines
+    access: ckan_download
+    resource_id: 8a38a51d-5000-4600-8114-3f9e92202a64
+    vintage: resource modified 2026-09-23
+    license: Creative Commons CCZero
+    verified: "2026-09-26"
+    note: Drawn in the 3D city for orientation only (styled by domi_class); never used in any metric.
 
   pwsa_combined_sewersheds:
     name: PWSA Combined Sewersheds

@@ -56,6 +56,33 @@ scene:
     damping: 3
     coarse: { extent: 2000, step: 12.5 }
     fine: { margin: 60, step: 3.5 }
+  # Orientation layers for the 3D city, baked by
+  # `uv run python -m pipeline.build_basemap` into web/public/data/basemap/.
+  # They help people find their block; no metric reads them.
+  basemap:
+    # Neighborhood names come from the `neighborhoods` section below.
+    labels:
+      # Labels closer than this many screen pixels to one already drawn are hidden;
+      # bigger neighborhoods win.
+      padding_px: 6
+    streets:
+      source: wprdc_street_centerlines
+      class_field: domi_class
+      # Segments with any of these fields set are no longer streets.
+      drop_if_set: [retired]
+      simplify_m: 2
+      # Drawn in this order; classes not listed (private roads, unknown) are skipped.
+      # `max_distance` hides a tier once the camera is farther than that (scene units).
+      tiers:
+        - { id: alley, classes: [Alley], color: "#f4f7fb", opacity: 0.35, width_px: 1, max_distance: 320 }
+        - { id: local, classes: [Local, Park Road], color: "#ffffff", opacity: 0.6, width_px: 1.4, max_distance: 900 }
+        - { id: collector, classes: [Collector], color: "#ffffff", opacity: 0.8, width_px: 2, max_distance: 1800 }
+        - { id: arterial, classes: [Principal Arterial, Minor Arterial], color: "#fff4c2", opacity: 0.95, width_px: 3, max_distance: 4000 }
+    lots:
+      # Outlines of the vacant lots only, from context.parcel_boundaries.
+      simplify_m: 0.3
+      # Below this camera distance (scene units) lots draw as outlines instead of dots.
+      outline_distance: 240
   rivers:
     - [[-80.0125, 40.442], [-79.99, 40.45], [-79.97, 40.462], [-79.945, 40.475], [-79.92, 40.482], [-79.88, 40.492]]
     - [[-80.0125, 40.442], [-79.99, 40.434], [-79.965, 40.425], [-79.95, 40.414], [-79.935, 40.4], [-79.915, 40.395], [-79.885, 40.405]]
