@@ -25,7 +25,14 @@ api:
   id_param_max_chars: 64
   explain_max_weights: 64
   explain_max_ranking: 32
+  # One budget per client IP, shared by every route that calls the model
+  # (explain, ask, lot search).
   explain_requests_per_minute: 12
+  # Free text a caller may send to the model: a question about a lot, or a
+  # plain-English description of the lots they want.
+  ask_question_max_chars: 300
+  lot_search_query_max_chars: 200
+  lot_search_results_max: 12
   analysis_cache_entries: 512
   # How long a browser is allowed to reuse an answer it already has before
   # asking us again. Answers only change when the config files change, so this
@@ -57,6 +64,16 @@ explanation:
   effort: low
   timeout_s: 30
   max_tokens: 4000
+# "Ask about this lot": starter questions shown as one-click chips. Answers use
+# the explanation settings above and pass the same grounding check.
+ask:
+  # Placeholder hint under the plain-English lot search on the city map.
+  search_example: big publicly held lots in Hazelwood, not on a steep slope
+  examples:
+    - Could a home health aide afford any of these?
+    - Why does the top option rank first?
+    - Which option has the lowest carbon per household?
+    - What would change the ranking?
 # Topics the offline Laya compile sorts source passages into, and the choices in
 # the "What we don't know" source filter. Descriptions are what Laya is asked, so
 # editing one changes the question hash and requires a recompile.

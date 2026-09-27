@@ -72,6 +72,9 @@ class ApiSettings(_Model):
     explain_max_weights: int = Field(gt=0)
     explain_max_ranking: int = Field(gt=0)
     explain_requests_per_minute: int = Field(gt=0)
+    ask_question_max_chars: int = Field(gt=0)
+    lot_search_query_max_chars: int = Field(gt=0)
+    lot_search_results_max: int = Field(gt=0)
     analysis_cache_entries: int = Field(gt=0)
     cache_max_age_seconds: int = Field(ge=0)
     work_backwards_max_units: int = Field(gt=0)
@@ -90,6 +93,11 @@ class ExplanationSettings(_Model):
     effort: Literal["low", "medium", "high", "xhigh", "max"]
     timeout_s: float = Field(gt=0)
     max_tokens: int = Field(gt=0)
+
+
+class AskSettings(_Model):
+    search_example: str = ""
+    examples: list[str] = Field(default_factory=list)
 
 
 class EvidenceTopic(_Model):
@@ -112,6 +120,7 @@ class AppConfig(_Model):
     api: ApiSettings
     smaa: SmaaSettings
     explanation: ExplanationSettings
+    ask: AskSettings
     evidence: EvidenceSettings
 
 

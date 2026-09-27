@@ -155,6 +155,10 @@ def test_route_limits_are_taken_from_config_not_retyped():
     assert param(wb, "target_ami_pct")["maximum"] == api.target_ami_pct_max
     assert param(wb, "typology")["maxLength"] == api.id_param_max_chars
 
+    bodies = schema["components"]["schemas"]
+    assert bodies["AskRequest"]["properties"]["question"]["maxLength"] == api.ask_question_max_chars
+    assert bodies["LotSearchRequest"]["properties"]["query"]["maxLength"] == api.lot_search_query_max_chars
+
     fmt = get_config().parcel_id_format
     pid = param(wb, "parcel_id")
     assert (pid["pattern"], pid["minLength"], pid["maxLength"]) == (
