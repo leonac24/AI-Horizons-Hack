@@ -62,8 +62,25 @@ _Auto-generated for config `7119c2477d9b`._
   planning rules of thumb for lot area per home. Parking, access, utility
   capacity, and topography beyond the flags are not modeled.
 - **Rent needed to cover cost is a simple annualized model** (capital cost share
-  plus operating cost). It is not a pro forma: no financing structure, tax
-  credits, abatements, or market rents.
+  plus operating cost plus property tax). It is not a pro forma: no financing
+  structure, tax credits or market rents; a reviewed abatement enters only the
+  public-revenue side.
+- **Property tax figures are placeholders until reviewed.** Millage, homestead
+  exclusions and abatement terms are labeled stand-ins in `assumptions.yaml` and
+  `tax.yaml`. We do not write tax law from memory; a teammate verifies each
+  against the published rate or ordinance. The unreviewed abatement is not
+  applied.
+- **Assessed values are base-year comps of existing buildings.** A new building
+  is assessed at its base-year-equivalent value; recent comps (since
+  `tax.yaml: comps.built_since_year`) stand in for it. Assessment appeals, which
+  materially move real bills in Allegheny County, are not modeled.
+- **Multi-unit comps rest on a unit band.** The county's use classes say 5–19,
+  20–39 or 40+ units, not a count. The 40+ band has no upper edge; its cap is a
+  documented choice in `tax.yaml` and the weakest number in the tax module.
+- **No reassessment spillover.** We do not estimate how new construction changes
+  neighbors' assessments. That would be a causal displacement claim.
+- **No Low-Income Housing Tax Credits.** LIHTC is a competitive PHFA allocation
+  we cannot model defensibly yet; it is named as a next step.
 - **Commute times are not modeled yet.** The PRT travel-time matrix is pending;
   a stop or route alone cannot establish jobs reachable by transit.
 - **City limits only.** Other Allegheny County municipalities have their own

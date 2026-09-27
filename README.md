@@ -38,7 +38,10 @@ assessment records) and compare six kinds of housing that could go there:
   - zoning status with Title Nine citations; buildings whose use is prohibited
     get a red outline, and the plan is excluded from the ranking;
   - "Could this household afford it?" for illustrative households;
-  - carbon over time, with a year slider and crossover years.
+  - carbon over time, with a year slider and crossover years;
+  - public revenue to the City, school district and county over the horizon,
+    net of any reviewed abatement, with a "high revenue, high exclusion" flag
+    when the top-revenue option is also the least affordable.
 - **Whose priorities?** Weight sliders and stakeholder presets. SMAA bars show
   how often each option ranks first once weights and uncertainty are sampled.
   A one-line "ranking flip" gives the smallest weight change that swaps the top
@@ -64,7 +67,9 @@ Weights are shown in their own color and never enter a metric.
 **Human in the loop.** Zoning rules are extracted by an LLM, and each must quote
 the code verbatim. A teammate then reviews every rule before it can affect the
 app (`pipeline/zoning/rules_review.yaml`). Until then, the lot shows
-"Needs planner review".
+"Needs planner review". Tax law gets the same treatment: millage and abatement
+terms are placeholders until a teammate verifies them (`data/config/tax.yaml`,
+`assumptions.yaml`).
 
 ## Run it
 
@@ -83,6 +88,7 @@ To rebuild the parcel index from WPRDC:
 uv sync --group pipeline
 uv run python -m pipeline.build_parcels   # ~2 min first run; caches in data/raw/
 uv run python -m pipeline.build_terrain   # 3D city heightmap -> web/public/data/terrain.*
+uv run python -m pipeline.build_comps     # assessed-value comps per housing type and neighborhood
 uv run python -m pipeline.docs            # regenerate SOURCES.md + LIMITATIONS.md counts
 ```
 
@@ -151,6 +157,8 @@ whatever that folder declares.
    build). Combined-sewershed boundaries are loaded, but sewer stress still
    needs capacity or overflow observations.
 4. Add the advocates + referee explanation mode.
+5. Verify City, School District and County millage, homestead exclusions and the
+   residential abatement terms; then model LIHTC in Work backwards.
 
 **Pilot partners we'd approach:** a Pittsburgh CDC, the Department of City
 Planning, the URA, and the Pittsburgh Land Bank.

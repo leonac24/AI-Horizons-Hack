@@ -70,9 +70,12 @@ combined:
     gross_sf       = homes × unit_size_sf
     site_share     = Σ cost_share of each hazard flag present (steep slope, landslide, undermined)
     dev_cost       = gross_sf × hard_cost_psf × (1 + soft_cost_share + site_share) + assessed_land_value
-    monthly_cost   = dev_cost / homes × annual_capital_cost_share / 12 + operating_cost_per_unit_month
+    monthly_cost   = dev_cost / homes × annual_capital_cost_share / 12 + operating_cost_per_unit_month + tax_per_home_month
     income_needed  = monthly_cost × 12 / housing_cost_share            (housing_cost_share = 0.30)
     ami_needed_pct = income_needed / ami_4person × 100
+
+`operating_cost_per_unit_month` no longer includes property tax; that is its own
+line, `tax_per_home_month`, from assessed value and millage (see "Property tax").
 
 **"Could this household afford it?"** A household's income is
 `ami_4person × size_factor(size) × ami_pct`, using HUD's size adjustment. It can
@@ -95,6 +98,7 @@ facts appear once, under "About this lot".
 | Share priced above nearby renter incomes | `1 − min(1, tract_median_income / income_needed)` | lower better |
 | Strain on infrastructure | `homes × (1 + Σ hazard weights present) × sewer_stress_index` | lower better |
 | Carbon per household | see below | lower better |
+| Public revenue | Σ over the horizon of the parcel's property tax, net of a reviewed abatement (see "Property tax") | higher better |
 
 Two changes on 2026-09-26, both to stop the criteria overstating what the
 evidence supports:
@@ -117,6 +121,13 @@ to the user to be independent. Transit access is still computed and shown as
 site context (`site.jobs_access`). If a future access measure varies by housing
 type, it belongs back in this table.
 
+**A criterion was added on 2026-09-26: "Public revenue."** It is `homes × per-home
+assessed value + land value`, times millage, summed over the horizon. It survives
+the test that removed "job access" because the per-home assessed value differs by
+housing type (it comes from county comps of that type) and is not derived from
+development cost. `tests/test_tax.py` checks on real lots that its normalized
+column is not an affine restatement of any other criterion's.
+
 ## Carbon over time (per household)
 
     year 0:  embodied = embodied_kgco2e_psf × unit_size_sf / 1000                         (t)
@@ -127,6 +138,46 @@ type, it belongs back in this table.
 A **crossover year** is the first year one option's cumulative line crosses
 another's. It happens when one option costs more carbon to build but less to
 live in.
+
+## Property tax
+
+Structure in `tax.yaml`; every number in `assumptions.yaml` (spec:
+`docs/superpowers/specs/2026-09-26-tax-metrics-design.md`).
+
+**Assessed value comes from observed county comparables, never from cost.**
+Allegheny County assessments are base-year values, not current prices, so a
+cost-derived assessment would overstate every option by about 2× and would
+duplicate the cost criterion besides. `uv run python -m pipeline.build_comps`
+takes every city building in each housing type's assessment use classes
+(`typologies.yaml: assessment_use_classes`) built since `comps.built_since_year`,
+divides its assessed building value by the homes on the parcel (a band midpoint
+for multi-unit classes, with the band edges widening the range), and keeps the
+median and interquartile range per neighborhood (at least `min_comps` comps) and
+citywide. The engine uses the neighborhood row, else the citywide row and says
+so, else a placeholder assumption.
+
+    assessed_home_b    = max(building_per_home + land_value / homes − homestead_b, 0)   homestead_b only for owner-occupied types
+    annual_full        = Σ_bodies homes × assessed_home_b × millage_b / 1000
+    tax_per_home_month = annual_full / homes / 12                                          → part of monthly_cost
+    exempt_b(y)        = min(building_per_home, cap) for y ≤ abatement years, else 0      only for a REVIEWED program that names body b
+    annual(y)          = Σ_bodies homes × max(assessed_home_b − exempt_b(y), 0) × millage_b / 1000
+    revenue_horizon    = Σ_y annual(y)                                                     → criterion "Public revenue"
+
+Millage is in mills (tax per $1,000 of assessed value). An unreviewed abatement
+program is not applied and marks horizon revenue a placeholder — the same rule as
+an unreviewed zoning rule. Site context shows whether the lot pays tax today
+(county tax status) and roughly what (land value × millage; zero if exempt).
+
+**Tension flags** (`criteria.yaml: tension_flags`). The option best on one
+criterion that is also worst on another is named in the receipt and the memo. A
+rank on a single criterion involves no weights, so the engine computes it.
+
+**Review checklist (a person, not the model).** City, School District and County
+millage and homestead exclusions → `assumptions.yaml` (`millage_*`,
+`homestead_exclusion_*`): set value/low/high, set `source`, flip provenance to
+observed. Abatement terms → `tax.yaml: abatements` (`code_section`, `quote`,
+`reviewed: true`) and `assumptions.yaml` (`abatement_years`,
+`abatement_exempt_assessed_cap_usd`).
 
 ## Scoring
 

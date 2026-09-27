@@ -1,6 +1,6 @@
 # Tax in the evidence layer
 
-Date: 2026-09-26 · Status: approved, not yet implemented
+Date: 2026-09-26 · Status: implemented 2026-09-26 (plan: `docs/superpowers/plans/2026-09-26-tax-metrics.md`)
 
 ## 1. Summary
 
@@ -111,16 +111,17 @@ series reuses the `CarbonSeries` shape and the existing chart component.
 
 ### 5.1 New: `data/config/tax.yaml`
 
-Millage rates, the common level ratio, the homestead exclusion and abatement
-program terms are **law**, not modeling choices. Each entry carries
-`code_section`, a short `quote` (< 25 words), `confidence`, and `reviewed: false`.
-Values ship unfilled by design and are populated by human review (§8) — this is
-the intended initial state, not an open question in this spec.
+Every number (millage per body, homestead exclusions, abatement years and cap) is
+an `assumptions.yaml` entry referenced from `tax.yaml` by key, so it carries a
+range, provenance and source and flows through `Samples`, `dependsOn`, inquiries
+and the LIMITATIONS count. `tax.yaml` holds structure and legal terms; an
+abatement program carries `reviewed: false` until a person verifies it.
+"Reviewed" for a rate means its assumption is no longer a placeholder. Stand-in
+values ship labeled STAND-IN by design — this is the intended initial state, not
+an open question in this spec. The common level ratio is dropped: it converts
+market to assessed value, and the comps are already assessed.
 
 ```yaml
-common_level_ratio:
-  { value: null, low: null, high: null, source: pa_steb, reviewed: false }
-
 millage:                      # one entry per taxing body
   - { id: city,   label: City of Pittsburgh,        value: null, source: ..., reviewed: false }
   - { id: school, label: Pittsburgh Public Schools, value: null, source: ..., reviewed: false }
@@ -271,7 +272,10 @@ ranking.
    column correlates with any other criterion's past
    `assumptions.criterion_independence_max_corr`. Run per lot, not pooled: the
    `opportunity` failure was a within-lot cancellation, and pooling across lots
-   would hide it.
+   would hide it. The threshold is 0.999: an affine restatement gives |r| = 1 to
+   machine precision, while two criteria that merely share home count as a
+   driver land near 0.99 on lots where one option is far denser than the rest —
+   a fact about the lot, not a defect.
 2. **Unreviewed rule.** A tax rule with `reviewed: false` produces
    `provenance: placeholder` and a band spanning the plausible range.
 3. **Comps fallback.** A neighborhood below `min_comps` falls back to citywide

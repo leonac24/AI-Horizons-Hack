@@ -14,6 +14,11 @@
   shipped.
 - Claude Code also looked up and checked the dataset endpoints listed in
   `sources.yaml`, calling the WPRDC CKAN API directly.
+- Claude Code drafted the property tax structure (`data/config/tax.yaml`), the
+  comps pipeline and the stand-in values in `assumptions.yaml`. It did **not**
+  write millage rates or abatement terms from memory: every such value is a
+  labeled placeholder until a teammate verifies it against the published rate or
+  ordinance, the same review rule as zoning.
 
 ## AI inside Lotline
 
