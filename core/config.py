@@ -18,6 +18,12 @@ DEFAULT_CONFIG_DIR = ROOT / "data" / "config"
 Provenance = Literal["observed", "modeled", "assumption", "placeholder"]
 
 
+# The FEMA high-risk flood flag is a parcel field (`fema_sfha`), not a city.yaml
+# hazard. Features that treat it like one (lot search, site checks) use this key.
+FEMA_FLOOD_KEY = "fema_high_risk_flood"
+FEMA_FLOOD_FIELD = "fema_sfha"
+
+
 class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -527,6 +533,88 @@ class InquiriesConfig(_Model):
 
 
 # --- everything ----------------------------------------------------------------
+
+# --- next_steps.yaml -------------------------------------------------------------
+class Contact(_Model):
+    label: str
+    url: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    # False until a person has opened the page and confirmed it is the right one.
+    checked: bool = False
+
+
+class AcquireStep(_Model):
+    title: str
+    default_contact: str
+    by_inventory_type: dict[str, str] = Field(default_factory=dict)
+    not_for_sale_statuses: list[str] = Field(default_factory=list)
+    ask_for_question: str
+    not_for_sale_note: str
+    why: str
+
+
+class ZoningStep(_Model):
+    title: str
+    contact: str
+    why: str
+    questions: list[str]
+
+
+class ConfirmStep(_Model):
+    title: str
+    contact: str
+    why_unreviewed: str
+    why_unchecked: str
+    questions: list[str]
+
+
+class SiteCheckStep(_Model):
+    title: str
+    contact: str
+    why: str
+    flood_label: str
+    hazards: dict[str, list[str]]
+
+
+class NeighborhoodStep(_Model):
+    title: str
+    contact: str
+    why: str
+    rco_placeholder: str
+    discussion_questions: list[str]
+
+
+class DraftSettings(_Model):
+    max_paragraphs: int = Field(gt=0)
+    subject: str
+    greeting: str
+    intro: str
+    facts_lead: str
+    questions_lead: str
+    closing: str
+    sign_off: str
+
+
+class NextStepsConfig(_Model):
+    contacts: dict[str, Contact]
+    acquire: AcquireStep
+    zoning: ZoningStep
+    confirm: ConfirmStep
+    site_check: SiteCheckStep
+    neighborhood: NeighborhoodStep
+    draft: DraftSettings
+
+    @model_validator(mode="after")
+    def _contacts_exist(self) -> NextStepsConfig:
+        used = [self.acquire.default_contact, *self.acquire.by_inventory_type.values(), self.zoning.contact,
+                self.confirm.contact, self.site_check.contact, self.neighborhood.contact]
+        missing = sorted({c for c in used if c not in self.contacts})
+        if missing:
+            raise ValueError(f"next_steps.yaml names contacts that are not defined: {missing}")
+        return self
+
+
 class Config(_Model):
     app: AppConfig
     city: _Open
@@ -538,6 +626,7 @@ class Config(_Model):
     assumptions: dict[str, Assumption]
     sources: SourcesConfig
     inquiries: InquiriesConfig
+    next_steps: NextStepsConfig
     hash: str = ""
 
     @model_validator(mode="after")
@@ -620,6 +709,10 @@ class Config(_Model):
                 errors.append(f"{where}: no assumption named {key!r}")
             if rec.trigger == "zoning_dimensional" and key not in dimensional:
                 errors.append(f"{where}: no dimensional rule named {key!r} in zoning.yaml")
+        known_hazards = {*(self.city.model_dump().get("hazards") or {}), FEMA_FLOOD_KEY}
+        for h in self.next_steps.site_check.hazards:
+            if h not in known_hazards:
+                errors.append(f"next_steps.site_check.hazards: {h!r} is not a city.yaml hazard or {FEMA_FLOOD_KEY!r}")
         if errors:
             raise ValueError("config cross-reference errors:\n  - " + "\n  - ".join(errors))
         return self
@@ -720,6 +813,7 @@ _FILES = {
     "assumptions": "assumptions.yaml",
     "sources": "sources.yaml",
     "inquiries": "inquiries.yaml",
+    "next_steps": "next_steps.yaml",
 }
 
 

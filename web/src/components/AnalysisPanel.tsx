@@ -6,11 +6,13 @@ import type { Analysis, Config, EvidenceLeads, Explanation, Unknowns, WorkBackwa
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
 import { AskLot, Dots, TypedSentences } from './ai'
 import { HelpTip } from './help'
+import { NextStepsTab } from './NextSteps'
 import { MetricBox, ProvTag, SourceRefs } from './ui'
 
-export type Tab = 'compare' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
+export type Tab = 'compare' | 'next' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
 const TABS: [Tab, string][] = [
   ['compare', 'Compare'],
+  ['next', 'Next steps'],
   ['priorities', 'Whose priorities?'],
   ['households', 'Households'],
   ['emissions', 'Carbon'],
@@ -51,6 +53,14 @@ export function AnalysisPanel(p: Props) {
       </div>
       <div className="panel-body">
         {p.tab === 'compare' && <CompareTab {...p} />}
+        {p.tab === 'next' && (
+          <NextStepsTab
+            config={p.config}
+            analysis={p.analysis}
+            ranking={p.ranking}
+            profileLabel={p.config.stakeholders.profiles.find((x) => x.id === p.profileId)?.label ?? 'Custom'}
+          />
+        )}
         {p.tab === 'priorities' && <Priorities {...p} />}
         {p.tab === 'households' && <Households {...p} />}
         {p.tab === 'emissions' && <Carbon {...p} />}
