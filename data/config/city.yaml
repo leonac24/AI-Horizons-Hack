@@ -89,7 +89,9 @@ parcels:
   id_min_chars: 4
   id_max_chars: 32
   municipality_field: MUNIDESC
-  municipality_pattern: "Ward - PITTSBURGH$"
+  # Whitespace-tolerant: the county writes "1st Ward  - PITTSBURGH" with two
+  # spaces and the other wards with one (checked 2026-09-26).
+  municipality_pattern: "Ward\\s+-\\s+PITTSBURGH$"
   # What counts as "vacant" (decision 2026-09-26: vacant land use classes only).
   vacant_use_field: USEDESC
   vacant_use_values:

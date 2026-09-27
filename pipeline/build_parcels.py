@@ -110,7 +110,7 @@ def build(cfg: Config) -> dict:
     ).str.strip()
 
     cols = ["id", "address", "zip", "lon", "lat", "lot_area_sf", "frontage_ft", "depth_ft", "land_value_usd", "land_use", "owner_type",
-            "public", "public_inventory_type", "public_status", "zoning", "zoning_label", "zoning_code_url",
+            "tax_status", "public", "public_inventory_type", "public_status", "zoning", "zoning_label", "zoning_code_url",
             "neighborhood", "tract", "block_group", *city["hazards"].keys()]
     out = pd.DataFrame(gdf[[c for c in cols if c in gdf.columns]])
     out = out.astype(object).where(out.notna(), None)
