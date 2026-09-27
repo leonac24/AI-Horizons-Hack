@@ -4,7 +4,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { makeBridge } from './bridges'
-import { loadTerrain, type Terrain } from './terrain'
+import { loadTerrain, WATER_LEVEL, type Terrain } from './terrain'
 import { box, house, makeBuilding, mat, mesh, type BuildingForm } from './typologyMeshes'
 
 export interface SceneConfig {
@@ -315,9 +315,13 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
 
   function buildCity(t: Terrain): void {
     terrain = t
-    // Water plane at the normal pool; land sits above it.
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.28, metalness: 0.1 }))
-    water.position.y = 0.3
+    // Water plane at the normal pool; land sits above it. Depth offset pushes the
+    // water back so the shoreline never z-fights with the banks.
+    const water = new THREE.Mesh(
+      new THREE.PlaneGeometry(6000, 6000).rotateX(-Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.28, metalness: 0.1, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 4 }),
+    )
+    water.position.y = WATER_LEVEL
     water.receiveShadow = true
     city.add(water)
     // Ground: vivid inside city limits, pale countryside outside.
