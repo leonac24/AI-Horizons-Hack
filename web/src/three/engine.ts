@@ -792,6 +792,10 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   controls.addEventListener('start', stopSpin)
   interface Tween { t0: number; dur: number; fp: THREE.Vector3; ft: THREE.Vector3; tp: THREE.Vector3; tt: THREE.Vector3; res: () => void }
   let tween: Tween | null = null
+  // Neighborhood labels stay hidden while the intro swoops out; mid-flight they
+  // jump across the screen and pop in and out as the overlap check re-runs.
+  let introFlight: Tween | null = null
+  let hoodsHidden = false
   const flyTo = (pos: number[], target: number[], dur = 900) =>
     new Promise<void>((res) => {
       tween = { t0: performance.now(), dur, fp: camera.position.clone(), ft: controls.target.clone(), tp: new THREE.Vector3(...pos), tt: new THREE.Vector3(...target), res }
@@ -1047,6 +1051,11 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
         t.res()
       }
     }
+    const hide = !!tween && tween === introFlight
+    if (hide !== hoodsHidden) {
+      hoodsHidden = hide
+      labels.classList.toggle('hoods-hidden', hide)
+    }
     if (mode === 'city' && !tween) {
       controls.target.x = Math.max(-HALF, Math.min(HALF, controls.target.x))
       controls.target.z = Math.max(-HALF, Math.min(HALF, controls.target.z))
@@ -1226,7 +1235,9 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     },
     async enter() {
       controls.autoRotateSpeed = 0.5
-      await flyTo(...cityView(), 2200)
+      const done = flyTo(...cityView(), 2200)
+      introFlight = tween
+      await done
     },
     resetView() {
       void flyTo(...(mode === 'city' ? cityView() : lotView()), 800)
