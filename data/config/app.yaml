@@ -182,6 +182,14 @@ tutorial:
           Decision support only. Confirm with the City of Pittsburgh Department
           of City Planning. Click ? next to any heading if you need a hand.
 
+# Every panel has a ▾ button that tucks it away to its header. The browser
+# remembers the choice under `storage_key`. At or below `narrow_max_px` wide
+# (phones) panels become full-width sheets and the top bar's actions move into a
+# Tools dropdown.
+panels:
+  storage_key: lotline.panels.v1
+  narrow_max_px: 720
+
 # Text for the small ? buttons. Keys are the ids the UI asks for.
 help:
   pick_lot:

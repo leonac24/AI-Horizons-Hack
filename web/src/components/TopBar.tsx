@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ParcelSummary } from '../types'
 import { HelpTip } from './help'
 
@@ -17,10 +18,17 @@ interface Props {
   onShare: () => void
   onHelp: () => void
   disclaimer: string
+  /** Phone width: the lot actions move into a Tools dropdown. */
+  narrow: boolean
+  /** Keep the dropdown open (the tour points at buttons inside it). */
+  menuOpen: boolean
 }
 
 export function TopBar(p: Props) {
   const isLot = p.mode === 'lot'
+  const [menu, setMenu] = useState(false)
+  const dropdown = isLot && p.narrow
+  const shown = !dropdown || menu || p.menuOpen
   return (
     <>
       <header className="topbar">
@@ -47,8 +55,13 @@ export function TopBar(p: Props) {
             </>
           )}
         </nav>
-        {isLot && (
-          <div className="bar-actions">
+        {dropdown && (
+          <button className="ghost-btn tools-btn" aria-expanded={shown} onClick={() => setMenu(!menu)}>
+            Tools <span className="tuck-chev" aria-hidden="true">▾</span>
+          </button>
+        )}
+        {isLot && shown && (
+          <div className={`bar-actions${dropdown ? ' bar-menu' : ''}`}>
             <div className="bar-actions" data-tour="plan-controls">
             <div className="seg">
               <button className={!p.showPlan ? 'on-info' : ''} onClick={() => p.setShowPlan(false)}>

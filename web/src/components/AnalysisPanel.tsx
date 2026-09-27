@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { PLAN_ID, type Crossing, type Option, type Ranking, type SetbackEnvelope } from '../lib/plan'
 import type { Placement } from '../three/engine'
@@ -7,7 +7,7 @@ import { ROLE_COLOR, roleOf, usd } from '../lib/format'
 import { AskLot, Dots, TypedSentences } from './ai'
 import { HelpTip } from './help'
 import { NextStepsTab } from './NextSteps'
-import { MetricBox, ProvTag, SourceRefs } from './ui'
+import { MetricBox, ProvTag, SourceRefs, TuckButton } from './ui'
 
 export type Tab = 'compare' | 'next' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
 const TABS: [Tab, string][] = [
@@ -38,35 +38,63 @@ interface Props {
   onPlace: (list: Placement[]) => void
   envelope: SetbackEnvelope | null
   crossings: Crossing[]
+  open: boolean
+  onToggle: () => void
+  onHeight?: (px: number) => void
 }
 
 export function AnalysisPanel(p: Props) {
-  const { L } = p
+  const { L, open, onToggle, onHeight } = p
+  const box = useRef<HTMLElement>(null)
+  // On narrow screens the palette stacks above this sheet, so report its height.
+  useEffect(() => {
+    const el = box.current
+    if (!el || !onHeight) return
+    const ro = new ResizeObserver(() => onHeight(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [onHeight])
+  // Tucked, the panel keeps only its tab bar; picking a tab opens it again.
+  const style = open
+    ? { top: L.pTop, right: L.pRight, bottom: L.pBottom, left: L.pLeft, width: L.pWidth, height: L.pHeight, borderRadius: L.pRadius }
+    : { top: L.pTop, right: L.pRight, bottom: L.pTop === 'auto' ? L.pBottom : 'auto', left: L.pLeft, width: L.pWidth, height: 'auto', borderRadius: L.pRadius }
   return (
-    <section className="panel" style={{ top: L.pTop, right: L.pRight, bottom: L.pBottom, left: L.pLeft, width: L.pWidth, height: L.pHeight, borderRadius: L.pRadius }}>
+    <section ref={box} className={`panel${open ? '' : ' tucked'}`} style={style}>
       <div className="tabs" data-tour="tabs">
-        {TABS.map(([id, label]) => (
-          <button key={id} className={`tab-${id} ${p.tab === id ? 'on' : ''}`} onClick={() => p.setTab(id)}>
-            {label}
-          </button>
-        ))}
+        <div className="tab-list">
+          {TABS.map(([id, label]) => (
+            <button
+              key={id}
+              className={`tab-${id} ${open && p.tab === id ? 'on' : ''}`}
+              onClick={() => {
+                p.setTab(id)
+                if (!open) onToggle()
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <TuckButton open={open} onToggle={onToggle} label="the analysis panel" />
       </div>
-      <div className="panel-body">
-        {p.tab === 'compare' && <CompareTab {...p} />}
-        {p.tab === 'next' && (
-          <NextStepsTab
-            config={p.config}
-            analysis={p.analysis}
-            ranking={p.ranking}
-            profileLabel={p.config.stakeholders.profiles.find((x) => x.id === p.profileId)?.label ?? 'Custom'}
-          />
-        )}
-        {p.tab === 'priorities' && <Priorities {...p} />}
-        {p.tab === 'households' && <Households {...p} />}
-        {p.tab === 'emissions' && <Carbon {...p} />}
-        {p.tab === 'backwards' && <Backwards {...p} />}
-        {p.tab === 'unknowns' && <UnknownsTab config={p.config} />}
-      </div>
+      {open && (
+        <div className="panel-body">
+          {p.tab === 'compare' && <CompareTab {...p} />}
+          {p.tab === 'next' && (
+            <NextStepsTab
+              config={p.config}
+              analysis={p.analysis}
+              ranking={p.ranking}
+              profileLabel={p.config.stakeholders.profiles.find((x) => x.id === p.profileId)?.label ?? 'Custom'}
+            />
+          )}
+          {p.tab === 'priorities' && <Priorities {...p} />}
+          {p.tab === 'households' && <Households {...p} />}
+          {p.tab === 'emissions' && <Carbon {...p} />}
+          {p.tab === 'backwards' && <Backwards {...p} />}
+          {p.tab === 'unknowns' && <UnknownsTab config={p.config} />}
+        </div>
+      )}
     </section>
   )
 }
