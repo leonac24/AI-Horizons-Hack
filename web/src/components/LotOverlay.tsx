@@ -3,6 +3,7 @@ import { PLAN_ID, subsidyPerHome, type Option, type Ranking } from '../lib/plan'
 import type { Placement } from '../three/engine'
 import type { Analysis, Config } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
+import { HelpTip } from './help'
 
 type L = Record<string, string>
 
@@ -27,7 +28,7 @@ export function Hud(p: {
   const short = p.profileLabel.length > 16 ? p.profileLabel.slice(0, 15) + '…' : p.profileLabel
   return (
     <div className="hud" style={{ left: p.L.hudLeft, maxWidth: p.L.hudMax }}>
-      <div className="hud-row">
+      <div className="hud-row" data-tour="hud">
         <Gauge tile="green" label="Homes" value={String(plan?.units ?? 0)} color="#2fd06b" />
         <div className="gauge wide">
           <div className="gauge-tile blue" />
@@ -41,6 +42,7 @@ export function Hud(p: {
         <Gauge tile="pink" label={`Rank · ${short}`} value={rank} labelColor="#ff4fa8" />
         <Gauge tile="teal" label={`CO₂e / hh · yr ${p.year}`} value={carbon} />
         <Gauge tile="amber" label={`Gap / home · ${p.wbAmi}% AMI`} value={gap} />
+        <span className="hud-help"><HelpTip id="hud" /></span>
       </div>
       {p.empty && p.showPlan && <div className="hud-note lime">Drag a building from the palette onto the outlined lot. R rotates · Del removes.</div>}
       {!p.showPlan && <div className="hud-note info">Before: the lot as it is today. Switch to After to edit your plan.</div>}
@@ -93,9 +95,13 @@ export function Palette(p: {
     <div
       ref={box}
       className="palette"
+      data-tour="palette"
       style={{ left: L.palLeft, right: L.palRight, top: L.palTop, bottom: L.palBottom, flexDirection: L.palDir as 'row' | 'column', maxWidth: L.palMax, maxHeight: L.palMaxH }}
     >
-      <div className="build-tag">BUILD</div>
+      <div className="build-head">
+        <span className="build-tag">BUILD</span>
+        <HelpTip id="palette" />
+      </div>
       {p.config.typologies.map((t) => {
         const s = p.analysis.scenarios.find((x) => x.typology_id === t.id)
         const fits = s?.form_fits ?? false

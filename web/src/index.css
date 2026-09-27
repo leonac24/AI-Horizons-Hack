@@ -197,7 +197,8 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   position: absolute; overflow: auto; display: flex; gap: 8px; padding: 30px 10px 10px; background: var(--panel);
   border: 2px solid var(--border); border-radius: 16px; z-index: 4; user-select: none;
 }
-.build-tag { position: absolute; top: 8px; left: 12px; font: 700 11px var(--display); color: var(--bg); background: var(--lime); padding: 2px 9px; border-radius: 999px; letter-spacing: 0.08em; }
+.build-head { position: absolute; top: 6px; left: 12px; display: flex; align-items: center; }
+.build-tag { font: 700 11px var(--display); color: var(--bg); background: var(--lime); padding: 2px 9px; border-radius: 999px; letter-spacing: 0.08em; }
 .pal-card {
   position: relative; width: 138px; flex-shrink: 0; padding: 6px 6px 8px; border: 2px solid var(--border); border-bottom-width: 5px;
   border-radius: 12px; background: var(--card); cursor: grab; touch-action: none; display: flex; flex-direction: column; gap: 4px; transition: transform 0.12s;
@@ -358,3 +359,48 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   #lotline-memo { position: absolute !important; inset: 0 !important; box-shadow: none !important; }
   .memo-actions { display: none !important; }
 }
+
+/* Help: tiny ? buttons + their popover */
+.help-tip {
+  display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 6px; padding: 0; vertical-align: 2px;
+  border-radius: 50%; border: 2px solid var(--border); background: var(--inset); color: var(--ink-2); font: 700 10.5px/1 var(--display);
+  cursor: pointer; flex-shrink: 0; text-transform: none; letter-spacing: 0;
+}
+.help-tip:hover, .help-tip.on { border-color: var(--lime); color: var(--lime); }
+.help-tip:focus-visible { outline: 2px solid var(--lime); outline-offset: 1px; }
+.cp-hero .help-tip { background: rgba(255, 255, 255, 0.35); border-color: #0b3a1f; color: #0b3a1f; }
+.help-pop {
+  position: fixed; z-index: 40; width: min(280px, calc(100vw - 24px)); padding: 10px 12px; background: var(--card); color: var(--ink);
+  border: 2px solid var(--lime); border-bottom-width: 4px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); font: 600 13px/1.45 var(--ui);
+}
+.help-pop p { margin: 4px 0 0; color: var(--ink-2); }
+.help-pop-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 700 14px var(--display); }
+.help-x { background: none; border: none; color: var(--ink-3); font: 700 18px/1 var(--display); cursor: pointer; padding: 0 2px; }
+.help-x:hover { color: var(--ink); }
+.help-btn { width: 32px; height: 32px; padding: 0; border-radius: 50%; font: 700 15px/1 var(--display); flex-shrink: 0; }
+
+/* Walk-through */
+.tour { position: fixed; inset: 0; z-index: 30; }
+.tour-block { position: absolute; inset: 0; }
+.tour-dim { position: absolute; inset: 0; background: rgba(6, 9, 12, 0.62); }
+.tour-hole {
+  position: absolute; border-radius: 12px; border: 3px solid var(--lime); pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(6, 9, 12, 0.62); transition: left 0.2s, top 0.2s, width 0.2s, height 0.2s;
+}
+.tour-card {
+  position: absolute; width: min(340px, calc(100vw - 24px)); padding: 14px 16px; background: var(--panel); border: 2px solid var(--lime);
+  border-bottom-width: 5px; border-radius: 16px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.tour-title { font: 700 20px/1.2 var(--display); margin-top: 4px; }
+.tour-card p { margin: 6px 0 10px; color: var(--ink-2); }
+.tour-dots { display: flex; gap: 5px; margin-bottom: 10px; }
+.tour-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-4); }
+.tour-dots span.on { background: var(--lime); }
+.tour-actions { display: flex; align-items: center; gap: 6px; }
+.tour-skip { background: none; border: none; padding: 4px 0; color: var(--ink-3); cursor: pointer; font: 600 12.5px var(--ui); text-decoration: underline; }
+.tour-skip:hover { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .tour-hole { transition: none; } }
+.cp-label { display: flex; align-items: center; margin-bottom: 6px; }
+.cp-head [data-tour='filters'] > .cp-label { margin-top: 2px; }
+.hud-help { align-self: center; }
+.back-btn { white-space: nowrap; flex-shrink: 0; }

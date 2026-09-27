@@ -4,12 +4,14 @@ import { AnalysisPanel, type Tab } from './components/AnalysisPanel'
 import { LotSearchBox } from './components/ai'
 import { type AiSearch, FLOOD_FILTER, passesAiFilters } from './lib/aiSearch'
 import { CityPanel, type Filters } from './components/CityPanel'
+import { Tour } from './components/help'
+import { HelpContext, readSeen, writeSeen } from './lib/tour'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
 import { MemoModal } from './components/MemoModal'
 import { TopBar } from './components/TopBar'
 import { buildingForms, buildPool, countsOf, PLAN_ID, rank, envelopeOf, setbackCrossings } from './lib/plan'
 import { createEngine, type Engine, type ParcelPoint, type Placement } from './three/engine'
-import type { Analysis, Config, ParcelSummary, PlanResult } from './types'
+import type { Analysis, Config, ParcelSummary, PlanResult, TourChapter } from './types'
 
 // Compact properties written by pipeline/build_parcels.py::_points
 interface PointProps {
@@ -54,6 +56,7 @@ export default function App() {
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
   const [palH, setPalH] = useState(0)
+  const [tour, setTour] = useState<TourChapter | null>(null)
   const vp = useRef<HTMLDivElement>(null)
   const engine = useRef<Engine | null>(null)
   const placementsRef = useRef<Placement[]>([])
@@ -237,6 +240,26 @@ export default function App() {
   }, [aiSearch, hits, suggested, visibleIds])
   useEffect(() => engine.current?.setPins(pinLots), [pinLots, config, features])
 
+  // First visit plays the city chapter; the first lot opened plays the lot chapter.
+  // Finishing a chapter or skipping the tutorial is remembered in this browser.
+  const lotReady = mode === 'lot' && !!analysis
+  useEffect(() => {
+    if (!config || !features.length) return
+    if (mode === 'lot' && !lotReady) return
+    const chapter: TourChapter = mode
+    if (config.app.tutorial.chapters[chapter]?.length && !readSeen(config.app.tutorial.storage_key)[chapter]) setTour(chapter)
+  }, [config, features.length, mode, lotReady])
+  const endTour = (how: 'done' | 'skipped') => {
+    if (!config || !tour) return
+    const key = config.app.tutorial.storage_key
+    const seen = readSeen(key)
+    if (how === 'done') seen[tour] = 'done'
+    // Skipping means skipping the whole tutorial, not just this screen.
+    else for (const c of Object.keys(config.app.tutorial.chapters) as TourChapter[]) seen[c] ??= 'skipped'
+    writeSeen(key, seen)
+    setTour(null)
+  }
+
   const pool = useMemo(() => (config && analysis ? buildPool(config, analysis, placements.length ? plan : null) : []), [config, analysis, plan, placements.length])
   const ranking = useMemo(() => (config ? rank(config, pool, weights) : null), [config, pool, weights])
 
@@ -273,6 +296,7 @@ export default function App() {
   const planOpt = pool.find((o) => o.id === PLAN_ID)
 
   return (
+    <HelpContext.Provider value={config.app.help}>
     <div className="shell">
       <div ref={vp} className="viewport" style={{ right: lotL.vpRight, bottom: mode === 'lot' ? lotL.vpBottom : '0px' }} />
       <TopBar
@@ -291,6 +315,7 @@ export default function App() {
         onClear={() => placements.length && place([])}
         onReset={() => engine.current?.resetView()}
         onMemo={() => setMemo(true)}
+        onHelp={() => setTour(mode)}
         disclaimer={config.app.disclaimer}
       />
       {error && <div className="error-toast">{error}</div>}
@@ -373,6 +398,10 @@ export default function App() {
       {memo && analysis && ranking && (
         <MemoModal config={config} analysis={analysis} ranking={ranking} profileLabel={config.stakeholders.profiles.find((p) => p.id === profileId)?.label ?? 'Custom'} onClose={() => setMemo(false)} />
       )}
+      {tour && config.app.tutorial.chapters[tour]?.length && (
+        <Tour key={tour} steps={config.app.tutorial.chapters[tour]!} onFinish={() => endTour('done')} onSkip={() => endTour('skipped')} />
+      )}
     </div>
+    </HelpContext.Provider>
   )
 }
