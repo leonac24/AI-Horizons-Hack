@@ -69,6 +69,18 @@ _Auto-generated for config `ef5b13cf1ef5`._
   a stop or route alone cannot establish jobs reachable by transit.
 - **City limits only.** Other Allegheny County municipalities have their own
   zoning codes.
+- **Next steps name an agency, not a person, and the links are unconfirmed.**
+  Land Bank, URA, City Real Estate and City Planning contacts in
+  `next_steps.yaml` were found by web search; the pages could not be opened from
+  the build environment, so each shows "not yet confirmed" until a teammate
+  checks it and sets `checked: true`. Which agency handles a public lot is read
+  from the city inventory's type; that routing is our reading, not the city's.
+- **Lotline does not know which Registered Community Organization covers a lot.**
+  WPRDC publishes RCO boundaries, but they are not joined to the parcel index
+  yet, so the neighborhood step and handout point to the City's RCO list instead
+  of naming an organization.
+- **Outreach drafts are starting points.** They state only the facts on the step
+  card, but the user is responsible for what they send.
 
 ## Who could be harmed by misuse
 

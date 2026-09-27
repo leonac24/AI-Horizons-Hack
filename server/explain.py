@@ -74,7 +74,7 @@ def build_input(cfg: Config, a: Analysis, weights: dict[str, float], ranking: li
     }
 
 
-def _allowed_numbers(payload: dict) -> set[float]:
+def allowed_numbers(payload: dict) -> set[float]:
     nums: set[float] = set()
     # ensure_ascii=False: an escaped label like "3\u201312" would hide the "12" from NUM.
     for tok in NUM.findall(json.dumps(payload, ensure_ascii=False)):
@@ -98,7 +98,7 @@ def validate(payload: dict, out: object, max_sentences: int) -> list[dict] | Non
     if not isinstance(out, dict):
         return None
     ids = {m["id"] for s in payload["scenarios"] for m in s["metrics"]}
-    allowed = _allowed_numbers(payload)
+    allowed = allowed_numbers(payload)
     sentences = out.get("sentences")
     if not isinstance(sentences, list) or not sentences:
         return None

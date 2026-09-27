@@ -4,6 +4,8 @@ import type {
   Explanation,
   EvidenceLeads,
   LotAnswer,
+  NextStep,
+  OutreachDraft,
   LotSearchResult,
   ParcelSummary,
   PlanResult,
@@ -48,6 +50,8 @@ export const api = {
   },
   ask: (parcelId: string, weights: Record<string, number>, ranking: string[], question: string) =>
     post<LotAnswer>('/api/ask', { parcel_id: parcelId, weights, ranking, question }),
+  nextSteps: (id: string) => get<NextStep[]>(`/api/next-steps/${encodeURIComponent(id)}`),
+  draft: (parcelId: string, stepId: NextStep['id']) => post<OutreachDraft>('/api/draft', { parcel_id: parcelId, step_id: stepId }),
   lotSearch: (query: string) => post<LotSearchResult>('/api/parcels/ask', { query }),
   explain: async (parcelId: string, weights: Record<string, number>, ranking: string[]) => {
     const r = await fetch('/api/explain', {
