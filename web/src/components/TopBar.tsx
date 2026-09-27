@@ -28,6 +28,11 @@ export function TopBar(p: Props) {
           <div className="brand-name">Lotline</div>
           <div className="brand-tag">SIM</div>
         </div>
+        {isLot && (
+          <button className="ghost-btn back-btn" onClick={p.onCity} data-tour="back" title="Back to the city map">
+            ← City map
+          </button>
+        )}
         <nav className="crumbs">
           <button className={`crumb ${isLot ? 'dimmed' : ''}`} onClick={p.onCity}>
             Pittsburgh

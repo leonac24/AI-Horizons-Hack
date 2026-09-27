@@ -154,6 +154,10 @@ tutorial:
         body: >-
           Flip between the lot as it is today and your plan. Undo, redo, clear
           the lot or reset the camera here.
+      - target: back
+        title: Back to the map
+        body: >-
+          Done with this lot? Go back to the city map to pick another one.
       - target: tabs
         title: Dig into the tradeoffs
         body: >-
