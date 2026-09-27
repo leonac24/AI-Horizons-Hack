@@ -48,6 +48,7 @@ export default function App() {
   const [hits, setHits] = useState<ParcelSummary[]>([])
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
+  const [palH, setPalH] = useState(0)
   const vp = useRef<HTMLDivElement>(null)
   const engine = useRef<Engine | null>(null)
   const placementsRef = useRef<Placement[]>([])
@@ -234,6 +235,8 @@ export default function App() {
   const ranking = useMemo(() => (config ? rank(config, pool, weights) : null), [config, pool, weights])
 
   if (!config) return <div className="boot">{error ? `Could not load: ${error}` : 'Loading Lotline…'}</div>
+  // Bottom-tray layout: stack the inspector above the palette's measured height.
+  const lotL = L.palDir === 'row' && palH ? { ...L, inspBottom: `calc(${L.palBottom} + ${palH + 12}px)` } : L
   const toCity = () => {
     if (mode !== 'lot') return
     void engine.current?.goCity()
@@ -249,7 +252,7 @@ export default function App() {
 
   return (
     <div className="shell">
-      <div ref={vp} className="viewport" style={{ right: L.vpRight, bottom: mode === 'lot' ? L.vpBottom : '0px' }} />
+      <div ref={vp} className="viewport" style={{ right: lotL.vpRight, bottom: mode === 'lot' ? lotL.vpBottom : '0px' }} />
       <TopBar
         mode={mode}
         lot={analysis?.parcel ?? null}
@@ -287,7 +290,7 @@ export default function App() {
         <>
           <Hud
             config={config}
-            L={L}
+            L={lotL}
             analysis={analysis}
             plan={planOpt ?? null}
             ranking={ranking}
@@ -297,11 +300,11 @@ export default function App() {
             showPlan={showPlan}
             empty={!placements.length}
           />
-          <Palette config={config} L={L} analysis={analysis} counts={countsOf(placements)} onDown={(id, e) => engine.current?.beginDrag(id, e)} />
+          <Palette config={config} L={lotL} analysis={analysis} counts={countsOf(placements)} onDown={(id, e) => engine.current?.beginDrag(id, e)} onHeight={setPalH} />
           {sel && showPlan && (
             <Inspector
               config={config}
-              L={L}
+              L={lotL}
               placement={placements.find((p) => p.uid === sel) ?? null}
               analysis={analysis}
               onRotate={() => engine.current?.rotateSelected()}
@@ -310,7 +313,7 @@ export default function App() {
           )}
           <AnalysisPanel
             config={config}
-            L={L}
+            L={lotL}
             analysis={analysis}
             pool={pool}
             ranking={ranking}
