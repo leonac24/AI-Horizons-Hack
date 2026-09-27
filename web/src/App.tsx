@@ -5,7 +5,7 @@ import { CityPanel, type Filters } from './components/CityPanel'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
 import { MemoModal } from './components/MemoModal'
 import { TopBar, type Layout } from './components/TopBar'
-import { buildingForms, buildPool, countsOf, PLAN_ID, rank } from './lib/plan'
+import { buildingForms, buildPool, countsOf, PLAN_ID, rank, envelopeOf, setbackCrossings } from './lib/plan'
 import { createEngine, type Engine, type ParcelPoint, type Placement } from './three/engine'
 import type { Analysis, Config, ParcelSummary, PlanResult } from './types'
 
@@ -193,7 +193,17 @@ export default function App() {
   }, [lotId, placements])
 
   useEffect(() => engine.current?.setShowPlan(showPlan), [showPlan])
-  useEffect(() => engine.current?.setWarnings(plan ? placements.filter((p) => plan.failed_typologies.includes(p.typ)).map((p) => p.uid) : []), [plan, placements])
+  // Reviewed setbacks: drawn as the buildable area; buildings crossing them are flagged.
+  const envelope = useMemo(() => (analysis ? envelopeOf(analysis) : null), [analysis])
+  const crossings = useMemo(
+    () => (analysis ? setbackCrossings(config!, placements, analysis.lot_shape, envelope) : []),
+    [config, analysis, placements, envelope],
+  )
+  useEffect(() => engine.current?.setEnvelope(envelope), [envelope])
+  useEffect(() => {
+    const failed = plan ? placements.filter((p) => plan.failed_typologies.includes(p.typ)).map((p) => p.uid) : []
+    engine.current?.setWarnings([...new Set([...failed, ...crossings.map((c) => c.uid)])])
+  }, [plan, placements, crossings])
 
   // City filters drive which parcel dots show; pins are suggested lots + search hits.
   const visibleIds = useMemo(() => {
@@ -322,6 +332,8 @@ export default function App() {
             wb={wb}
             setWb={setWb}
             onPlace={place}
+            envelope={envelope}
+            crossings={crossings}
           />
         </>
       )}
