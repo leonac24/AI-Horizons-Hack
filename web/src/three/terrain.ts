@@ -17,13 +17,19 @@ interface Meta {
   fine: { extent: number; step: number; n: number }
 }
 
-const WATER_H = -0.6
+/** Height of the flat water plane. */
+export const WATER_LEVEL = 0.3
+// Riverbed and lowest land sit well clear of the water plane: at city zoom the
+// depth buffer can't separate surfaces a fraction of a unit apart, and flat banks
+// near the pool z-fight with the water (rivers flicker as the camera moves).
+const WATER_H = WATER_LEVEL - 2.5
+const LAND_MIN = WATER_LEVEL + 0.8
 
 function sampler(data: Int16Array, offset: number, extent: number, step: number, n: number, scale: number, water: number) {
   const stride = n + 1
   const at = (i: number, j: number) => {
     const v = data[offset + j * stride + i]
-    return v === water ? WATER_H : v / scale
+    return v === water ? WATER_H : Math.max(LAND_MIN, v / scale)
   }
   const wet = (i: number, j: number) => data[offset + j * stride + i] === water
   const idx = (x: number, z: number) => {
@@ -101,7 +107,7 @@ function ruleTerrain(riverPts: [number, number][][], half: number): Terrain {
     const d = dist(x, z)
     if (d < 15) return WATER_H
     const n = 0.5 + 0.5 * Math.sin(x * 0.011 + 1.3) * Math.cos(z * 0.013 - 0.7) + 0.22 * Math.sin(x * 0.029 + z * 0.023)
-    return 0.8 + sst(40, 105, d) * sst(80, 190, Math.hypot(x + 15, z)) * (15 + 14 * n)
+    return LAND_MIN + sst(40, 105, d) * sst(80, 190, Math.hypot(x + 15, z)) * (15 + 14 * n)
   }
   return {
     source: 'rules',
