@@ -3,6 +3,7 @@ import { api } from './api'
 import { AnalysisPanel, type Tab } from './components/AnalysisPanel'
 import { LotSearchBox } from './components/ai'
 import { type AiSearch, FLOOD_FILTER, passesAiFilters } from './lib/aiSearch'
+import { clearShare, readShare, shareUrl, type Shared } from './lib/share'
 import { CityPanel, type Filters } from './components/CityPanel'
 import { Tour } from './components/help'
 import { HelpContext, readSeen, writeSeen } from './lib/tour'
@@ -53,6 +54,14 @@ export default function App() {
   const [aiSearch, setAiSearch] = useState<AiSearch | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  // A scenario from a shared link, applied once its lot's analysis has loaded.
+  const pendingShare = useRef<Shared | null>(null)
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 4500)
+    return () => clearTimeout(t)
+  }, [toast])
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
   const [palH, setPalH] = useState(0)
@@ -72,8 +81,20 @@ export default function App() {
         setFeatures(fc.features)
         setSuggested(sug)
         const first = c.stakeholders.profiles[0]
-        setWeights({ ...first.weights })
-        setProfileId(first.id)
+        const shared = readShare({
+          lots: new Set(fc.features.map((f) => f.properties.id)),
+          criteria: new Set(c.criteria.map((x) => x.id)),
+          typologies: new Set(c.typologies.map((t) => t.id)),
+          profiles: new Set(c.stakeholders.profiles.map((p) => p.id)),
+          maxBuildings: c.app.api.plan_max_buildings,
+        })
+        setWeights(shared && Object.keys(shared.weights).length ? shared.weights : { ...first.weights })
+        setProfileId(shared ? shared.profile : first.id)
+        if (shared) {
+          pendingShare.current = shared
+          setLotId(shared.lot)
+          setMode('lot')
+        }
         setYear(Math.round(c.assumptions.analysis_years.value))
         document.title = `${c.app.name} — Pittsburgh`
       })
@@ -172,7 +193,12 @@ export default function App() {
         const firstFit = [...a.scenarios].reverse().find((s) => s.form_fits) ?? a.scenarios[0]
         setWb((w) => ({ ...w, typ: firstFit.typology_id, units: firstFit.units }))
         const hill = Object.entries(config.city.hazards).some(([k, h]) => h.lot_scene === 'hill' && a.parcel[k])
-        void engine.current?.goLot({ id: a.parcel.id, lon: a.parcel.lon, lat: a.parcel.lat, frontage: a.lot_shape.frontage_ft, depth: a.lot_shape.depth_ft, hill }, [])
+        const shared = pendingShare.current?.lot === a.parcel.id ? pendingShare.current : null
+        const list = (shared?.placements ?? []).map((b) => ({ ...b, uid: 'b' + Math.random().toString(36).slice(2, 9) }))
+        pendingShare.current = null
+        if (shared) clearShare()
+        if (list.length) setPlacements(list)
+        void engine.current?.goLot({ id: a.parcel.id, lon: a.parcel.lon, lat: a.parcel.lat, frontage: a.lot_shape.frontage_ft, depth: a.lot_shape.depth_ft, hill }, list)
       })
       .catch((e: Error) => setError(e.message))
     return () => {
@@ -316,9 +342,22 @@ export default function App() {
         onReset={() => engine.current?.resetView()}
         onMemo={() => setMemo(true)}
         onHelp={() => setTour(mode)}
+        onShare={() => {
+          if (!lotId) return
+          const url = shareUrl({ lot: lotId, weights, profile: profileId, placements })
+          navigator.clipboard
+            .writeText(url)
+            .then(() => setToast('Link copied: it reopens this lot with these priorities and buildings.'))
+            .catch(() => setToast(url))
+        }}
         disclaimer={config.app.disclaimer}
       />
       {error && <div className="error-toast">{error}</div>}
+      {toast && (
+        <div className="info-toast" role="status" onClick={() => setToast(null)}>
+          {toast}
+        </div>
+      )}
       {mode === 'city' && (
         <CityPanel
           config={config}

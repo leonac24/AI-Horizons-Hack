@@ -18,10 +18,13 @@ from pydantic import BaseModel, Field
 
 from core.config import ROOT, get_config
 from core.engine import Analysis, analyze, work_backwards
+from core.next_steps import Step, StepKind
+from core.next_steps import build as build_next_steps
 from core.plan import Placement, PlanResult, analyze_plan
 from core.zoning import covered_bases, load_rules
 from server import lot_search
 from server.ask import ask
+from server.draft import draft
 from server.explain import explain
 from server.llm import get_provider
 
@@ -235,6 +238,30 @@ def analysis(request: Request, response: Response, parcel_id: str = PARCEL_ID) -
     if _conditional(request, response, result.model_dump(mode="json")):
         return Response(status_code=304)  # type: ignore[return-value]
     return result
+
+
+@api.get("/next-steps/{parcel_id}", summary="What to do next on one lot, and who to contact")
+def next_steps(request: Request, response: Response, parcel_id: str = PARCEL_ID) -> list[Step]:
+    steps = build_next_steps(get_config(), _analysis(parcel_id))
+    if _conditional(request, response, [s.model_dump(mode="json") for s in steps]):
+        return Response(status_code=304)  # type: ignore[return-value]
+    return steps
+
+
+class DraftRequest(BaseModel):
+    parcel_id: str = ParcelId
+    step_id: StepKind
+
+
+@api.post("/draft", summary="Draft outreach for one next step; nothing is sent")
+def draft_route(req: DraftRequest, request: Request) -> dict:
+    cfg = get_config()
+    a = _analysis(req.parcel_id)
+    step = next((s for s in build_next_steps(cfg, a) if s.id == req.step_id), None)
+    if step is None:
+        raise HTTPException(404, "that step does not apply to this lot")
+    _spend(request)
+    return draft(cfg, get_provider(), a, step)
 
 
 class PlanRequest(BaseModel):
