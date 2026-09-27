@@ -7,7 +7,7 @@ Housing Typology, Equity & Climate Matchmaker.**
 | | |
 |---|---|
 | **Demo video (3–5 min)** | _TODO: add the public link_ |
-| **Live app** | lotline-pgh.vercel.app |
+| **Live app** | https://lotline-pgh.vercel.app |
 | **Repository** | https://github.com/leonac24/LotLine |
 
 > **Decision support only.** Lotline is not zoning, legal, or financial advice.
