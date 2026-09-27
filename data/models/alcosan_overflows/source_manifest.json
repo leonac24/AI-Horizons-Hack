@@ -24,8 +24,8 @@
         "4-26",
         "4-27"
       ],
-      "table_records": 348,
-      "modeled_records": 338,
+      "table_records": 349,
+      "modeled_records": 339,
       "closed_records": 8,
       "pending_unmodeled_records": 2,
       "model_scenario": "Existing-condition typical-year hydrologic and hydraulic model simulation",
@@ -39,7 +39,7 @@
       "license": "Public agency report; retain attribution to ALCOSAN."
     },
     {
-      "source_id": "pwsa_combined_sewersheds_2018",
+      "source_id": "pwsa_combined_sewersheds",
       "publisher": "Pittsburgh Water and Sewer Authority via Western Pennsylvania Regional Data Center",
       "title": "Combined Sewershed",
       "url": "https://data.wprdc.org/dataset/combined-sewershed",
@@ -66,10 +66,11 @@
     "parcel_records_with_combined_sewershed": 19447,
     "distinct_combined_sewershed_labels": 153,
     "distinct_labels_with_complete_exact_or_terminal_of_match": 86,
-    "parcel_records_with_complete_exact_or_terminal_of_match": 15697,
-    "parcel_match_rate_of_parcel_rows_with_a_sewershed": 0.8071682008,
-    "parcel_match_rate_of_all_parcel_rows": 0.7061134,
-    "coverage_note": "Coverage is a reproducible baseline over the inspected source parcel file and the loaded CWP table registry; recalculate from active parcel data at integration time."
+    "parcel_match_rate_of_parcel_rows_with_a_sewershed": 0.7686532627,
+    "parcel_match_rate_of_all_parcel_rows": 0.672333918,
+    "coverage_note": "Runtime coverage measured on active data/processed/parcels.json (build_overflow_inputs): direct matched context for 14,948 of 22,233 parcels; 7,285 receive the disclosed regional fallback. The 86 complete-match labels are unique labels, not a count of parcels. Recalculate when parcel data or the model registry changes.",
+    "parcel_records_with_direct_runtime_match": 14948,
+    "parcel_records_with_regional_fallback": 7285
   },
   "normalization_boundary": "Only slash tokenization, case-insensitive exact ID / explicit report-alias match, or adding a terminal -OF marker when that exact candidate exists are allowed. No punctuation stripping, number changes, fuzzy aliases, or spatial proximity joins.",
   "output_artifact": "data/models/alcosan_overflows.json",
@@ -134,7 +135,32 @@
         "duration_hours_per_year": 657,
         "volume_million_gallons_per_year": 99.5,
         "check": "PWSA municipal outfall row; confirms frequency, duration, and volume column assignment."
+      },
+      {
+        "outfall_id": "A1_MCD0002-3",
+        "source_table": "4-5",
+        "source_pdf_page": 39,
+        "printed_section_page": "4-39",
+        "frequency_activations_per_year": 15,
+        "duration_hours_per_year": 23,
+        "volume_million_gallons_per_year": 0.209,
+        "check": "Wrapped A1_MCD0002-3(1) row is present in the municipal table; it was restored to the registry so its modeled volume is available to exact-label matches."
       }
     ]
+  },
+  "extraction": {
+    "refresh_command": "python -m pipeline.overflow_context --refresh --pdf /path/to/cwp-section-4.pdf",
+    "download_command": "python -m pipeline.overflow_context --refresh",
+    "extractor": "Poppler pdftotext -raw; standard-library parser in pipeline/overflow_context.py",
+    "runtime_policy": "Parcel API/runtime reads only checked-in data/models/alcosan_overflows.json; no PDF, network, or parser dependency is required at runtime.",
+    "identity_policy": "The checked-in row identity, table, note-reference, and verified-alias fields are the stable parsing keys. On explicit refresh, every registered row is located in the pinned source tables and annual frequency, duration, volume, model status, and physical/printed page are re-extracted. Missing or duplicate row matches fail closed.",
+    "integrity_policy": "Refresh verifies the pinned source PDF SHA-256 and refuses a different document until its source vintage and metadata are reviewed.",
+    "verified_refresh": {
+      "source_pdf_sha256": "2ff5deb31d9606b5445c8e18ce7780bad25f382d6654543b57ae2247f4e678ab",
+      "outfall_records_rebuilt": 349,
+      "modeled_records_rebuilt": 339,
+      "metrics_changed_from_snapshot": 0,
+      "corrected_page_reference": "C-04-02-OF2 is printed on PDF page 36 / report section page 4-36."
+    }
   }
 }

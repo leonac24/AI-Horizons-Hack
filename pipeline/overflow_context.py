@@ -8,18 +8,317 @@ verified terminal ``-OF`` marker normalization documented with the registry.
 
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
 import math
+import re
+import subprocess
 from collections import defaultdict
 from collections.abc import Mapping
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from urllib.request import Request, urlopen
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "data" / "models" / "alcosan_overflows.json"
 ALCOSAN_SOURCE_ID = "alcosan_cwp_section4_2018"
-PWSA_SOURCE_ID = "pwsa_combined_sewersheds_2018"
+PWSA_SOURCE_ID = "pwsa_combined_sewersheds"
 PWSA_SOURCE_URL = "https://data.wprdc.org/dataset/combined-sewershed"
+_PDF_TEXT_TOOL = "pdftotext"
+_SOURCE_TABLE_PATTERN = re.compile(r"\bTable\s+(4-\d+)\s*:", re.IGNORECASE)
+_FOOTER_PATTERN = re.compile(r"^\s*4\s*-\s*(\d+)\s*$")
+_CELL_NUMBER_PATTERN = re.compile(r"\(\d+\)|(?<![A-Za-z])\d[\d,]*(?:\.\d+)?")
+
+
+def _compact_label(value: str) -> str:
+    return re.sub(r"\s+", "", value).upper()
+
+
+def _table_region(lines: list[str], table_id: str) -> tuple[int, int, int] | None:
+    """Return title line, body start, and body end for one printed table page."""
+    title = next(
+        (
+            index for index, line in enumerate(lines)
+            if re.search(rf"\bTable\s+{re.escape(table_id)}\s*:", line, re.IGNORECASE)
+        ),
+        None,
+    )
+    if title is None:
+        return None
+    end = len(lines)
+    for index in range(title + 1, len(lines)):
+        if re.match(r"^\s*\*?\s*Note\b", lines[index], re.IGNORECASE):
+            end = index
+            break
+        if _FOOTER_PATTERN.match(lines[index]):
+            end = index
+            break
+        if re.match(r"^\s*\d+\.\d+(?:\.\d+)?\s+", lines[index]):
+            end = index
+            break
+    return title, title + 1, end
+
+
+def _row_variants(row: Mapping[str, Any]) -> list[str]:
+    """Stable table keys include IDs and the report's printed alias labels."""
+    variants = [str(row.get("outfall_id", ""))]
+    source_label = str(row.get("source_outfall_label", ""))
+    if source_label:
+        variants.append(source_label.split("(", 1)[0].strip())
+    variants.extend(str(alias) for alias in row.get("report_aliases", []))
+    return list(dict.fromkeys(value for value in variants if value))
+
+
+def _row_start_candidates(
+    lines: list[str], start: int, end: int, row: Mapping[str, Any]
+) -> list[int]:
+    variants = [_compact_label(value) for value in _row_variants(row)]
+    candidates: list[int] = []
+    for index in range(start, end):
+        first_line = _compact_label(lines[index])
+        if not first_line:
+            continue
+        # pdftotext -raw may wrap a long outfall ID across lines (for example
+        # M4400_-OSC- / M-02OF). Reassemble at most three physical text lines.
+        combined = _compact_label(" ".join(lines[index:min(index + 3, end)]))
+        if any(
+            combined.startswith(variant)
+            and (first_line.startswith(variant) or variant.startswith(first_line))
+            and len(first_line) >= 4
+            for variant in variants
+        ):
+            candidates.append(index)
+    return candidates
+
+
+def _remove_row_label(row_lines: list[str], row: Mapping[str, Any]) -> list[str]:
+    """Remove the printed label while preserving any owner and annual cells."""
+    variants = sorted(
+        [str(row.get("source_outfall_label", "")), str(row.get("outfall_id", "")),
+         *(str(alias) for alias in row.get("report_aliases", []))],
+        key=len,
+        reverse=True,
+    )
+    for variant in (value for value in variants if value):
+        expected = _compact_label(variant)
+        consumed = 0
+        remainder: list[str] = []
+        failed = False
+        for line_index, line in enumerate(row_lines):
+            offset = 0
+            while offset < len(line):
+                char = line[offset]
+                offset += 1
+                if char.isspace():
+                    continue
+                if consumed == len(expected) or char.upper() != expected[consumed]:
+                    failed = True
+                    break
+                consumed += 1
+                if consumed == len(expected):
+                    remainder.append(line[offset:])
+                    remainder.extend(row_lines[line_index + 1:])
+                    return remainder
+            if failed:
+                break
+    return row_lines
+
+
+def _read_annual_cells(row_lines: list[str], row: Mapping[str, Any]) -> list[str]:
+    """Read the three cells after the outfall label, ignoring numeric footnotes."""
+    for line in _remove_row_label(row_lines, row):
+        tokens = _CELL_NUMBER_PATTERN.findall(line)
+        plain = [token for token in tokens if not re.fullmatch(r"\(\d+\)", token)]
+        placeholders = [token for token in tokens if re.fullmatch(r"\(\d+\)", token)]
+        if len(plain) >= 3:
+            return plain[:3]
+        if not plain and len(placeholders) >= 3:
+            return placeholders[:3]
+    return []
+
+
+def _table_row_locations(
+    pages: list[str], rows: list[dict[str, Any]]
+) -> dict[str, tuple[int, int, int]]:
+    """Find each registered outfall's printed table page and row start.
+
+    The registry supplies stable row identities and curated footnote aliases;
+    all frequency, duration, volume, model status, and page values are rebuilt
+    from the PDF text. Ambiguous or missing identities fail closed.
+    """
+    locations: dict[str, tuple[int, int, int]] = {}
+    for row in rows:
+        table_id = str(row["source_table"])
+        candidates: list[tuple[int, int, int]] = []
+        for page_number, page_text in enumerate(pages, start=1):
+            lines = page_text.splitlines()
+            region = _table_region(lines, table_id)
+            if region is None:
+                continue
+            _, body_start, body_end = region
+            for line_index in _row_start_candidates(lines, body_start, body_end, row):
+                candidates.append((page_number, line_index, body_end))
+        # Some PDF text layers repeat a caption or identity. Accept only one
+        # row start; never guess which table occurrence is the data row.
+        if len(candidates) != 1:
+            raise ValueError(
+                f"Expected one table-row match for {row['outfall_id']} in {table_id}, "
+                f"found {len(candidates)}"
+            )
+        locations[str(row["outfall_id"])] = candidates[0]
+    return locations
+
+
+def _parse_pdf_text(model: dict[str, Any], pdf_text: str) -> dict[str, Any]:
+    pages = pdf_text.split("\f")
+    if pages and not pages[-1].strip():
+        pages.pop()
+    expected_pages = int(model["metadata"].get("source_pdf_pages", 0))
+    if expected_pages and len(pages) != expected_pages:
+        raise ValueError(f"Expected {expected_pages} PDF pages, extracted {len(pages)}")
+
+    rows = model["outfalls"]
+    locations = _table_row_locations(pages, rows)
+    by_page: dict[int, list[tuple[str, int, int]]] = defaultdict(list)
+    for outfall_id, (page_number, line_index, region_end) in locations.items():
+        by_page[page_number].append((outfall_id, line_index, region_end))
+
+    row_by_id = {str(row["outfall_id"]): row for row in rows}
+    for page_number, page_rows in by_page.items():
+        lines = pages[page_number - 1].splitlines()
+        ordered = sorted(page_rows, key=lambda row_location: row_location[1])
+        for row_index, (outfall_id, line_index, region_end) in enumerate(ordered):
+            next_row_start = (
+                ordered[row_index + 1][1]
+                if row_index + 1 < len(ordered)
+                else region_end
+            )
+            row_lines = lines[line_index:next_row_start]
+            row_text = " ".join(row_lines).strip()
+            row = row_by_id[outfall_id]
+            footer_page = next(
+                (
+                    int(match.group(1))
+                    for line in lines
+                    if (match := _FOOTER_PATTERN.match(line))
+                ),
+                None,
+            )
+            row["source_pdf_page"] = page_number
+            if footer_page is not None:
+                row["source_section_page"] = footer_page
+
+            if re.search(r"\bclosed\b|\bsealed\b", row_text, re.IGNORECASE):
+                row["model_status"] = "closed_or_sealed"
+                row["frequency_activations_per_year"] = None
+                row["duration_hours_per_year"] = None
+                row["volume_million_gallons_per_year"] = None
+                continue
+
+            cells = _read_annual_cells(row_lines, row)
+            if len(cells) < 3:
+                raise ValueError(f"Could not read three annual cells for {outfall_id}: {row_text}")
+            last_cells = cells[:3]
+            if all(re.fullmatch(r"\(\d+\)", cell) for cell in last_cells):
+                row["model_status"] = "not_modeled_pending"
+                row["frequency_activations_per_year"] = None
+                row["duration_hours_per_year"] = None
+                row["volume_million_gallons_per_year"] = None
+                continue
+
+            parsed_cells = [float(cell.strip("()").replace(",", "")) for cell in last_cells]
+            row["model_status"] = "modeled"
+            row["frequency_activations_per_year"] = parsed_cells[0]
+            row["duration_hours_per_year"] = parsed_cells[1]
+            row["volume_million_gallons_per_year"] = parsed_cells[2]
+
+    # Refresh provenance counters from the extracted rows, not from the prior
+    # snapshot, so a malformed source layout cannot silently keep old totals.
+    statuses = [str(row.get("model_status")) for row in rows]
+    model["metadata"]["outfall_record_count"] = len(rows)
+    model["metadata"]["modeled_record_count"] = statuses.count("modeled")
+    model["metadata"]["closed_or_sealed_record_count"] = statuses.count("closed_or_sealed")
+    model["metadata"]["not_modeled_pending_record_count"] = statuses.count("not_modeled_pending")
+    return model
+
+
+def _refresh_from_pdf(pdf_path: str | Path, *, model_path: str | Path = MODEL_PATH) -> dict[str, Any]:
+    """Rebuild the checked-in modeled table values from an official PDF copy."""
+    source_path = Path(pdf_path)
+    model = json.loads(Path(model_path).read_text(encoding="utf-8"))
+    pdf_bytes = source_path.read_bytes()
+    pdf_sha256 = hashlib.sha256(pdf_bytes).hexdigest()
+    expected_sha256 = model["metadata"].get("source_pdf_sha256")
+    if expected_sha256 and pdf_sha256 != expected_sha256:
+        raise ValueError(
+            f"PDF SHA-256 {pdf_sha256} differs from pinned 2018 source {expected_sha256}; "
+            "inspect and curate a new source vintage instead of replacing this model"
+        )
+    try:
+        completed = subprocess.run(
+            [_PDF_TEXT_TOOL, "-raw", str(source_path), "-"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+    except FileNotFoundError as error:
+        raise RuntimeError("pdftotext (Poppler) is required for --refresh") from error
+    model["metadata"]["source_pdf_sha256"] = pdf_sha256
+    model["metadata"]["source_pdf_bytes"] = len(pdf_bytes)
+    model = _parse_pdf_text(model, completed.stdout)
+    return model
+
+
+def _download_source_pdf() -> Path:
+    """Download the pinned public source for an explicit refresh invocation."""
+    import tempfile
+
+    request = Request(
+        str(_load_model()["metadata"]["source_url"]),
+        headers={"User-Agent": "Lotline modeled-context source refresh/1.0"},
+    )
+    with urlopen(request, timeout=90) as response:
+        payload = response.read()
+    with tempfile.NamedTemporaryFile(prefix="alcosan-cwp-", suffix=".pdf", delete=False) as temporary:
+        temporary.write(payload)
+        temporary.flush()
+        temporary_path = Path(temporary.name)
+    return temporary_path
+
+
+def _refresh_cli(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Rebuild the pinned ALCOSAN overflow model from its source PDF.")
+    parser.add_argument("--refresh", action="store_true", help="extract the actual annual tables and update the JSON snapshot")
+    parser.add_argument("--pdf", type=Path, help="cached source PDF; omitted means download the official URL")
+    parser.add_argument("--output", type=Path, default=MODEL_PATH, help="output JSON path (default: checked-in model)")
+    args = parser.parse_args(argv)
+    if not args.refresh:
+        parser.error("specify --refresh to rebuild the model")
+
+    downloaded_path: Path | None = None
+    try:
+        pdf_path = args.pdf
+        if pdf_path is None:
+            downloaded_path = _download_source_pdf()
+            pdf_path = downloaded_path
+        model = _refresh_from_pdf(pdf_path)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(model, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        metadata = model["metadata"]
+        print(
+            f"Wrote {len(model['outfalls'])} rows ({metadata['modeled_record_count']} modeled, "
+            f"{metadata['closed_or_sealed_record_count']} closed/sealed, "
+            f"{metadata['not_modeled_pending_record_count']} pending); "
+            f"source SHA-256 {metadata['source_pdf_sha256']}"
+        )
+        return 0
+    except (OSError, subprocess.CalledProcessError, RuntimeError, ValueError) as error:
+        parser.exit(2, f"overflow refresh failed: {error}\n")
+    finally:
+        if downloaded_path is not None:
+            downloaded_path.unlink(missing_ok=True)
 
 
 @lru_cache(maxsize=8)
@@ -297,3 +596,7 @@ def build_overflow_inputs(parcel: Mapping[str, Any], *, model_path: str | Path |
         ),
     }
     return {"sewer_overflow_context": base, "sewer_stress_index": stress}
+
+
+if __name__ == "__main__":
+    raise SystemExit(_refresh_cli())

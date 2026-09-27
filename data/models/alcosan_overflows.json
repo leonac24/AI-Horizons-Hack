@@ -32,8 +32,8 @@
       "4-26",
       "4-27"
     ],
-    "outfall_record_count": 348,
-    "modeled_record_count": 338,
+    "outfall_record_count": 349,
+    "modeled_record_count": 339,
     "closed_or_sealed_record_count": 8,
     "not_modeled_pending_record_count": 2,
     "source_ids": [
@@ -114,8 +114,8 @@
       "planning_basin": "Chartiers Creek",
       "table_owner_class": "ALCOSAN outfalls",
       "source_table": "4-4",
-      "source_pdf_page": 37,
-      "source_section_page": 37,
+      "source_pdf_page": 36,
+      "source_section_page": 36,
       "model_status": "modeled",
       "frequency_activations_per_year": 1.0,
       "duration_hours_per_year": 0.25,
@@ -1201,6 +1201,33 @@
       "model_vintage": 2018,
       "model_period": "A refined calendar-year 2003 rainfall dataset calibrated to produce annual statistics equivalent to a 60-year historical precipitation record; not observed overflow data from a single calendar year.",
       "report_aliases": []
+    },
+    {
+      "outfall_type": "CSO",
+      "provenance": "modeled",
+      "model_vintage": 2018,
+      "model_scenario": "existing_condition_typical_year",
+      "model_period": "A refined calendar-year 2003 rainfall dataset calibrated to produce annual statistics equivalent to a 60-year historical precipitation record; not observed overflow data from a single calendar year.",
+      "source_ids": [
+        "alcosan_cwp_section4_2018"
+      ],
+      "outfall_id": "A1_MCD0002-3",
+      "source_outfall_label": "A1_MCD0002-3(1)",
+      "report_aliases": [],
+      "source_note_references": [
+        "1"
+      ],
+      "source_note": "ALCOSAN Table 4-5 marks this McDonald / MBSA row with footnote 1; the note reports that full separation had been completed and identifies the active CSO structures as disconnected from the sanitary system, pending ALCOSAN confirmation.",
+      "planning_basin": "Chartiers Creek",
+      "table_owner_class": "municipal and authority outfalls",
+      "source_table": "4-5",
+      "source_pdf_page": 39,
+      "source_section_page": 39,
+      "owner_text": "McDonald / MBSA",
+      "model_status": "modeled",
+      "frequency_activations_per_year": 15.0,
+      "duration_hours_per_year": 23.0,
+      "volume_million_gallons_per_year": 0.209
     },
     {
       "outfall_id": "A2_MCD0082",
