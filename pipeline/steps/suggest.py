@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 
 
-def pick_suggested(records: list[dict], rule: dict, seed: int = 0) -> list[str]:
+def pick_suggested(records: list[dict], rule: dict, seed: int = 0,
+                   usable: Callable[[dict], bool] | None = None) -> list[str]:
     """Greedy pick: at most one per neighborhood; each pick prefers a combination of
-    stratum values (zoning district, hazard flags, public) not yet covered."""
+    stratum values (zoning district, hazard flags, public) not yet covered.
+
+    `usable` screens out lots that would open on nothing. Suggested lots are the
+    way most people enter the tool, so one that no housing type fits is a dead
+    end; any lot can still be chosen from the map. The caller supplies the test
+    so this step stays ignorant of typologies."""
     rng = random.Random(seed)
-    pool = [r for r in records if (r.get("lot_area_sf") or 0) >= rule["min_lot_area_sf"] and r.get("neighborhood")]
+    pool = [r for r in records
+            if (r.get("lot_area_sf") or 0) >= rule["min_lot_area_sf"] and r.get("neighborhood")
+            and (usable is None or usable(r))]
     rng.shuffle(pool)
     strata = rule["strata"]
     chosen: list[dict] = []

@@ -65,6 +65,7 @@ def _combine(mid: str, parts: list[tuple[int, Metric]]) -> Metric:
         provenance=weakest(*(m.provenance for _, m in parts)),
         sourceIds=sorted({s for _, m in parts for s in m.sourceIds}),
         note=first.note if len(parts) == 1 else "Combined across the building types in this plan.",
+        dependsOn=sorted({k for _, m in parts for k in m.dependsOn}),
     )
 
 
