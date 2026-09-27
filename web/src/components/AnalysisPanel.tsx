@@ -98,6 +98,10 @@ function CompareTab(p: Props) {
   }
   const z = plan?.zoning
   const zRole = z ? roleOf(config, z.status) : 'unreviewed'
+  const sitePlaceholderCount = analysis.site_context.filter((m) => m.provenance === 'placeholder').length
+    + analysis.site_facts.filter((f) => f.provenance === 'placeholder').length
+  const scenarioPlaceholderCount = analysis.scenarios.reduce((count, s) =>
+    count + Object.values(s.metrics).filter((m) => m.provenance === 'placeholder').length, 0)
 
   return (
     <div className="compare-grid">
@@ -121,7 +125,10 @@ function CompareTab(p: Props) {
           </div>
           {analysis.placeholder_count > 0 && (
             <div className="hatched note-box small">
-              {analysis.placeholder_count} values for this lot are placeholders. {config.app.placeholder_notice}
+              {analysis.placeholder_count} displayed values depend on placeholders: {sitePlaceholderCount} site values
+              {' '}and {scenarioPlaceholderCount} results across {analysis.scenarios.length} housing types.
+              {' '}Several results reuse the same unsourced inputs. Rankings are provisional.
+              {' '}{config.app.placeholder_notice}
             </div>
           )}
         </div>
