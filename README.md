@@ -365,7 +365,7 @@ evidence and data pipeline
   placeholders with sourced values
   ([docs/PLACEHOLDER_PIPELINE.md](docs/PLACEHOLDER_PIPELINE.md)).
 
-**Devin** (commits as `Devin-M5706`): backend and zoning engine
+**Devin Myers** ([@Devin-M5706](https://github.com/Devin-M5706)): backend and zoning engine
 
 - Hardened the API: hard requirements before weights, every input limit and
   route bound taken from config with tests that keep it that way, the parcel-id
