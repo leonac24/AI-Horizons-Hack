@@ -1,0 +1,627 @@
+{
+  "schema_version": 1,
+  "source_vintage": "DOE 2021 IECC residential HP prototype outputs; output tables generated 2024-06-27 / posted 2024-12-22; embodied study published 2024-12-15",
+  "geography": "Pittsburgh (Allegheny County) IECC climate-zone proxy 5A; DOE weather model is Buffalo NY TMY3",
+  "by_typology": {
+    "detached": {
+      "proxy_label": "DOE 2021 IECC single-family detached; direct form match",
+      "embodied_kgco2e_psf": {
+        "value": 7.43,
+        "low": 3.62,
+        "high": 11.24,
+        "unit": "kgCO2e/sf",
+        "provenance": "modeled",
+        "evidence_tier": "modeled_prototype_lca",
+        "interval_type": "reported_study_range",
+        "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+        "source_ids": [
+          "jungclaus_2024_sf_embodied_a1a3"
+        ],
+        "source_urls": [
+          "https://doi.org/10.1016/j.scs.2024.105975",
+          "https://www.sciencedirect.com/science/article/pii/S2210670724007996",
+          "https://doi.org/10.6084/m9.figshare.24451948.v1"
+        ],
+        "model_id": "us_doe_sfh_embodied_ec_intensity_a1_a3_2024",
+        "source_range_kgco2e_m2": {
+          "low": 39,
+          "high": 121,
+          "unit": "kgCO2e/m2"
+        },
+        "reported_stage_boundary": "A1-A3 product-stage embodied GHG; gross ECI, without applying separately reported theoretical maximum biogenic storage",
+        "physical_scope": "DOE single-family prototype quantity takeoff: structure, enclosure, and foundation material classes",
+        "center_basis": "Arithmetic midpoint of the published 39–121 kgCO2e/m2 all-model ECI range (80 kgCO2e/m2 converted to 7.43 kgCO2e/sf); declared planning center, not a reported sample mean.",
+        "proxy_adjustment": {
+          "low_factor": 1.0,
+          "high_factor": 1.0,
+          "provenance": "none",
+          "limitations": "Detached house maps to the DOE single-family detached form."
+        },
+        "as_of": "2024-12-15",
+        "limitations": "Upfront materials (A1-A3 proxy), not complete whole-building or whole-life carbon. The source covers DOE detached single-family models and structure/enclosure/foundation material classes; interiors/fit-out, MEP, appliances and sitework are not established as included. A4-A5 transport/construction, replacements/use and end-of-life are outside A1-A3. Source min/max spans study climate, foundation, and LCA-tool cases, not a confidence interval. Typology differences beyond the DOE detached archetype use declared proxy factors."
+      },
+      "operational_kwh_psf_yr": {
+        "value": 8.07,
+        "low": 7.1,
+        "high": 8.48,
+        "unit": "kWh/sf/yr",
+        "provenance": "modeled",
+        "evidence_tier": "doe_energyplus_prototype_output",
+        "interval_type": "foundation_variant_range",
+        "geography": "IECC 2021 climate zone 5A; DOE uses Buffalo Niagara International Airport TMY3; Allegheny County is also CZ5A but Buffalo weather is not Pittsburgh local weather",
+        "source_ids": [
+          "doe_iecc2021_residential_cz5a_outputs",
+          "pnnl_33270_allegheny_5a",
+          "doe_pa_residential_code_status_2026"
+        ],
+        "source_urls": [
+          "https://www.energycodes.gov/prototype-building-models",
+          "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+          "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+          "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates",
+          "https://www.energycodes.gov/status/states/pennsylvania"
+        ],
+        "model_id": "doe_iecc2021_residential_cz5a_heat_pump",
+        "prototype_proxy": "sf_detached",
+        "scenario": "All-electric heat-pump scenario. Uses only DOE hp-tagged output tables; all non-electric fuel columns in selected annual end-use outputs are zero.",
+        "end_uses": "Electricity:Facility annual meter for all modeled end uses, normalized by Net Conditioned Building Area.",
+        "foundation_variants": [
+          {
+            "foundation": "crawlspace",
+            "model_id": "US+SF+CZ5A+hp+crawlspace+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20161.62,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.48160363
+          },
+          {
+            "foundation": "heatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+heatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 25331.05,
+            "conditioned_area_sf": 3565.64,
+            "value_kwh_sf_yr": 7.1042085
+          },
+          {
+            "foundation": "slab",
+            "model_id": "US+SF+CZ5A+hp+slab+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 19708.85,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.29113205
+          },
+          {
+            "foundation": "unheatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+unheatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20012.46,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.41885491
+          }
+        ],
+        "center_basis": "Arithmetic mean of the four DOE HP foundation variant EUIs for the selected prototype; no building-form savings are assumed.",
+        "proxy_adjustment": {
+          "low_factor": 1.0,
+          "high_factor": 1.0,
+          "provenance": "none",
+          "limitations": "Detached house maps to the DOE single-family detached form."
+        },
+        "as_of": "2024-12-22",
+        "limitations": "Simulated 2021 IECC prototype electricity in Buffalo TMY3 weather, not a Pittsburgh meter or prediction. Assumes all-electric heat-pump systems; selected output tables have zero non-electric fuel use. Foundation low/high span four foundation variants only and are not a statistical interval. Building form, floor area, occupancy, schedules, appliance behavior and local weather may differ. DOE uses one single-family detached and one multifamily low-rise base form; other forms are explicit proxies."
+      }
+    },
+    "adu_pair": {
+      "proxy_label": "DOE detached-house proxy for primary house plus ADU",
+      "embodied_kgco2e_psf": {
+        "value": 7.43,
+        "low": 2.72,
+        "high": 16.86,
+        "unit": "kgCO2e/sf",
+        "provenance": "modeled",
+        "evidence_tier": "modeled_prototype_lca",
+        "interval_type": "reported_study_range_plus_assumed_form_factor",
+        "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+        "source_ids": [
+          "jungclaus_2024_sf_embodied_a1a3"
+        ],
+        "source_urls": [
+          "https://doi.org/10.1016/j.scs.2024.105975",
+          "https://www.sciencedirect.com/science/article/pii/S2210670724007996",
+          "https://doi.org/10.6084/m9.figshare.24451948.v1"
+        ],
+        "model_id": "us_doe_sfh_embodied_ec_intensity_a1_a3_2024",
+        "source_range_kgco2e_m2": {
+          "low": 39,
+          "high": 121,
+          "unit": "kgCO2e/m2"
+        },
+        "reported_stage_boundary": "A1-A3 product-stage embodied GHG; gross ECI, without applying separately reported theoretical maximum biogenic storage",
+        "physical_scope": "DOE single-family prototype quantity takeoff: structure, enclosure, and foundation material classes",
+        "center_basis": "Arithmetic midpoint of the published 39–121 kgCO2e/m2 all-model ECI range (80 kgCO2e/m2 converted to 7.43 kgCO2e/sf); declared planning center, not a reported sample mean.",
+        "proxy_adjustment": {
+          "low_factor": 0.75,
+          "high_factor": 1.5,
+          "provenance": "assumption",
+          "limitations": "DOE has no ADU prototype; this proxy does not separately model the ADU shell, foundation, shared or duplicated services."
+        },
+        "as_of": "2024-12-15",
+        "limitations": "Upfront materials (A1-A3 proxy), not complete whole-building or whole-life carbon. The source covers DOE detached single-family models and structure/enclosure/foundation material classes; interiors/fit-out, MEP, appliances and sitework are not established as included. A4-A5 transport/construction, replacements/use and end-of-life are outside A1-A3. Source min/max spans study climate, foundation, and LCA-tool cases, not a confidence interval. Typology differences beyond the DOE detached archetype use declared proxy factors."
+      },
+      "operational_kwh_psf_yr": {
+        "value": 8.07,
+        "low": 5.33,
+        "high": 12.72,
+        "unit": "kWh/sf/yr",
+        "provenance": "modeled",
+        "evidence_tier": "doe_energyplus_prototype_output",
+        "interval_type": "foundation_range_plus_assumed_form_proxy",
+        "geography": "IECC 2021 climate zone 5A; DOE uses Buffalo Niagara International Airport TMY3; Allegheny County is also CZ5A but Buffalo weather is not Pittsburgh local weather",
+        "source_ids": [
+          "doe_iecc2021_residential_cz5a_outputs",
+          "pnnl_33270_allegheny_5a",
+          "doe_pa_residential_code_status_2026"
+        ],
+        "source_urls": [
+          "https://www.energycodes.gov/prototype-building-models",
+          "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+          "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+          "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates",
+          "https://www.energycodes.gov/status/states/pennsylvania"
+        ],
+        "model_id": "doe_iecc2021_residential_cz5a_heat_pump",
+        "prototype_proxy": "sf_detached",
+        "scenario": "All-electric heat-pump scenario. Uses only DOE hp-tagged output tables; all non-electric fuel columns in selected annual end-use outputs are zero.",
+        "end_uses": "Electricity:Facility annual meter for all modeled end uses, normalized by Net Conditioned Building Area.",
+        "foundation_variants": [
+          {
+            "foundation": "crawlspace",
+            "model_id": "US+SF+CZ5A+hp+crawlspace+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20161.62,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.48160363
+          },
+          {
+            "foundation": "heatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+heatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 25331.05,
+            "conditioned_area_sf": 3565.64,
+            "value_kwh_sf_yr": 7.1042085
+          },
+          {
+            "foundation": "slab",
+            "model_id": "US+SF+CZ5A+hp+slab+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 19708.85,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.29113205
+          },
+          {
+            "foundation": "unheatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+unheatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20012.46,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.41885491
+          }
+        ],
+        "center_basis": "Arithmetic mean of the four DOE HP foundation variant EUIs for the selected prototype; no building-form savings are assumed.",
+        "proxy_adjustment": {
+          "low_factor": 0.75,
+          "high_factor": 1.5,
+          "provenance": "assumption",
+          "limitations": "DOE has no ADU prototype; this proxy does not separately model the ADU shell, foundation, shared or duplicated services."
+        },
+        "as_of": "2024-12-22",
+        "limitations": "Simulated 2021 IECC prototype electricity in Buffalo TMY3 weather, not a Pittsburgh meter or prediction. Assumes all-electric heat-pump systems; selected output tables have zero non-electric fuel use. Foundation low/high span four foundation variants only and are not a statistical interval. Building form, floor area, occupancy, schedules, appliance behavior and local weather may differ. DOE uses one single-family detached and one multifamily low-rise base form; other forms are explicit proxies."
+      }
+    },
+    "two_unit": {
+      "proxy_label": "DOE detached-house proxy for duplex",
+      "embodied_kgco2e_psf": {
+        "value": 7.43,
+        "low": 2.72,
+        "high": 16.86,
+        "unit": "kgCO2e/sf",
+        "provenance": "modeled",
+        "evidence_tier": "modeled_prototype_lca",
+        "interval_type": "reported_study_range_plus_assumed_form_factor",
+        "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+        "source_ids": [
+          "jungclaus_2024_sf_embodied_a1a3"
+        ],
+        "source_urls": [
+          "https://doi.org/10.1016/j.scs.2024.105975",
+          "https://www.sciencedirect.com/science/article/pii/S2210670724007996",
+          "https://doi.org/10.6084/m9.figshare.24451948.v1"
+        ],
+        "model_id": "us_doe_sfh_embodied_ec_intensity_a1_a3_2024",
+        "source_range_kgco2e_m2": {
+          "low": 39,
+          "high": 121,
+          "unit": "kgCO2e/m2"
+        },
+        "reported_stage_boundary": "A1-A3 product-stage embodied GHG; gross ECI, without applying separately reported theoretical maximum biogenic storage",
+        "physical_scope": "DOE single-family prototype quantity takeoff: structure, enclosure, and foundation material classes",
+        "center_basis": "Arithmetic midpoint of the published 39–121 kgCO2e/m2 all-model ECI range (80 kgCO2e/m2 converted to 7.43 kgCO2e/sf); declared planning center, not a reported sample mean.",
+        "proxy_adjustment": {
+          "low_factor": 0.75,
+          "high_factor": 1.5,
+          "provenance": "assumption",
+          "limitations": "DOE residential set has no duplex form; shared walls, common systems and two-unit layout are not represented."
+        },
+        "as_of": "2024-12-15",
+        "limitations": "Upfront materials (A1-A3 proxy), not complete whole-building or whole-life carbon. The source covers DOE detached single-family models and structure/enclosure/foundation material classes; interiors/fit-out, MEP, appliances and sitework are not established as included. A4-A5 transport/construction, replacements/use and end-of-life are outside A1-A3. Source min/max spans study climate, foundation, and LCA-tool cases, not a confidence interval. Typology differences beyond the DOE detached archetype use declared proxy factors."
+      },
+      "operational_kwh_psf_yr": {
+        "value": 8.07,
+        "low": 5.33,
+        "high": 12.72,
+        "unit": "kWh/sf/yr",
+        "provenance": "modeled",
+        "evidence_tier": "doe_energyplus_prototype_output",
+        "interval_type": "foundation_range_plus_assumed_form_proxy",
+        "geography": "IECC 2021 climate zone 5A; DOE uses Buffalo Niagara International Airport TMY3; Allegheny County is also CZ5A but Buffalo weather is not Pittsburgh local weather",
+        "source_ids": [
+          "doe_iecc2021_residential_cz5a_outputs",
+          "pnnl_33270_allegheny_5a",
+          "doe_pa_residential_code_status_2026"
+        ],
+        "source_urls": [
+          "https://www.energycodes.gov/prototype-building-models",
+          "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+          "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+          "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates",
+          "https://www.energycodes.gov/status/states/pennsylvania"
+        ],
+        "model_id": "doe_iecc2021_residential_cz5a_heat_pump",
+        "prototype_proxy": "sf_detached",
+        "scenario": "All-electric heat-pump scenario. Uses only DOE hp-tagged output tables; all non-electric fuel columns in selected annual end-use outputs are zero.",
+        "end_uses": "Electricity:Facility annual meter for all modeled end uses, normalized by Net Conditioned Building Area.",
+        "foundation_variants": [
+          {
+            "foundation": "crawlspace",
+            "model_id": "US+SF+CZ5A+hp+crawlspace+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20161.62,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.48160363
+          },
+          {
+            "foundation": "heatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+heatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 25331.05,
+            "conditioned_area_sf": 3565.64,
+            "value_kwh_sf_yr": 7.1042085
+          },
+          {
+            "foundation": "slab",
+            "model_id": "US+SF+CZ5A+hp+slab+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 19708.85,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.29113205
+          },
+          {
+            "foundation": "unheatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+unheatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20012.46,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.41885491
+          }
+        ],
+        "center_basis": "Arithmetic mean of the four DOE HP foundation variant EUIs for the selected prototype; no building-form savings are assumed.",
+        "proxy_adjustment": {
+          "low_factor": 0.75,
+          "high_factor": 1.5,
+          "provenance": "assumption",
+          "limitations": "DOE residential set has no duplex form; shared walls, common systems and two-unit layout are not represented."
+        },
+        "as_of": "2024-12-22",
+        "limitations": "Simulated 2021 IECC prototype electricity in Buffalo TMY3 weather, not a Pittsburgh meter or prediction. Assumes all-electric heat-pump systems; selected output tables have zero non-electric fuel use. Foundation low/high span four foundation variants only and are not a statistical interval. Building form, floor area, occupancy, schedules, appliance behavior and local weather may differ. DOE uses one single-family detached and one multifamily low-rise base form; other forms are explicit proxies."
+      }
+    },
+    "rowhouse": {
+      "proxy_label": "DOE detached-house proxy for attached rowhouse",
+      "embodied_kgco2e_psf": {
+        "value": 7.43,
+        "low": 2.72,
+        "high": 16.86,
+        "unit": "kgCO2e/sf",
+        "provenance": "modeled",
+        "evidence_tier": "modeled_prototype_lca",
+        "interval_type": "reported_study_range_plus_assumed_form_factor",
+        "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+        "source_ids": [
+          "jungclaus_2024_sf_embodied_a1a3"
+        ],
+        "source_urls": [
+          "https://doi.org/10.1016/j.scs.2024.105975",
+          "https://www.sciencedirect.com/science/article/pii/S2210670724007996",
+          "https://doi.org/10.6084/m9.figshare.24451948.v1"
+        ],
+        "model_id": "us_doe_sfh_embodied_ec_intensity_a1_a3_2024",
+        "source_range_kgco2e_m2": {
+          "low": 39,
+          "high": 121,
+          "unit": "kgCO2e/m2"
+        },
+        "reported_stage_boundary": "A1-A3 product-stage embodied GHG; gross ECI, without applying separately reported theoretical maximum biogenic storage",
+        "physical_scope": "DOE single-family prototype quantity takeoff: structure, enclosure, and foundation material classes",
+        "center_basis": "Arithmetic midpoint of the published 39–121 kgCO2e/m2 all-model ECI range (80 kgCO2e/m2 converted to 7.43 kgCO2e/sf); declared planning center, not a reported sample mean.",
+        "proxy_adjustment": {
+          "low_factor": 0.75,
+          "high_factor": 1.5,
+          "provenance": "assumption",
+          "limitations": "DOE residential set has no rowhouse form; party walls and repeated attached geometry are not represented."
+        },
+        "as_of": "2024-12-15",
+        "limitations": "Upfront materials (A1-A3 proxy), not complete whole-building or whole-life carbon. The source covers DOE detached single-family models and structure/enclosure/foundation material classes; interiors/fit-out, MEP, appliances and sitework are not established as included. A4-A5 transport/construction, replacements/use and end-of-life are outside A1-A3. Source min/max spans study climate, foundation, and LCA-tool cases, not a confidence interval. Typology differences beyond the DOE detached archetype use declared proxy factors."
+      },
+      "operational_kwh_psf_yr": {
+        "value": 8.07,
+        "low": 5.33,
+        "high": 12.72,
+        "unit": "kWh/sf/yr",
+        "provenance": "modeled",
+        "evidence_tier": "doe_energyplus_prototype_output",
+        "interval_type": "foundation_range_plus_assumed_form_proxy",
+        "geography": "IECC 2021 climate zone 5A; DOE uses Buffalo Niagara International Airport TMY3; Allegheny County is also CZ5A but Buffalo weather is not Pittsburgh local weather",
+        "source_ids": [
+          "doe_iecc2021_residential_cz5a_outputs",
+          "pnnl_33270_allegheny_5a",
+          "doe_pa_residential_code_status_2026"
+        ],
+        "source_urls": [
+          "https://www.energycodes.gov/prototype-building-models",
+          "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+          "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+          "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates",
+          "https://www.energycodes.gov/status/states/pennsylvania"
+        ],
+        "model_id": "doe_iecc2021_residential_cz5a_heat_pump",
+        "prototype_proxy": "sf_detached",
+        "scenario": "All-electric heat-pump scenario. Uses only DOE hp-tagged output tables; all non-electric fuel columns in selected annual end-use outputs are zero.",
+        "end_uses": "Electricity:Facility annual meter for all modeled end uses, normalized by Net Conditioned Building Area.",
+        "foundation_variants": [
+          {
+            "foundation": "crawlspace",
+            "model_id": "US+SF+CZ5A+hp+crawlspace+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20161.62,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.48160363
+          },
+          {
+            "foundation": "heatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+heatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 25331.05,
+            "conditioned_area_sf": 3565.64,
+            "value_kwh_sf_yr": 7.1042085
+          },
+          {
+            "foundation": "slab",
+            "model_id": "US+SF+CZ5A+hp+slab+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 19708.85,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.29113205
+          },
+          {
+            "foundation": "unheatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+unheatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20012.46,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.41885491
+          }
+        ],
+        "center_basis": "Arithmetic mean of the four DOE HP foundation variant EUIs for the selected prototype; no building-form savings are assumed.",
+        "proxy_adjustment": {
+          "low_factor": 0.75,
+          "high_factor": 1.5,
+          "provenance": "assumption",
+          "limitations": "DOE residential set has no rowhouse form; party walls and repeated attached geometry are not represented."
+        },
+        "as_of": "2024-12-22",
+        "limitations": "Simulated 2021 IECC prototype electricity in Buffalo TMY3 weather, not a Pittsburgh meter or prediction. Assumes all-electric heat-pump systems; selected output tables have zero non-electric fuel use. Foundation low/high span four foundation variants only and are not a statistical interval. Building form, floor area, occupancy, schedules, appliance behavior and local weather may differ. DOE uses one single-family detached and one multifamily low-rise base form; other forms are explicit proxies."
+      }
+    },
+    "small_multi": {
+      "proxy_label": "DOE multifamily low-rise prototype for energy; DOE detached-house study for embodied carbon",
+      "embodied_kgco2e_psf": {
+        "value": 7.43,
+        "low": 1.81,
+        "high": 22.48,
+        "unit": "kgCO2e/sf",
+        "provenance": "modeled",
+        "evidence_tier": "modeled_prototype_lca",
+        "interval_type": "reported_study_range_plus_assumed_form_factor",
+        "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+        "source_ids": [
+          "jungclaus_2024_sf_embodied_a1a3"
+        ],
+        "source_urls": [
+          "https://doi.org/10.1016/j.scs.2024.105975",
+          "https://www.sciencedirect.com/science/article/pii/S2210670724007996",
+          "https://doi.org/10.6084/m9.figshare.24451948.v1"
+        ],
+        "model_id": "us_doe_sfh_embodied_ec_intensity_a1_a3_2024",
+        "source_range_kgco2e_m2": {
+          "low": 39,
+          "high": 121,
+          "unit": "kgCO2e/m2"
+        },
+        "reported_stage_boundary": "A1-A3 product-stage embodied GHG; gross ECI, without applying separately reported theoretical maximum biogenic storage",
+        "physical_scope": "DOE single-family prototype quantity takeoff: structure, enclosure, and foundation material classes",
+        "center_basis": "Arithmetic midpoint of the published 39–121 kgCO2e/m2 all-model ECI range (80 kgCO2e/m2 converted to 7.43 kgCO2e/sf); declared planning center, not a reported sample mean.",
+        "proxy_adjustment": {
+          "low_factor": 0.5,
+          "high_factor": 2.0,
+          "provenance": "assumption",
+          "limitations": "Low-rise multifamily is an operational-energy prototype match. The embodied study has no multifamily ECI, so its detached-house center is only a reference; the wide 0.5–2.0 form multiplier is an explicit bounding assumption."
+        },
+        "as_of": "2024-12-15",
+        "limitations": "Upfront materials (A1-A3 proxy), not complete whole-building or whole-life carbon. The source covers DOE detached single-family models and structure/enclosure/foundation material classes; interiors/fit-out, MEP, appliances and sitework are not established as included. A4-A5 transport/construction, replacements/use and end-of-life are outside A1-A3. Source min/max spans study climate, foundation, and LCA-tool cases, not a confidence interval. Typology differences beyond the DOE detached archetype use declared proxy factors."
+      },
+      "operational_kwh_psf_yr": {
+        "value": 8.95,
+        "low": 8.12,
+        "high": 9.3,
+        "unit": "kWh/sf/yr",
+        "provenance": "modeled",
+        "evidence_tier": "doe_energyplus_prototype_output",
+        "interval_type": "foundation_variant_range",
+        "geography": "IECC 2021 climate zone 5A; DOE uses Buffalo Niagara International Airport TMY3; Allegheny County is also CZ5A but Buffalo weather is not Pittsburgh local weather",
+        "source_ids": [
+          "doe_iecc2021_residential_cz5a_outputs",
+          "pnnl_33270_allegheny_5a",
+          "doe_pa_residential_code_status_2026"
+        ],
+        "source_urls": [
+          "https://www.energycodes.gov/prototype-building-models",
+          "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+          "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+          "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates",
+          "https://www.energycodes.gov/status/states/pennsylvania"
+        ],
+        "model_id": "doe_iecc2021_residential_cz5a_heat_pump",
+        "prototype_proxy": "mf_lowrise",
+        "scenario": "All-electric heat-pump scenario. Uses only DOE hp-tagged output tables; all non-electric fuel columns in selected annual end-use outputs are zero.",
+        "end_uses": "Electricity:Facility annual meter for all modeled end uses, normalized by Net Conditioned Building Area.",
+        "foundation_variants": [
+          {
+            "foundation": "crawlspace",
+            "model_id": "US+MF+CZ5A+hp+crawlspace+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 200964.55,
+            "conditioned_area_sf": 21609.96,
+            "value_kwh_sf_yr": 9.29962619
+          },
+          {
+            "foundation": "heatedbsmt",
+            "model_id": "US+MF+CZ5A+hp+heatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 238844.59,
+            "conditioned_area_sf": 29404.35,
+            "value_kwh_sf_yr": 8.12276381
+          },
+          {
+            "foundation": "slab",
+            "model_id": "US+MF+CZ5A+hp+slab+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 198651.44,
+            "conditioned_area_sf": 21609.96,
+            "value_kwh_sf_yr": 9.19258712
+          },
+          {
+            "foundation": "unheatedbsmt",
+            "model_id": "US+MF+CZ5A+hp+unheatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 198472.93,
+            "conditioned_area_sf": 21609.96,
+            "value_kwh_sf_yr": 9.18432658
+          }
+        ],
+        "center_basis": "Arithmetic mean of the four DOE HP foundation variant EUIs for the selected prototype; no building-form savings are assumed.",
+        "proxy_adjustment": {
+          "low_factor": 1.0,
+          "high_factor": 1.0,
+          "provenance": "none",
+          "limitations": "Low-rise multifamily is an operational-energy prototype match. The embodied study has no multifamily ECI, so its detached-house center is only a reference; the wide 0.5–2.0 form multiplier is an explicit bounding assumption."
+        },
+        "as_of": "2024-12-22",
+        "limitations": "Simulated 2021 IECC prototype electricity in Buffalo TMY3 weather, not a Pittsburgh meter or prediction. Assumes all-electric heat-pump systems; selected output tables have zero non-electric fuel use. Foundation low/high span four foundation variants only and are not a statistical interval. Building form, floor area, occupancy, schedules, appliance behavior and local weather may differ. DOE uses one single-family detached and one multifamily low-rise base form; other forms are explicit proxies."
+      }
+    },
+    "midrise": {
+      "proxy_label": "DOE multifamily low-rise proxy for 5-story mid-rise; DOE detached-house study for embodied carbon",
+      "embodied_kgco2e_psf": {
+        "value": 7.43,
+        "low": 1.81,
+        "high": 22.48,
+        "unit": "kgCO2e/sf",
+        "provenance": "modeled",
+        "evidence_tier": "modeled_prototype_lca",
+        "interval_type": "reported_study_range_plus_assumed_form_factor",
+        "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+        "source_ids": [
+          "jungclaus_2024_sf_embodied_a1a3"
+        ],
+        "source_urls": [
+          "https://doi.org/10.1016/j.scs.2024.105975",
+          "https://www.sciencedirect.com/science/article/pii/S2210670724007996",
+          "https://doi.org/10.6084/m9.figshare.24451948.v1"
+        ],
+        "model_id": "us_doe_sfh_embodied_ec_intensity_a1_a3_2024",
+        "source_range_kgco2e_m2": {
+          "low": 39,
+          "high": 121,
+          "unit": "kgCO2e/m2"
+        },
+        "reported_stage_boundary": "A1-A3 product-stage embodied GHG; gross ECI, without applying separately reported theoretical maximum biogenic storage",
+        "physical_scope": "DOE single-family prototype quantity takeoff: structure, enclosure, and foundation material classes",
+        "center_basis": "Arithmetic midpoint of the published 39–121 kgCO2e/m2 all-model ECI range (80 kgCO2e/m2 converted to 7.43 kgCO2e/sf); declared planning center, not a reported sample mean.",
+        "proxy_adjustment": {
+          "low_factor": 0.5,
+          "high_factor": 2.0,
+          "provenance": "assumption",
+          "limitations": "DOE residential energy outputs have no mid-rise residential prototype. Low-rise multifamily is an operational proxy; the detached-house ECI is only a reference. Both ranges are widened for transfer uncertainty."
+        },
+        "as_of": "2024-12-15",
+        "limitations": "Upfront materials (A1-A3 proxy), not complete whole-building or whole-life carbon. The source covers DOE detached single-family models and structure/enclosure/foundation material classes; interiors/fit-out, MEP, appliances and sitework are not established as included. A4-A5 transport/construction, replacements/use and end-of-life are outside A1-A3. Source min/max spans study climate, foundation, and LCA-tool cases, not a confidence interval. Typology differences beyond the DOE detached archetype use declared proxy factors."
+      },
+      "operational_kwh_psf_yr": {
+        "value": 8.95,
+        "low": 6.09,
+        "high": 13.95,
+        "unit": "kWh/sf/yr",
+        "provenance": "modeled",
+        "evidence_tier": "doe_energyplus_prototype_output",
+        "interval_type": "foundation_range_plus_assumed_form_proxy",
+        "geography": "IECC 2021 climate zone 5A; DOE uses Buffalo Niagara International Airport TMY3; Allegheny County is also CZ5A but Buffalo weather is not Pittsburgh local weather",
+        "source_ids": [
+          "doe_iecc2021_residential_cz5a_outputs",
+          "pnnl_33270_allegheny_5a",
+          "doe_pa_residential_code_status_2026"
+        ],
+        "source_urls": [
+          "https://www.energycodes.gov/prototype-building-models",
+          "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+          "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+          "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates",
+          "https://www.energycodes.gov/status/states/pennsylvania"
+        ],
+        "model_id": "doe_iecc2021_residential_cz5a_heat_pump",
+        "prototype_proxy": "mf_lowrise",
+        "scenario": "All-electric heat-pump scenario. Uses only DOE hp-tagged output tables; all non-electric fuel columns in selected annual end-use outputs are zero.",
+        "end_uses": "Electricity:Facility annual meter for all modeled end uses, normalized by Net Conditioned Building Area.",
+        "foundation_variants": [
+          {
+            "foundation": "crawlspace",
+            "model_id": "US+MF+CZ5A+hp+crawlspace+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 200964.55,
+            "conditioned_area_sf": 21609.96,
+            "value_kwh_sf_yr": 9.29962619
+          },
+          {
+            "foundation": "heatedbsmt",
+            "model_id": "US+MF+CZ5A+hp+heatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 238844.59,
+            "conditioned_area_sf": 29404.35,
+            "value_kwh_sf_yr": 8.12276381
+          },
+          {
+            "foundation": "slab",
+            "model_id": "US+MF+CZ5A+hp+slab+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 198651.44,
+            "conditioned_area_sf": 21609.96,
+            "value_kwh_sf_yr": 9.19258712
+          },
+          {
+            "foundation": "unheatedbsmt",
+            "model_id": "US+MF+CZ5A+hp+unheatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 198472.93,
+            "conditioned_area_sf": 21609.96,
+            "value_kwh_sf_yr": 9.18432658
+          }
+        ],
+        "center_basis": "Arithmetic mean of the four DOE HP foundation variant EUIs for the selected prototype; no building-form savings are assumed.",
+        "proxy_adjustment": {
+          "low_factor": 0.75,
+          "high_factor": 1.5,
+          "provenance": "assumption",
+          "limitations": "DOE residential energy outputs have no mid-rise residential prototype. Low-rise multifamily is an operational proxy; the detached-house ECI is only a reference. Both ranges are widened for transfer uncertainty."
+        },
+        "as_of": "2024-12-22",
+        "limitations": "Simulated 2021 IECC prototype electricity in Buffalo TMY3 weather, not a Pittsburgh meter or prediction. Assumes all-electric heat-pump systems; selected output tables have zero non-electric fuel use. Foundation low/high span four foundation variants only and are not a statistical interval. Building form, floor area, occupancy, schedules, appliance behavior and local weather may differ. DOE uses one single-family detached and one multifamily low-rise base form; other forms are explicit proxies."
+      }
+    }
+  },
+  "sources_manifest": "data/models/carbon_prototypes/sources.json",
+  "energy_extract": "data/models/carbon_prototypes/doe_energy_outputs.json"
+}

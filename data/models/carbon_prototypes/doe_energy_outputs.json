@@ -1,0 +1,193 @@
+{
+  "source_id": "doe_iecc2021_residential_cz5a_outputs",
+  "source_url": "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+  "downloaded_at": "2026-09-27",
+  "package_sha256": "c9577e3954ad2a51e5b20955069308a7c6e6b95495c18483f8be825c9d1664cf",
+  "model_table_generated_at": "2024-06-27",
+  "source_page_publication_date": "2024-12-22",
+  "rows": [
+    {
+      "model_id": "US+SF+CZ5A+hp+slab+IECC_2021",
+      "prototype": "sf_detached",
+      "foundation": "slab",
+      "conditioned_area_sf": 2377.1,
+      "electricity_facility_meter_kwh_yr": 19708.85,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 67294.25,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 8.29113205
+    },
+    {
+      "model_id": "US+SF+CZ5A+hp+crawlspace+IECC_2021",
+      "prototype": "sf_detached",
+      "foundation": "crawlspace",
+      "conditioned_area_sf": 2377.1,
+      "electricity_facility_meter_kwh_yr": 20161.62,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 68840.19,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 8.48160363
+    },
+    {
+      "model_id": "US+SF+CZ5A+hp+heatedbsmt+IECC_2021",
+      "prototype": "sf_detached",
+      "foundation": "heatedbsmt",
+      "conditioned_area_sf": 3565.64,
+      "electricity_facility_meter_kwh_yr": 25331.05,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 86490.79,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 7.1042085
+    },
+    {
+      "model_id": "US+SF+CZ5A+hp+unheatedbsmt+IECC_2021",
+      "prototype": "sf_detached",
+      "foundation": "unheatedbsmt",
+      "conditioned_area_sf": 2377.1,
+      "electricity_facility_meter_kwh_yr": 20012.46,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 68330.89,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 8.41885491
+    },
+    {
+      "model_id": "US+MF+CZ5A+hp+slab+IECC_2021",
+      "prototype": "mf_lowrise",
+      "foundation": "slab",
+      "conditioned_area_sf": 21609.96,
+      "electricity_facility_meter_kwh_yr": 198651.44,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 678278.92,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 9.19258712
+    },
+    {
+      "model_id": "US+MF+CZ5A+hp+crawlspace+IECC_2021",
+      "prototype": "mf_lowrise",
+      "foundation": "crawlspace",
+      "conditioned_area_sf": 21609.96,
+      "electricity_facility_meter_kwh_yr": 200964.55,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 686176.84,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 9.29962619
+    },
+    {
+      "model_id": "US+MF+CZ5A+hp+heatedbsmt+IECC_2021",
+      "prototype": "mf_lowrise",
+      "foundation": "heatedbsmt",
+      "conditioned_area_sf": 29404.35,
+      "electricity_facility_meter_kwh_yr": 238844.59,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 815515.09,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 8.12276381
+    },
+    {
+      "model_id": "US+MF+CZ5A+hp+unheatedbsmt+IECC_2021",
+      "prototype": "mf_lowrise",
+      "foundation": "unheatedbsmt",
+      "conditioned_area_sf": 21609.96,
+      "electricity_facility_meter_kwh_yr": 198472.93,
+      "fuel_end_uses_kbtu_yr": {
+        "Electricity": 677669.4,
+        "Natural Gas": 0.0,
+        "Gasoline": 0.0,
+        "Diesel": 0.0,
+        "Coal": 0.0,
+        "Fuel Oil No 1": 0.0,
+        "Fuel Oil No 2": 0.0,
+        "Propane": 0.0,
+        "Other Fuel 1": 0.0,
+        "Other Fuel 2": 0.0,
+        "District Cooling": 0.0,
+        "District Heating": 0.0
+      },
+      "electricity_kwh_per_conditioned_sf_yr": 9.18432658
+    }
+  ],
+  "calculation": {
+    "electricity": "EnergyPlus annual Electricity:Facility meter [kWh/year]",
+    "area": "EnergyPlus Annual Building Utility Performance Summary > Building Area > Net Conditioned Building Area [ft2]",
+    "conversion": "kWh/sf/yr = Electricity:Facility [kWh/yr] / Net Conditioned Building Area [ft2]",
+    "cross_check": "Annual Building Utility Performance Summary > End Uses > Total End Uses reports energy by carrier; all non-electric carriers are 0 kBtu/year in selected HP outputs.",
+    "extraction_note": "The four selected models for each prototype are heating-system-tagged hp and cover slab, crawlspace, heated basement, and unheated basement. Annual facility electricity includes all modeled end uses."
+  }
+}
