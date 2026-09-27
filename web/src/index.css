@@ -3,9 +3,8 @@
   --bg: #0d1b2a;
   --header: #102236;
   --strip: #2a2206;
-  /* Information panels over the 3D view: lighter blue, partly see-through (blurred below). */
-  --panel: rgba(30, 60, 94, 0.8);
-  --panel-blur: blur(10px) saturate(1.15);
+  /* Information panels over the 3D view. */
+  --panel: rgba(30, 60, 94, 0.96);
   --card: #1a3250;
   --card-hover: #213d60;
   --inset: #152b44;
@@ -137,7 +136,7 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 /* City panel */
 .city-panel {
   position: absolute; top: 90px; left: 16px; bottom: 16px; width: 330px; display: flex; flex-direction: column;
-  background: var(--panel); border: 2px solid var(--border); border-radius: 16px; overflow: auto; z-index: 4;
+  background: var(--panel); border: 2px solid var(--border); border-radius: 16px; overflow: auto; z-index: 4; backdrop-filter: blur(6px);
 }
 .cp-hero { padding: 14px 16px 12px; background: var(--lime); color: var(--bg); }
 .cp-hero .h-title { font: 700 22px/1.15 var(--display); }
@@ -358,10 +357,4 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   #lotline-memo, #lotline-memo * { visibility: visible !important; }
   #lotline-memo { position: absolute !important; inset: 0 !important; box-shadow: none !important; }
   .memo-actions { display: none !important; }
-}
-
-/* See-through panels stay readable: blur whatever shows through them. */
-.city-panel, .hint-pill, .gauge, .hud-note, .palette, .inspector, .panel {
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
 }
