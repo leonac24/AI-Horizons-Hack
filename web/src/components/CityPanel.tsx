@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { ParcelFeature } from '../App'
 import { districtColor } from '../lib/format'
+import { MARKER_COLORS } from '../three/engine'
 import type { Config, ParcelSummary } from '../types'
 
 export interface Filters {
@@ -84,9 +85,9 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
           </div>
         </div>
         <div className="cp-legend">
-          <span><i style={{ background: '#2fd06b' }} />suggested / search hit</span>
-          <span><i style={{ background: '#ff4d6d' }} />publicly held</span>
-          <span><i style={{ background: '#1f8bff' }} />other vacant</span>
+          <span><i style={{ background: MARKER_COLORS.pin }} />suggested / search hit</span>
+          <span><i style={{ background: MARKER_COLORS.public }} />publicly held</span>
+          <span><i style={{ background: MARKER_COLORS.other }} />other vacant</span>
         </div>
         <div className="eyebrow cp-count">
           {cardsAreHits ? 'Search results' : 'Suggested starting points'} · {visibleCount.toLocaleString()} of {features.length.toLocaleString()} lots shown

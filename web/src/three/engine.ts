@@ -82,11 +82,14 @@ export interface Engine {
 
 const BG = '#cfeaff' // haze
 const FADE = '#0d1b2a'
-const GREEN = '#2fd06b' // plan, selection, lot outline, pins
+const GREEN = '#2fd06b' // plan, selection, lot outline
 const VALID = '#7dffb0'
 const INVALID = '#ff4a3a'
-const DOT_PUBLIC = '#ff4d6d'
-const DOT_OTHER = '#1f8bff'
+// Map markers avoid green and blue so they stand out from terrain and water.
+export const MARKER_COLORS = { pin: '#ffd23f', public: '#ff4d6d', other: '#ff9f1c' } as const
+const PIN = MARKER_COLORS.pin
+const DOT_PUBLIC = MARKER_COLORS.public
+const DOT_OTHER = MARKER_COLORS.other
 const WATER = '#3aa7ff'
 
 function skyTexture(): THREE.Texture {
@@ -258,9 +261,9 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     hit: new THREE.CylinderGeometry(20, 20, 80, 8),
   }
   const pinMats = {
-    pad: new THREE.MeshStandardMaterial({ color: GREEN, emissive: GREEN, emissiveIntensity: 0.35 }),
-    beam: new THREE.MeshBasicMaterial({ color: GREEN, transparent: true, opacity: 0.55 }),
-    ring: new THREE.MeshBasicMaterial({ color: GREEN }),
+    pad: new THREE.MeshStandardMaterial({ color: PIN, emissive: PIN, emissiveIntensity: 0.35 }),
+    beam: new THREE.MeshBasicMaterial({ color: PIN, transparent: true, opacity: 0.55 }),
+    ring: new THREE.MeshBasicMaterial({ color: PIN }),
     hit: new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
   }
   function addPin(lot: PinLot): void {
