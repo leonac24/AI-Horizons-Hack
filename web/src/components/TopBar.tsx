@@ -1,4 +1,5 @@
 import type { ParcelSummary } from '../types'
+import { HelpTip } from './help'
 
 interface Props {
   mode: 'city' | 'lot'
@@ -14,6 +15,7 @@ interface Props {
   onReset: () => void
   onMemo: () => void
   onShare: () => void
+  onHelp: () => void
   disclaimer: string
 }
 
@@ -27,6 +29,11 @@ export function TopBar(p: Props) {
           <div className="brand-name">Lotline</div>
           <div className="brand-tag">SIM</div>
         </div>
+        {isLot && (
+          <button className="ghost-btn back-btn" onClick={p.onCity} data-tour="back" title="Back to the city map">
+            ← City map
+          </button>
+        )}
         <nav className="crumbs">
           <button className={`crumb ${isLot ? 'dimmed' : ''}`} onClick={p.onCity}>
             Pittsburgh
@@ -42,6 +49,7 @@ export function TopBar(p: Props) {
         </nav>
         {isLot && (
           <div className="bar-actions">
+            <div className="bar-actions" data-tour="plan-controls">
             <div className="seg">
               <button className={!p.showPlan ? 'on-info' : ''} onClick={() => p.setShowPlan(false)}>
                 Before
@@ -62,14 +70,19 @@ export function TopBar(p: Props) {
             <button className="ghost-btn" onClick={p.onReset}>
               Reset view
             </button>
+            <HelpTip id="plan_controls" />
+            </div>
             <button className="ghost-btn" onClick={p.onShare} title="Copy a link to this lot, priorities and plan">
               Share link
             </button>
-            <button className="go-btn" onClick={p.onMemo}>
+            <button className="go-btn" onClick={p.onMemo} data-tour="memo">
               Print memo
             </button>
           </div>
         )}
+        <button className="ghost-btn help-btn" onClick={p.onHelp} data-tour="help-button" title="Show the tour for this screen" aria-label="Show the tour for this screen">
+          ?
+        </button>
       </header>
       <div className="strip">{p.disclaimer}</div>
     </>

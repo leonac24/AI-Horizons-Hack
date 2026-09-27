@@ -101,6 +101,8 @@ export interface Config {
     }
     evidence: { topics: Record<string, { label: string; listed: boolean }> }
     ask: { search_example: string; examples: string[] }
+    tutorial: { storage_key: string; chapters: Partial<Record<TourChapter, TourStep[]>> }
+    help: Record<string, { title: string; body: string }>
   }
   city: {
     name: string
@@ -329,4 +331,11 @@ export interface PlanResult {
   eligible: boolean
   ineligible_reason: string | null
   notes: string[]
+}
+
+export type TourChapter = 'city' | 'lot'
+export interface TourStep {
+  title: string
+  body: string
+  target: string | null
 }

@@ -88,3 +88,202 @@ evidence:
     cost: { label: Costs, description: "Construction, operating, financing, or subsidy costs" }
     site: { label: Site conditions, description: "Parcel geometry, flood, slope, mine, or other site condition" }
     other: { label: Other, description: None of these inputs, listed: false }
+# First-run walk-through. `city` plays on the first visit; `lot` plays the first
+# time someone opens a lot. "Skip tutorial" skips both; the ? button in the top
+# bar replays the chapter for the screen you're on. `target` names a
+# `data-tour` anchor in the UI; leave it out for a centered card. A missing
+# anchor (e.g. an empty list) also falls back to a centered card.
+tutorial:
+  storage_key: lotline.tutorial.v1
+  chapters:
+    city:
+      - title: Welcome to Lotline
+        body: >-
+          Pick any vacant lot in Pittsburgh, try housing on it, and see who it
+          houses, what it costs, what it emits and what the zoning allows.
+          This short tour shows you around. You can skip it any time.
+      - target: map-hint
+        title: The whole city, in 3D
+        body: >-
+          Every dot on the map is a vacant lot. Drag to orbit, right-drag to
+          pan, scroll to zoom. Click any lot to zoom in on it.
+      - target: ai-search
+        title: Describe what you're looking for
+        body: >-
+          Type the kind of lot you want in plain English. AI turns it into map
+          filters and shows you exactly which filters it used.
+      - target: filters
+        title: Or filter by hand
+        body: >-
+          Search an address or parcel ID, pick a zoning district, set a minimum
+          lot size, or hide lots on steep slopes and flood zones.
+      - target: legend
+        title: Read the dots
+        body: >-
+          Yellow pins are suggested lots and search hits. The key shows which
+          dot color means publicly held and which means other vacant lots.
+      - target: lot-cards
+        title: Start from a suggested lot
+        body: >-
+          These are spread across neighborhoods, zoning districts and site
+          conditions so you can see variety. They are starting points, not
+          recommendations. Click one to open it.
+      - target: help-button
+        title: Stuck? Look for the ?
+        body: >-
+          Small ? buttons next to headings explain that part of the screen.
+          This button replays the tour for whatever screen you're on.
+    lot:
+      - title: You're on a lot
+        body: >-
+          This is your sandbox. Place buildings, then compare your plan against
+          every housing type Lotline screens. A quick tour of this screen.
+      - target: palette
+        title: Build
+        body: >-
+          Drag a housing type onto the outlined lot. Cards marked "too big"
+          don't fit this lot's shape. Select a building to rotate (R) or
+          delete it (Del).
+      - target: hud
+        title: Your scoreboard
+        body: >-
+          Homes, zoning status, rank under the current priorities, carbon per
+          household and the subsidy gap update as you build.
+      - target: plan-controls
+        title: Before and after
+        body: >-
+          Flip between the lot as it is today and your plan. Undo, redo, clear
+          the lot or reset the camera here.
+      - target: back
+        title: Back to the map
+        body: >-
+          Done with this lot? Go back to the city map to pick another one.
+      - target: tabs
+        title: Dig into the tradeoffs
+        body: >-
+          Compare ranks the options. Whose priorities? changes the weights.
+          Households, Carbon and Work backwards go deeper. What we don't know
+          lists every gap in the data.
+      - target: presets
+        title: Whose priorities?
+        body: >-
+          Pink is always values, never evidence. Pick a stakeholder preset and
+          watch the ranking shift. The numbers stay the same; only how they're
+          weighed changes.
+      - target: memo
+        title: Take it to a meeting
+        body: >-
+          Print a one-page memo of this lot for a community meeting or a
+          conversation with City Planning.
+      - target: help-button
+        title: That's it
+        body: >-
+          Decision support only. Confirm with the City of Pittsburgh Department
+          of City Planning. Click ? next to any heading if you need a hand.
+
+# Text for the small ? buttons. Keys are the ids the UI asks for.
+help:
+  pick_lot:
+    title: Picking a lot
+    body: >-
+      Click any dot on the map, search an address or parcel ID, or start from a
+      suggested lot. Every vacant lot inside City of Pittsburgh limits works.
+  ai_search:
+    title: AI lot search
+    body: >-
+      Describe the lots you want in your own words. AI turns your words into
+      the same filters you could set by hand and lists them, so you can check
+      what it understood. The largest matching lots are shown first.
+  filters:
+    title: Filters
+    body: >-
+      Filters change which dots show on the map. Hazard filters hide lots with
+      that flag; a lot whose flood location couldn't be matched stays visible.
+  legend:
+    title: Map colors
+    body: >-
+      Pins are suggested lots or search results. Dots are split into publicly
+      held lots and all other vacant lots; the key shows which color is which.
+  suggested:
+    title: Suggested lots
+    body: >-
+      Picked automatically to cover different neighborhoods, zoning districts,
+      slopes and flood exposure. They are examples, not recommendations.
+  hud:
+    title: Scoreboard
+    body: >-
+      A live summary of your plan: homes placed, zoning status, rank under the
+      current priorities, carbon per household by the year on the Carbon tab,
+      and the subsidy per home needed at the income level on Work backwards.
+  palette:
+    title: Building palette
+    body: >-
+      Drag a card onto the lot. Each card shows homes per building, stories and
+      footprint. A building turns red when it is off the lot, overlapping
+      another, or crossing a setback.
+  plan_controls:
+    title: Plan controls
+    body: >-
+      Before shows the lot today; After shows your plan. Undo and redo step
+      through your edits (Ctrl/⌘ Z). Clear lot removes every building.
+  your_plan:
+    title: Your plan
+    body: >-
+      How what you placed does on zoning and each criterion. Bars show the
+      uncertainty range; the tick is the central estimate. Box style shows
+      where a number comes from: solid observed, dashed modeled, outlined
+      assumption, hatched placeholder.
+  ranking:
+    title: Ranking
+    body: >-
+      Options that fail a verified zoning requirement are left out of the
+      ranking, not scored low. The rest are scored 0–1 on each criterion and
+      weighted by the current priorities. Place copies an option onto the lot.
+  flip:
+    title: What would flip it
+    body: >-
+      The smallest change to one weight that would swap the top two. If a small
+      change flips it, the ranking depends mostly on values, not evidence.
+  smaa:
+    title: How often it comes out on top
+    body: >-
+      Lotline reruns the ranking thousands of times with weights near yours and
+      every number drawn from its range. A long first bar means the result
+      holds up; a short one means it's a close call.
+  ask:
+    title: Ask about this lot
+    body: >-
+      Ask a question in plain English. Answers use only the numbers on this
+      page, cite them as chips, and are checked before you see them.
+  about_lot:
+    title: About this lot
+    body: >-
+      Site context such as slope, flood and sewer flags. Being near a sewer,
+      school or stop is not evidence of spare capacity.
+  priorities:
+    title: Priorities
+    body: >-
+      Weights say how much each criterion matters to you. Presets are
+      illustrative starting points. Moving a slider switches to a custom
+      profile. Weights never change the evidence.
+  households:
+    title: Households
+    body: >-
+      Illustrative households, not real people. Each is checked against each
+      option: could they afford it at 30% of income?
+  carbon_over_time:
+    title: Carbon
+    body: >-
+      Materials at year 0, then home energy and travel each year, per
+      household. Drag the year slider to see when one option overtakes
+      another.
+  backwards:
+    title: Work backwards
+    body: >-
+      Pick a target housing type, number of homes and income level. See which
+      zoning rules it would fail and how much subsidy per home it would need.
+  unknowns:
+    title: What we don't know
+    body: >-
+      Every placeholder, missing zoning rule and data gap in one place. Read
+      this before relying on any result.
