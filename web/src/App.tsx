@@ -350,6 +350,14 @@ export default function App() {
             .catch(() => setToast(url))
         }}
         onHelp={() => setTour(mode)}
+        onShare={() => {
+          if (!lotId) return
+          const url = shareUrl({ lot: lotId, weights, profile: profileId, placements })
+          navigator.clipboard
+            .writeText(url)
+            .then(() => setToast('Link copied: it reopens this lot with these priorities and buildings.'))
+            .catch(() => setToast(url))
+        }}
         disclaimer={config.app.disclaimer}
       />
       {error && <div className="error-toast">{error}</div>}
