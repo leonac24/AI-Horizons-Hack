@@ -6,7 +6,8 @@ import copy
 import pytest
 import yaml
 
-from core.zoning import evaluate
+from core.engine import LotShape, pure_buildings
+from core.zoning import buildable_margins, evaluate
 from pipeline.zoning.build_rules import FACTS, FactError, expand, verify
 
 
@@ -68,3 +69,23 @@ def test_reviewed_setbacks_are_reported_not_scored(cfg, facts):
     assert r.setbacks["interior_side_setback_ft"].value_ft == 5
     assert all(c.rule_id not in r.setbacks for c in r.checks)
     assert r.status == "by_right"
+
+
+def test_options_are_sized_to_the_buildable_area_once_setbacks_are_reviewed(cfg, facts):
+    rules = expand(facts, ["R2-L"])
+    assert buildable_margins(cfg, rules, "R2-L") == {}  # unreviewed setbacks change nothing
+    d = rules["R2-L"]["dimensional"]
+    for k in d:
+        d[k] = _reviewed(d[k])
+    m = buildable_margins(cfg, rules, "R2-L")
+    assert m["left"] == m["right"] == 5
+    typ = cfg.typologies[0]
+    w, depth = typ.building.footprint_ft
+    typ = typ.model_copy(update={"building": typ.building.model_copy(update={"max_in_a_row": 9})})
+    # Two buildings fit the raw frontage, but only one fits between the side setbacks.
+    frontage = 2 * w + 1
+    shape = LotShape(frontage_ft=frontage, depth_ft=depth + m["front"] + m["rear"] + 1,
+                     provenance="observed", sourceIds=[], note="")
+    area = 10 * typ.min_lot_sf_for_form + 1
+    assert pure_buildings(typ, shape, area)[0] == 2
+    assert pure_buildings(typ, shape, area, m) == (1, True)

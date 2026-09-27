@@ -75,6 +75,24 @@ def cite(cfg: Config, section: str | None) -> str | None:
     return cfg.zoning.code.citation_format.format(section=section) if section else None
 
 
+def buildable_margins(cfg: Config, rules: dict, district: str | None) -> dict[str, float]:
+    """Reviewed setbacks for a district as margins in feet: front, rear, left,
+    right. Empty when no setback rule is reviewed. Side setbacks apply to both
+    sides; where the code gives a different "other side" value it is used on
+    the right. Exterior (street-side) yards apply only on corner lots, which we
+    cannot identify, so they are not used here."""
+    d = (rules.get(district or "") or {}).get("dimensional") or {}
+    def v(key: str) -> float | None:
+        r = d.get(key)
+        return float(r["value"]) if r and r.get("reviewed") and r.get("value") is not None else None
+    front, rear, side, other = (v("front_setback_ft"), v("rear_setback_ft"),
+                                v("interior_side_setback_ft"), v("interior_side_other_ft"))
+    if front is None and rear is None and side is None:
+        return {}
+    return {"front": front or 0.0, "rear": rear or 0.0, "left": side or 0.0,
+            "right": other if other is not None else (side or 0.0)}
+
+
 def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_area_sf: float | None,
              units: int, frontage_ft: float | None = None) -> ZoningResult:
     """`frontage_ft` is the lot width when it is OBSERVED; pass None when it is a

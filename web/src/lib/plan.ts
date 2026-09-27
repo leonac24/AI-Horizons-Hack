@@ -37,13 +37,18 @@ export function buildingForms(config: Config): Record<string, BuildingForm> {
 }
 
 /** The pure option's buildings in a row along the front of the lot (street is +z). */
-export function purePlacements(config: Config, typId: string, buildings: number, shape: LotShape): Placement[] {
+export function purePlacements(config: Config, typId: string, buildings: number, shape: LotShape,
+  env: SetbackEnvelope | null = null): Placement[] {
   const t = config.typologies.find((x) => x.id === typId)
   if (!t) return []
   const [w, d] = t.building.footprint_ft
   const D = shape.depth_ft
-  const z = D / 2 - 6 - d / 2 > -D / 2 + d / 2 ? D / 2 - 6 - d / 2 : D / 2 - d / 2
-  const x0 = -(buildings * w) / 2 + w / 2
+  // With reviewed setbacks, sit on the front setback line and centre in the buildable width;
+  // otherwise keep the old 6 ft stand-in front yard (falling back to the lot edge on shallow lots).
+  const front = env ? env.front : 6
+  const z = env || D / 2 - front - d / 2 > -D / 2 + d / 2 ? D / 2 - front - d / 2 : D / 2 - d / 2
+  const cx = env ? (env.left - env.right) / 2 : 0
+  const x0 = cx - (buildings * w) / 2 + w / 2
   return Array.from({ length: buildings }, (_, i) => ({ uid: `o_${typId}_${i}`, typ: typId, x: x0 + i * w, z, rot: 0 }))
 }
 
@@ -54,12 +59,13 @@ export function countsOf(list: Placement[]): Record<string, number> {
 }
 
 export function buildPool(config: Config, analysis: Analysis, plan: PlanResult | null): Option[] {
+  const env = envelopeOf(analysis)
   const pure: Option[] = analysis.scenarios.map((s) => {
     const t = config.typologies.find((x) => x.id === s.typology_id)!
     return {
       id: t.id, label: t.label, short: t.short_label, color: t.color, units: s.units, metrics: s.metrics,
       zoning: s.zoning, households: s.households, carbon: s.carbon, eligible: s.eligible, reason: s.ineligible_reason,
-      fits: s.form_fits, isPlan: false, placements: purePlacements(config, t.id, s.buildings, analysis.lot_shape),
+      fits: s.form_fits, isPlan: false, placements: purePlacements(config, t.id, s.buildings, analysis.lot_shape, env),
       notes: s.notes,
     }
   })

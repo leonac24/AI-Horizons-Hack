@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from core.config import Config, Typology
 from core.metrics import Metric, Samples, Trace, to_metric, weakest
-from core.zoning import ZoningResult, evaluate, load_rules
+from core.zoning import ZoningResult, buildable_margins, evaluate, load_rules
 
 
 class HouseholdCheck(BaseModel):
@@ -113,13 +113,18 @@ def _interval_samples(S: Samples, parcel: dict, key: str, value: float,
     return np.concatenate([[value], draws])
 
 
-def pure_buildings(typ: Typology, shape: LotShape, lot_area_sf: float) -> tuple[int, bool]:
+def pure_buildings(typ: Typology, shape: LotShape, lot_area_sf: float,
+                   margins: dict[str, float] | None = None) -> tuple[int, bool]:
     """How many of this typology's building fit side by side along the frontage
-    (up to max_in_a_row), and whether the form fits the lot at all. Screening
-    geometry only: setbacks, access and topography are not modeled."""
+    (up to max_in_a_row), and whether the form fits the lot at all. When the
+    district's setbacks are reviewed, only the buildable area inside them counts.
+    Screening geometry only: access and topography are not modeled."""
+    m = margins or {}
+    width = shape.frontage_ft - m.get("left", 0.0) - m.get("right", 0.0)
+    depth = shape.depth_ft - m.get("front", 0.0) - m.get("rear", 0.0)
     w, d = typ.building.footprint_ft
-    fits = (w <= shape.frontage_ft and d <= shape.depth_ft and lot_area_sf >= typ.min_lot_sf_for_form)
-    n = max(1, min(typ.building.max_in_a_row, math.floor(shape.frontage_ft / w))) if fits else 1
+    fits = (w <= width and d <= depth and lot_area_sf >= typ.min_lot_sf_for_form)
+    n = max(1, min(typ.building.max_in_a_row, math.floor(width / w))) if fits else 1
     return n, fits
 
 
@@ -230,17 +235,19 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     shape = lot_shape(cfg, parcel)
     # Width-conditional zoning rules only resolve on an observed frontage.
     observed_frontage = shape.frontage_ft if shape.provenance == "observed" else None
+    margins = buildable_margins(cfg, rules, parcel.get("zoning"))
     scenarios: list[Scenario] = []
     for typ in cfg.typologies:
         if homes_override and typ.id not in homes_override:
             continue
-        n_buildings, form_fits = pure_buildings(typ, shape, lot)
+        n_buildings, form_fits = pure_buildings(typ, shape, lot, margins)
         units = homes_override[typ.id] if homes_override else n_buildings * typ.building.homes
         notes: list[str] = []
         if not form_fits and not homes_override:
             w, d = typ.building.footprint_ft
-            notes.append(f"This building ({w:.0f}×{d:.0f} ft) doesn't fit a "
-                         f"{shape.frontage_ft:.0f}×{shape.depth_ft:.0f} ft lot, or the lot is under "
+            where = "the buildable area inside the setbacks" if margins else (
+                f"a {shape.frontage_ft:.0f}×{shape.depth_ft:.0f} ft lot")
+            notes.append(f"This building ({w:.0f}×{d:.0f} ft) doesn't fit {where}, or the lot is under "
                          f"{typ.min_lot_sf_for_form:,.0f} sf.")
         zres = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units, observed_frontage)
         if zres.max_units_by_rule is not None and zres.max_units_by_rule < units:
