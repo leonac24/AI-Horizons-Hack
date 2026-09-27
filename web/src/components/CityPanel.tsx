@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import type { ParcelFeature } from '../App'
 import { districtColor } from '../lib/format'
 import { MARKER_COLORS } from '../three/engine'
@@ -21,10 +21,12 @@ interface Props {
   setQuery: (q: string) => void
   cards: ParcelSummary[]
   cardsAreHits: boolean
+  cardsTitle?: string
+  aiBox?: ReactNode
   onOpen: (id: string) => void
 }
 
-export function CityPanel({ config, features, visibleCount, filters, setFilters, query, setQuery, cards, cardsAreHits, onOpen }: Props) {
+export function CityPanel({ config, features, visibleCount, filters, setFilters, query, setQuery, cards, cardsAreHits, cardsTitle, aiBox, onOpen }: Props) {
   const districts = useMemo(() => {
     const c: Record<string, number> = {}
     for (const f of features) if (f.properties.z) c[f.properties.z] = (c[f.properties.z] ?? 0) + 1
@@ -48,6 +50,7 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
           <p>Every vacant lot in the City of Pittsburgh is on the map. Click one, search an address or parcel ID, or start from a suggested lot.</p>
         </div>
         <div className="cp-head">
+          {aiBox}
           <input className="field" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search address or parcel ID" />
           <div className="cp-grid">
             <label>
@@ -90,7 +93,7 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
           <span><i style={{ background: MARKER_COLORS.other }} />other vacant</span>
         </div>
         <div className="eyebrow cp-count">
-          {cardsAreHits ? 'Search results' : 'Suggested starting points'} · {visibleCount.toLocaleString()} of {features.length.toLocaleString()} lots shown
+          {cardsTitle ?? (cardsAreHits ? 'Search results' : 'Suggested starting points')} · {visibleCount.toLocaleString()} of {features.length.toLocaleString()} lots shown
         </div>
         <div className="cp-cards">
           {cards.map((c) => {

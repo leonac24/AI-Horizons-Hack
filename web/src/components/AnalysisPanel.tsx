@@ -4,6 +4,7 @@ import { PLAN_ID, type Crossing, type Option, type Ranking, type SetbackEnvelope
 import type { Placement } from '../three/engine'
 import type { Analysis, Config, EvidenceLeads, Explanation, Unknowns, WorkBackwardsResult } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
+import { AskLot, Dots, TypedSentences } from './ai'
 import { MetricBox, ProvTag, SourceRefs } from './ui'
 
 export type Tab = 'compare' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
@@ -87,6 +88,14 @@ function CompareTab(p: Props) {
   const f = ranking.flip
   const crit = f ? config.criteria[f.criterionIndex] : null
   const labelOf = (id: string) => pool.find((o) => o.id === id)?.label ?? id
+  const rankedIds = ranking.ranked.filter((o) => !o.isPlan).map((o) => o.id)
+  // "typology:metric" -> "Duplex · Income needed to afford a home"
+  const chip = (id: string) => {
+    const [t, m] = id.split(':')
+    const metricLabel =
+      config.criteria.find((c) => c.metric_id === m)?.label ?? analysis.scenarios.find((s) => s.typology_id === t)?.metrics[m]?.label ?? m
+    return `${config.typologies.find((x) => x.id === t)?.short_label ?? t} · ${metricLabel}`
+  }
   const z = plan?.zoning
   const zRole = z ? roleOf(config, z.status) : 'unreviewed'
   const sitePlaceholderCount = analysis.site_context.filter((m) => m.provenance === 'placeholder').length
@@ -239,7 +248,7 @@ function CompareTab(p: Props) {
             onClick={() => {
               setLoading(true)
               api
-                .explain(par.id, p.weights, ranking.ranked.filter((o) => !o.isPlan).map((o) => o.id))
+                .explain(par.id, p.weights, rankedIds)
                 .then(setExpl)
                 .finally(() => setLoading(false))
             }}
@@ -247,11 +256,7 @@ function CompareTab(p: Props) {
             {loading ? (
               <>
                 Explaining
-                <span className="dots" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                </span>
+                <Dots />
               </>
             ) : (
               'Explain these tradeoffs with AI'
@@ -265,21 +270,19 @@ function CompareTab(p: Props) {
                   : `Written by ${expl.source}, then checked against the numbers on this page.`}{' '}
                 Covers the ranked building types; every sentence cites the metrics it uses.
               </div>
-              {expl.sentences.map((s, i) => (
-                <p key={i}>
-                  {s.text}{' '}
-                  {s.metric_ids.map((id) => {
-                    const [t, m] = id.split(':')
-                    return (
-                      <span key={id} className="chip">
-                        {config.typologies.find((x) => x.id === t)?.short_label ?? t} · {config.criteria.find((c) => c.metric_id === m)?.label ?? m}
-                      </span>
-                    )
-                  })}
-                </p>
-              ))}
+              <TypedSentences key={expl.sentences.map((s) => s.text).join('|')} sentences={expl.sentences} chip={chip} />
             </div>
           )}
+          <div className="h-sec">Ask about this lot</div>
+          <AskLot
+            key={par.id}
+            parcelId={par.id}
+            weights={p.weights}
+            ranking={rankedIds}
+            examples={config.app.ask.examples}
+            maxChars={config.app.api.ask_question_max_chars}
+            chip={chip}
+          />
         </div>
         <div className="h-sec">About this lot</div>
         <div className="ctx-grid">

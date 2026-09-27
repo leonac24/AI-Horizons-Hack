@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api'
 import { AnalysisPanel, type Tab } from './components/AnalysisPanel'
+import { LotSearchBox } from './components/ai'
+import { type AiSearch, FLOOD_FILTER, passesAiFilters } from './lib/aiSearch'
 import { CityPanel, type Filters } from './components/CityPanel'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
 import { MemoModal } from './components/MemoModal'
@@ -46,6 +48,9 @@ export default function App() {
   const [filters, setFilters] = useState<Filters>({ district: '', minArea: 0, publicOnly: false, exclude: {} })
   const [query, setQuery] = useState('')
   const [hits, setHits] = useState<ParcelSummary[]>([])
+  const [aiSearch, setAiSearch] = useState<AiSearch | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
   const [palH, setPalH] = useState(0)
@@ -211,11 +216,12 @@ export default function App() {
       if (filters.district && p.z !== filters.district) continue
       if (filters.publicOnly && !p.p) continue
       if (Object.entries(filters.exclude).some(([h, on]) => on && p[h])) continue
+      if (aiSearch && !passesAiFilters(aiSearch.result.filters, p)) continue
       if (q.length >= 2 && !(p.ad.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || (p.n ?? '').toLowerCase().includes(q))) continue
       out.add(p.id)
     }
     return out
-  }, [features, filters, query])
+  }, [features, filters, query, aiSearch])
   useEffect(() => engine.current?.setVisibleParcels(visibleIds), [visibleIds, config, features])
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -226,9 +232,9 @@ export default function App() {
     return () => clearTimeout(t)
   }, [query])
   const pinLots = useMemo(() => {
-    const src = hits.length ? hits : suggested.filter((s) => visibleIds.has(s.id))
+    const src = aiSearch ? aiSearch.result.results : hits.length ? hits : suggested.filter((s) => visibleIds.has(s.id))
     return src.map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, public: s.public, neighborhood: s.neighborhood, zoning: s.zoning, area: s.lot_area_sf ?? 0 }))
-  }, [hits, suggested, visibleIds])
+  }, [aiSearch, hits, suggested, visibleIds])
   useEffect(() => engine.current?.setPins(pinLots), [pinLots, config, features])
 
   const pool = useMemo(() => (config && analysis ? buildPool(config, analysis, placements.length ? plan : null) : []), [config, analysis, plan, placements.length])
@@ -237,6 +243,22 @@ export default function App() {
   if (!config) return <div className="boot">{error ? `Could not load: ${error}` : 'Loading Lotline…'}</div>
   // Bottom-tray layout: stack the inspector above the palette's measured height.
   const lotL = L.palDir === 'row' && palH ? { ...L, inspBottom: `calc(${L.palBottom} + ${palH + 12}px)` } : L
+  const runAiSearch = (q: string) => {
+    setAiLoading(true)
+    setAiError(null)
+    api
+      .lotSearch(q)
+      .then((r) => {
+        if (!r.ok) {
+          setAiError(`AI search is unavailable right now (${r.reason}). The filters below still work.`)
+          return
+        }
+        setAiSearch({ query: q, result: r })
+        engine.current?.frameLots(r.results)
+      })
+      .catch((e: Error) => setAiError(e.message))
+      .finally(() => setAiLoading(false))
+  }
   const toCity = () => {
     if (mode !== 'lot') return
     void engine.current?.goCity()
@@ -281,8 +303,24 @@ export default function App() {
           setFilters={setFilters}
           query={query}
           setQuery={setQuery}
-          cards={hits.length ? hits : suggested}
-          cardsAreHits={hits.length > 0}
+          cards={aiSearch ? aiSearch.result.results : hits.length ? hits : suggested}
+          cardsAreHits={!!aiSearch || hits.length > 0}
+          cardsTitle={aiSearch ? `Largest matching lots` : undefined}
+          aiBox={
+            <LotSearchBox
+              search={aiSearch}
+              loading={aiLoading}
+              error={aiError}
+              maxChars={config.app.api.lot_search_query_max_chars}
+              example={config.app.ask.search_example}
+              hazardLabel={(h) => (h === FLOOD_FILTER ? 'FEMA high-risk flood zone' : config.city.hazards[h]?.label ?? h)}
+              onSearch={runAiSearch}
+              onClear={() => {
+                setAiSearch(null)
+                setAiError(null)
+              }}
+            />
+          }
           onOpen={openLot}
         />
       )}

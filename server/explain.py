@@ -76,7 +76,8 @@ def build_input(cfg: Config, a: Analysis, weights: dict[str, float], ranking: li
 
 def _allowed_numbers(payload: dict) -> set[float]:
     nums: set[float] = set()
-    for tok in NUM.findall(json.dumps(payload)):
+    # ensure_ascii=False: an escaped label like "3\u201312" would hide the "12" from NUM.
+    for tok in NUM.findall(json.dumps(payload, ensure_ascii=False)):
         try:
             x = float(tok.replace(",", ""))
         except ValueError:

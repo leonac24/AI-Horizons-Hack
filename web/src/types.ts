@@ -89,6 +89,7 @@ export interface Config {
     tagline: string
     disclaimer: string
     placeholder_notice: string
+    api: { ask_question_max_chars: number; lot_search_query_max_chars: number }
     smaa: {
       samples: number
       seed: number
@@ -99,6 +100,7 @@ export interface Config {
       leverage_epsilon: number
     }
     evidence: { topics: Record<string, { label: string; listed: boolean }> }
+    ask: { search_example: string; examples: string[] }
   }
   city: {
     name: string
@@ -230,6 +232,28 @@ export interface Explanation {
   reason?: string
   sentences: { text: string; metric_ids: string[] }[]
 }
+
+export interface LotAnswer {
+  source: string
+  /** null when no checked answer could be produced (see `reason`). */
+  answerable: boolean | null
+  reason?: string
+  sentences: { text: string; metric_ids: string[] }[]
+}
+
+export interface LotSearchFilters {
+  neighborhoods: string[]
+  zoning_districts: string[]
+  min_lot_sf: number | null
+  max_lot_sf: number | null
+  publicly_held_only: boolean
+  avoid: string[]
+  not_understood: string[]
+}
+
+export type LotSearchResult =
+  | { ok: true; filters: LotSearchFilters; match_count: number; results: ParcelSummary[] }
+  | { ok: false; reason: string }
 
 export interface Unknowns {
   placeholder_assumptions: { id: string; unit: string; rationale: string; source: string | null }[]
