@@ -177,7 +177,7 @@ All are public. Full registry, licenses and verification dates:
   the team: pipeline, engine, API, frontend and tests. A person on the team
   decided each design question. Claude Code also hand-extracted the current
   zoning facts from Title Nine and checked the dataset endpoints.
-- **GitHub Copilot coding agent** authored a few commits.
+- **GitHub Copilot coding agent** authored a few commits exclusively for fixing merge conflicts.
 
 **Inside Lotline:**
 
