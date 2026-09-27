@@ -6,12 +6,13 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `489d4f1a5ae6`._
+_Auto-generated for config `ef5b13cf1ef5`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
-- **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 41 districts reviewed).
-- **Largest unreviewed base districts:** R1D (6,434), R2 (3,389), H (3,230), R1A (2,724), RM (2,535), P (1,207), LNC (949), UI (460), NDI (185), RIV-MU (148), UPR-B (98), RIV-IMU (97).
-- **Uses settled city-wide (1):** `single_unit_detached_with_adu`. These are decided by a reviewed rule that applies in every district, so they are excluded from the ranking everywhere, with a citation.
+- **Zoning rules in force:** AI-extracted rules are in force once their quotes verify against the saved code text; they are labelled as not checked by a planner (`require_human_review` in zoning.yaml).
+- **Share of vacant parcels covered by zoning rules:** 88.1% (7 of 41 base districts); by human-reviewed rules: 0.0%.
+- **Largest base districts with no rules yet:** LNC (949), UI (460), NDI (185), RIV-MU (148), UPR-B (98), RIV-IMU (97), RIV-RM (88), RIV-NS (87), RP (77), HC (52), GI (42), AP (41).
+- **Uses settled city-wide (1):** `single_unit_detached_with_adu`. These are decided by a rule that applies in every district, so they are excluded from the ranking everywhere, with a citation.
 - **Placeholder assumptions (15):** `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
 - **2024 ACS median income / renter burden:** 22,113 / 22,132 indexed lots have tract estimates.
 - **FEMA point screen:** 22,183 classified; 359 in a mapped Special Flood Hazard Area at the tested point.

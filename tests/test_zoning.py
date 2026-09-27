@@ -25,9 +25,18 @@ def test_unreviewed_district_needs_review(cfg):
     assert r.status == "needs_review" and not r.reviewed
 
 
-def test_unreviewed_use_needs_review(cfg):
-    r = evaluate(cfg, _rules(reviewed=False), "TEST-M", _typ(cfg), 5000, 2)
+def test_unreviewed_use_needs_review_when_review_required(strict_cfg):
+    r = evaluate(strict_cfg, _rules(reviewed=False), "TEST-M", _typ(strict_cfg), 5000, 2)
     assert r.status == "needs_review"
+
+
+def test_extracted_use_decides_when_review_not_required(cfg):
+    """With require_human_review off, an extracted rule answers, but the result
+    says no person checked it, so the UI can label it that way."""
+    assert not cfg.zoning.require_human_review
+    r = evaluate(cfg, _rules(reviewed=False), "TEST-M", _typ(cfg), 5000, 2)
+    assert r.status == "by_right" and r.reviewed and not r.human_reviewed
+    assert evaluate(cfg, _rules(reviewed=True), "TEST-M", _typ(cfg), 5000, 2).human_reviewed
 
 
 def test_by_right_passes_with_citation(cfg):
@@ -82,11 +91,11 @@ def test_height_rule_that_fits_stays_by_right(cfg):
     assert all(c.passed for c in r.checks)
 
 
-def test_unreviewed_height_rule_is_ignored_not_assumed(cfg):
-    """An extracted-but-unreviewed rule must not decide anything. A height the
-    building clearly busts is skipped until a human signs off on it."""
-    typ = _typ(cfg)
-    r = evaluate(cfg, _with_height(1, reviewed=False), "TEST-M", typ, 5000, 2)
+def test_unreviewed_height_rule_is_ignored_not_assumed(strict_cfg):
+    """When review is required, an extracted-but-unreviewed rule must not decide
+    anything. A height the building clearly busts is skipped until a human signs off."""
+    typ = _typ(strict_cfg)
+    r = evaluate(strict_cfg, _with_height(1, reviewed=False), "TEST-M", typ, 5000, 2)
     assert r.status == "by_right"
     assert "max_height_ft" not in [c.rule_id for c in r.checks]
 
@@ -156,10 +165,10 @@ def test_citywide_use_applies_in_every_district(cfg):
         assert evaluate(cfg, _citywide(), code, _adu_typ(cfg), 5000, 2).status == "not_permitted"
 
 
-def test_unreviewed_citywide_use_decides_nothing(cfg):
-    """The human-in-the-loop rule holds here too: until a person signs off, a
+def test_unreviewed_citywide_use_decides_nothing(strict_cfg):
+    """When review is required, it holds here too: until a person signs off, a
     city-wide rule must not disqualify anything."""
-    r = evaluate(cfg, _citywide(reviewed=False), "TEST-M", _adu_typ(cfg), 5000, 2)
+    r = evaluate(strict_cfg, _citywide(reviewed=False), "TEST-M", _adu_typ(strict_cfg), 5000, 2)
     assert r.status == "needs_review"
     assert not r.disqualified
 

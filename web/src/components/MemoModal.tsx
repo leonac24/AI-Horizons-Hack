@@ -61,7 +61,7 @@ export function MemoModal({ config, analysis, ranking, profileLabel, onClose }: 
             ))}
           </tbody>
         </table>
-        {ranking.excluded.length > 0 && <p className="small">Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}`).join('; ')}.</p>}
+        {ranking.excluded.length > 0 && <p className="small">Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}${o.zoning?.human_reviewed ? '' : ' (AI-extracted rule, not checked by a planner)'}`).join('; ')}.</p>}
         <p className="small">
           * placeholder value — not yet sourced. {analysis.placeholder_count} placeholders on this lot. Full list: “What we don’t know.” Weights are values chosen by the user; the evidence does not change with them.
         </p>

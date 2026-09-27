@@ -150,7 +150,6 @@ dimensional_facts:
   applies:
     families:
     - R1D
-    - R1A
     - R2
     - R3
     density: VL
@@ -168,6 +167,24 @@ dimensional_facts:
   reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
     (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
   reviewed: false
+- id: dim.VL.setbacks.r1a
+  section: 903.03.A
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1A
+    density: VL
+  values:
+    front_setback_ft: 30
+    rear_setback_ft: 30
+    exterior_side_setback_ft: 30
+    interior_side_setback_ft: 5
+  quotes:
+  - Minimum Front Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  - Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  - 10 ft. on the other sideR1A Subdistrict5 ft.
+  confidence: 0.9
+  reviewer_note: Split from dim.VL.setbacks.low_rise, which had applied R1D/R2/R3's 10 ft other-side yard to R1A as well.
 - id: dim.VL.setbacks.rm
   section: 903.03.A
   file: 903-03_development-subdistricts.txt

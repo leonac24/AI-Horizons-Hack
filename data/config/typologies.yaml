@@ -92,6 +92,8 @@ typologies:
       body: "#f06b5b"
       roof: "#fff3e6"
       max_in_a_row: 6
+      # Pittsburgh Code § 903.03(c): no interior side yard on the party-wall side.
+      party_walls: true
 
   - id: small_multi
     label: Small apartment building (3–12)

@@ -2,7 +2,8 @@
 
 Tick a box **only after checking the fact against the linked code section**.
 Then run `uv run python -m pipeline.zoning.build_rules --apply`.
-Unticked facts stay out of the app (lots show *Needs planner review*).
+Unticked facts are still used, labelled *not checked by a planner* (unless
+`require_human_review` is on in zoning.yaml, which keeps them out of the app).
 
 Legend for use cells: P = by right · A = administrator exception · S = special exception (ZBA) ·
 C = conditional use (Council) · - = not permitted (§ 911.01).
@@ -52,6 +53,13 @@ C = conditional use (Council) · - = not permitted (§ 911.01).
   > Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts30 ft.  
   > R1D, R2 & R3 Subdistricts5 ft, on one side; 10 ft. on the other side  
   _Note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side (903.03.x.2(c)). Contextual setbacks (925.06) may allow less._
+
+- [ ] `dim.VL.setbacks.r1a` — § 903.03.A ([code](https://ecode360.com/45474237))  
+  **front_setback_ft 30, rear_setback_ft 30, exterior_side_setback_ft 30, interior_side_setback_ft 5**  
+  > Minimum Front Setback R1D, R1A, R2 & R3 Subdistricts30 ft.  
+  > Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts30 ft.  
+  > 10 ft. on the other sideR1A Subdistrict5 ft.  
+  _Note: Split from dim.VL.setbacks.low_rise, which had applied R1D/R2/R3's 10 ft other-side yard to R1A as well._
 
 - [ ] `dim.VL.setbacks.rm` — § 903.03.A ([code](https://ecode360.com/45474237))  
   **front_setback_ft 30, rear_setback_ft 30, exterior_side_setback_ft 30, interior_side_setback_ft 30**  

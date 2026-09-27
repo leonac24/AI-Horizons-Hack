@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from core.config import ROOT, get_config
 from core.engine import Analysis, analyze, work_backwards
 from core.plan import Placement, PlanResult, analyze_plan
-from core.zoning import load_rules
+from core.zoning import covered_bases, load_rules
 from server.explain import explain
 from server.llm import get_provider
 
@@ -307,10 +307,14 @@ def unknowns() -> dict:
     rules = load_rules(cfg)
     parcels = _index()["parcels"].values()
     by_district = Counter(p.get("zoning") or "(no district)" for p in parcels)
-    reviewed = {d for d, r in rules.items()
-                if any(u.get("reviewed") for u in (r.get("uses") or {}).values())}
+
+    def base(code: str) -> str | None:
+        return cfg.zoning.district_code.split(code)[0]
+
+    covered_b, human_b = covered_bases(cfg, rules), covered_bases(cfg, rules, human_only=True)
     total = sum(by_district.values()) or 1
-    covered = sum(n for d, n in by_district.items() if d in reviewed)
+    covered = sum(n for d, n in by_district.items() if base(d) in covered_b)
+    human = sum(n for d, n in by_district.items() if base(d) in human_b)
     report_path = ROOT / "data" / "processed" / "pipeline_report.json"
     return {
         "placeholder_assumptions": [
@@ -318,10 +322,12 @@ def unknowns() -> dict:
             for k, a in cfg.assumptions.items() if a.provenance == "placeholder"],
         "unverified_sources": [
             {"id": k, "name": s.name, "note": s.note} for k, s in cfg.sources.sources.items() if s.verified is False],
-        "unreviewed_districts": [
-            {"district": d, "vacant_parcels": n} for d, n in by_district.most_common() if d not in reviewed],
+        "uncovered_districts": [
+            {"district": d, "vacant_parcels": n} for d, n in by_district.most_common() if base(d) not in covered_b],
         "vacant_parcels": total,
-        "share_covered_by_reviewed_rules": round(covered / total, 4),
+        "share_covered_by_rules": round(covered / total, 4),
+        "share_covered_by_human_reviewed_rules": round(human / total, 4),
+        "require_human_review": cfg.zoning.require_human_review,
         "pipeline": json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None,
     }
 

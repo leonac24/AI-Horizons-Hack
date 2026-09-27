@@ -4,9 +4,10 @@
     uv run python -m pipeline.zoning.build_rules --apply  # first copy ticks from REVIEW.md into facts.yaml
 
 facts.yaml holds one entry per statement in the code, each with verbatim quotes
-from data/sources/zoning/. A person reviews facts (not districts) in REVIEW.md.
-Every rule written to rules_review.yaml inherits its fact's `reviewed` flag, and
-the engine only acts on reviewed rules.
+from data/sources/zoning/. A person may confirm facts (not districts) in REVIEW.md.
+Every rule written to rules_review.yaml inherits its fact's `reviewed` flag. The
+engine acts on every rule unless zoning.yaml sets require_human_review, and the
+UI labels unconfirmed answers as not checked by a planner.
 """
 
 from __future__ import annotations
@@ -130,7 +131,8 @@ def write_review(facts: dict) -> None:
         "",
         "Tick a box **only after checking the fact against the linked code section**.",
         "Then run `uv run python -m pipeline.zoning.build_rules --apply`.",
-        "Unticked facts stay out of the app (lots show *Needs planner review*).",
+        "Unticked facts are still used, labelled *not checked by a planner* (unless",
+        "`require_human_review` is on in zoning.yaml, which keeps them out of the app).",
         "",
         "Legend for use cells: P = by right · A = administrator exception · S = special exception (ZBA) ·",
         "C = conditional use (Council) · - = not permitted (§ 911.01).",
