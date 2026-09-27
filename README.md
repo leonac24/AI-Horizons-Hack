@@ -120,23 +120,28 @@ not extract numerical inputs or change zoning status, assumptions, or ranking.
 Existing parcel, ACS, flood, and sewer inputs keep their deterministic ETL;
 Laya is only for unstructured source documents.
 
-1. Save current zoning code sections as `.txt` files in `data/raw/zoning/`.
-   The live eCode360 pages currently block scripted downloads, so obtain the
-   text through an authorized manual download and check the version/date.
-2. Save other text, Markdown, or PDF source documents in
+1. The checked-in `data/sources/zoning/*.txt` and
+   `data/sources/laya/<source_id>/` snapshots compile automatically.
+   Their section links and coverage are listed in
+   `data/sources/zoning/README.md`. Confirm changed code against the live
+   source, then update the snapshot and link. eCode360 blocks scripted downloads.
+2. Optionally save other text, Markdown, or PDF source documents in
    `data/raw/laya/<source_id>/`, using an ID from `data/config/sources.yaml`.
-   Raw documents are gitignored. Keep only public documents in this corpus.
+   Additional zoning text can go in `data/raw/zoning/`. These extra files are
+   gitignored; keep only public documents in this corpus.
 3. Install a CPU-only PyTorch build, then install `requirements-laya.txt`
-   in a local virtual environment. Laya's first run
-   downloads its checkpoint.
+   in a local virtual environment. Laya's first run downloads its checkpoint.
 4. From the repository root, run
    `python -m pipeline.laya_compile`. Inspect the source links and labels in
    `data/processed/laya_evidence.json`, then commit that file with the source
-   and code changes. The site's “What we don’t know” tab reads the artifact.
+   and code changes. Run `python -m pipeline.laya_compile --check` to verify
+   the committed artifact against its source files without loading Laya. The
+   site's “What we don’t know” tab reads the artifact.
 
 The artifact records document and passage hashes, model version, question
 version, source IDs, and short excerpts. Recompile when the source text,
-questions, or checkpoint changes. No raw document or model weight goes to Git.
+questions, or checkpoint changes. The versioned zoning snapshots are in Git;
+optional raw documents and model weights remain local.
 
 Tests and lint:
 

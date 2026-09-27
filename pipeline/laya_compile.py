@@ -1,9 +1,11 @@
 """Compile local source documents into a checked-in Laya evidence index.
 
-Put text, Markdown, or PDF files under data/raw/laya/<source_id>/, where
-source_id is declared in data/config/sources.yaml. Zoning text saved under
-data/raw/zoning/ is included as pgh_zoning_code. Raw files stay gitignored;
-the compact, source-linked classification index is committed to Git.
+The checked-in snapshots in data/sources/zoning/ and data/sources/laya/
+are included by default. Additional text, Markdown, or PDF files may go under
+data/raw/laya/<source_id>/, where source_id is declared in
+data/config/sources.yaml. Zoning text saved under data/raw/zoning/ is also
+included. Raw files stay gitignored; the compact, source-linked classification
+index is committed to Git.
 
 Laya classifies passages. It does not extract measurements, verify law, or
 change the parcel index, assumptions, scoring, or reviewed zoning rules.
@@ -58,6 +60,12 @@ def sources() -> dict[str, dict]:
 
 def discover(raw: Path = RAW) -> list[tuple[str, Path]]:
     found: list[tuple[str, Path]] = []
+    for path in sorted((raw.parent / "sources" / "zoning").glob("*.txt")):
+        if path.is_file():
+            found.append(("pgh_zoning_code", path))
+    for path in sorted((raw.parent / "sources" / "laya").glob("*/*")):
+        if path.is_file() and path.suffix.lower() in SUPPORTED:
+            found.append((path.parent.name, path))
     for path in sorted((raw / "zoning").glob("*")):
         if path.is_file() and path.suffix.lower() in SUPPORTED:
             found.append(("pgh_zoning_code", path))
@@ -67,6 +75,19 @@ def discover(raw: Path = RAW) -> list[tuple[str, Path]]:
             if path.is_file() and path.suffix.lower() in SUPPORTED:
                 found.append((path.parent.name, path))
     return found
+
+
+def zoning_manifest_urls(root: Path) -> dict[str, str]:
+    """Read section links next to the versioned zoning snapshots."""
+    manifest = root / "data" / "sources" / "zoning" / "README.md"
+    if not manifest.exists():
+        return {}
+    urls: dict[str, str] = {}
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) == 3 and cells[0].endswith(".txt") and cells[2].startswith("https://"):
+            urls[cells[0]] = cells[2]
+    return urls
 
 
 def read_pages(path: Path) -> list[str]:
@@ -148,13 +169,19 @@ def compile_index(
         "documents": [],
         "passages": [],
     }
+    zoning_urls = zoning_manifest_urls(root)
     for source_id, path in documents:
         if source_id not in registry:
             raise ValueError(f"Unknown source id {source_id!r} for {path}")
         raw = path.read_bytes()
         rel = path.relative_to(root).as_posix()
         pages = read_pages(path)
-        document_url = source_url(path, registry[source_id].get("url"))
+        registered_url = registry[source_id].get("url")
+        if rel.startswith("data/sources/zoning/"):
+            if path.name not in zoning_urls:
+                raise ValueError(f"Zoning snapshot has no source URL in README.md: {path.name}")
+            registered_url = zoning_urls[path.name]
+        document_url = source_url(path, registered_url)
         doc_count = 0
         for page_no, page in enumerate(pages, 1):
             for passage in chunks(page):
@@ -183,15 +210,52 @@ def compile_index(
     return index
 
 
+def verify_index(index: dict, documents: list[tuple[str, Path]], root: Path, checkpoint: str) -> None:
+    """Check artifact provenance without loading the local model."""
+    registry = yaml.safe_load((root / "data" / "config" / "sources.yaml").read_text(encoding="utf-8"))["sources"]
+    zoning_urls = zoning_manifest_urls(root)
+
+    def expected_document(source_id: str, path: Path) -> tuple[str, str, str | None]:
+        rel = path.relative_to(root).as_posix()
+        registered_url = registry[source_id].get("url")
+        if rel.startswith("data/sources/zoning/"):
+            registered_url = zoning_urls.get(path.name, registered_url)
+        return source_id, sha256(path.read_bytes()), source_url(path, registered_url)
+
+    expected = {
+        path.relative_to(root).as_posix(): expected_document(source_id, path)
+        for source_id, path in documents
+    }
+    recorded = {
+        doc["path"]: (doc["source_id"], doc["sha256"], doc.get("source_url"))
+        for doc in index.get("documents", [])
+    }
+    if recorded != expected:
+        raise ValueError("Laya artifact source list or hashes are stale; recompile")
+    if index.get("question_sha256") != sha256(json.dumps(QUESTIONS, sort_keys=True).encode()):
+        raise ValueError("Laya artifact questions have changed; recompile")
+    if index.get("model", {}).get("checkpoint") != checkpoint:
+        raise ValueError("Laya artifact checkpoint differs; recompile")
+    if len(index.get("passages", [])) != sum(doc["passage_count"] for doc in index["documents"]):
+        raise ValueError("Laya artifact passage count is inconsistent")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", choices=("english", "multilingual", "typed-decisions"),
                         default="typed-decisions")
     parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument("--check", action="store_true", help="Verify the committed artifact without loading Laya")
     args = parser.parse_args()
     documents = discover()
     if not documents:
-        parser.error("No text or PDF inputs found; add files under data/raw/laya/<source_id>/ or data/raw/zoning/")
+        parser.error("No text or PDF inputs found; add files under data/sources/zoning/, data/raw/laya/<source_id>/, or data/raw/zoning/")
+    if args.check:
+        if not args.output.exists():
+            parser.error(f"No compiled artifact at {args.output}")
+        verify_index(json.loads(args.output.read_text(encoding="utf-8")), documents, ROOT, args.checkpoint)
+        print(f"Verified {args.output} against {len(documents)} source documents")
+        return
     try:
         import laya
     except ImportError as exc:
