@@ -37,8 +37,12 @@ a { color: var(--info); }
 a:hover { color: var(--lime); }
 input[type='range'] { accent-color: var(--values); }
 input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lime); }
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* Light thumb on a transparent track, inset from the edge and kept clear of rounded panel corners. */
+::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+::-webkit-scrollbar-track { background: transparent; margin: 14px; }
+::-webkit-scrollbar-thumb { background: rgba(169, 193, 219, 0.45); border: 3px solid transparent; background-clip: padding-box; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(169, 193, 219, 0.7); }
+::-webkit-scrollbar-corner { background: transparent; }
 
 .muted { color: var(--ink-2); }
 .dim { color: var(--ink-3); }
