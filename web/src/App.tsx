@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api'
 import { AnalysisPanel, type Tab } from './components/AnalysisPanel'
 import { CityPanel, type Filters } from './components/CityPanel'
+import { Intro } from './components/Intro'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
 import { MemoModal } from './components/MemoModal'
 import { TopBar } from './components/TopBar'
@@ -49,6 +50,9 @@ export default function App() {
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
   const [palH, setPalH] = useState(0)
+  const [ready, setReady] = useState(false)
+  const [entered, setEntered] = useState(false)
+  const [introDone, setIntroDone] = useState(false)
   const vp = useRef<HTMLDivElement>(null)
   const engine = useRef<Engine | null>(null)
   const placementsRef = useRef<Placement[]>([])
@@ -144,6 +148,7 @@ export default function App() {
       onSelect: (uid) => setSel(uid),
       onUndo: () => undoRef.current(),
       onRedo: () => redoRef.current(),
+      onReady: () => setReady(true),
     })
     engine.current = e
     return () => {
@@ -234,7 +239,7 @@ export default function App() {
   const pool = useMemo(() => (config && analysis ? buildPool(config, analysis, placements.length ? plan : null) : []), [config, analysis, plan, placements.length])
   const ranking = useMemo(() => (config ? rank(config, pool, weights) : null), [config, pool, weights])
 
-  if (!config) return <div className="boot">{error ? `Could not load: ${error}` : 'Loading Lotline…'}</div>
+  if (!config) return <Intro app={null} ready={false} leaving={false} error={error} onEnter={() => {}} />
   // Bottom-tray layout: stack the inspector above the palette's measured height.
   const lotL = L.palDir === 'row' && palH ? { ...L, inspBottom: `calc(${L.palBottom} + ${palH + 12}px)` } : L
   const toCity = () => {
@@ -251,7 +256,7 @@ export default function App() {
   const planOpt = pool.find((o) => o.id === PLAN_ID)
 
   return (
-    <div className="shell">
+    <div className={`shell${entered ? '' : ' pre-intro'}`}>
       <div ref={vp} className="viewport" style={{ right: lotL.vpRight, bottom: mode === 'lot' ? lotL.vpBottom : '0px' }} />
       <TopBar
         mode={mode}
@@ -334,6 +339,20 @@ export default function App() {
       )}
       {memo && analysis && ranking && (
         <MemoModal config={config} analysis={analysis} ranking={ranking} profileLabel={config.stakeholders.profiles.find((p) => p.id === profileId)?.label ?? 'Custom'} onClose={() => setMemo(false)} />
+      )}
+      {!introDone && (
+        <Intro
+          app={config.app}
+          lotCount={features.length}
+          ready={ready}
+          leaving={entered}
+          error={error}
+          onEnter={() => {
+            setEntered(true)
+            void engine.current?.enter()
+            setTimeout(() => setIntroDone(true), 1400)
+          }}
+        />
       )}
     </div>
   )

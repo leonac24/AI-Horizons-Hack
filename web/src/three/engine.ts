@@ -64,6 +64,7 @@ export interface EngineOptions {
   onSelect?: (uid: string | null) => void
   onUndo?: () => void
   onRedo?: () => void
+  onReady?: () => void // city terrain and basemap are built
 }
 
 /** Buildable area inside the setbacks, in feet from each lot edge (street = front). */
@@ -88,6 +89,8 @@ export interface Engine {
   deleteSelected(): void
   clearSelection(): void
   resetView(): void
+  /** Leave the intro: swoop from the showcase orbit down to the working city view. */
+  enter(): Promise<void>
   dispose(): void
 }
 
@@ -544,6 +547,11 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     writeDots()
     renderPins()
     loading.remove()
+    // Showcase: drop from straight overhead into a low, fast orbit.
+    camera.position.set(0, 1650, 200)
+    controls.target.set(0, 0, 30)
+    void flyTo(...introView(), 3400)
+    opts.onReady?.()
   }
   void Promise.all([
     loadTerrain(opts.dataBase, opts.scene.rivers.map((r) => r.map(([lo, la]) => toXZ(lo, la))), HALF),
@@ -767,6 +775,11 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   controls.enableDamping = true
   controls.dampingFactor = 0.08
   controls.maxPolarAngle = 1.32
+  // Idle showcase: the city turns slowly until the user first touches the map.
+  controls.autoRotate = true
+  controls.autoRotateSpeed = 1.6
+  const stopSpin = () => (controls.autoRotate = false)
+  controls.addEventListener('start', stopSpin)
   interface Tween { t0: number; dur: number; fp: THREE.Vector3; ft: THREE.Vector3; tp: THREE.Vector3; tt: THREE.Vector3; res: () => void }
   let tween: Tween | null = null
   const flyTo = (pos: number[], target: number[], dur = 900) =>
@@ -774,6 +787,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       tween = { t0: performance.now(), dur, fp: camera.position.clone(), ft: controls.target.clone(), tp: new THREE.Vector3(...pos), tt: new THREE.Vector3(...target), res }
     })
   const cityView = (): [number[], number[]] => [[420, 620, 760], [0, 0, 30]]
+  const introView = (): [number[], number[]] => [[560, 210, 500], [0, 20, 30]]
   const lotView = (): [number[], number[]] => {
     const m = Math.max(lotScene!.W, lotScene!.D)
     return [[m * 0.85 + 90, m * 0.8 + 110, lotScene!.D / 2 + m + 130], [0, 0, 6]]
@@ -900,6 +914,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   let down: { x: number; y: number } | null = null
   const onDown = (e: PointerEvent) => {
     down = { x: e.clientX, y: e.clientY }
+    stopSpin()
     if (mode !== 'lot' || e.button !== 0 || !showPlan || !placedGroup) return
     const h = pick(e.clientX, e.clientY, placedGroup.children)
     const uid = h?.object.userData.uid as string | undefined
@@ -1069,6 +1084,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
 
   const api: Engine = {
     async goLot(lot, list = []) {
+      stopSpin()
       selLot = lot.id
       if (mode === 'city') {
         const [x, z] = toXZ(lot.lon, lot.lat)
@@ -1172,6 +1188,10 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     },
     clearSelection() {
       select(null)
+    },
+    async enter() {
+      controls.autoRotateSpeed = 0.5
+      await flyTo(...cityView(), 2200)
     },
     resetView() {
       void flyTo(...(mode === 'city' ? cityView() : lotView()), 800)
