@@ -19,7 +19,7 @@
 
 | Where | Model | What it may do | How it's checked |
 |---|---|---|---|
-| Zoning extraction (offline, `pipeline/zoning/extract.py`) | Gemini, `ZONING_EXTRACT_MODEL` (default `gemini-2.5-pro`) | Read Title Nine text and propose per-district rules | Output must validate against a schema. Each rule must quote the source verbatim (< 25 words) or it is dropped. **A teammate reviews every rule and sets `reviewed: true`.** Unreviewed rules never change what the app shows. |
+| Zoning extraction (offline, `pipeline/zoning/extract.py`) | Gemini, `ZONING_EXTRACT_MODEL` (default `gemini-3.8-flash`; Pro models have no free-tier quota) | Read Title Nine text and propose per-district rules | Output must validate against a schema. Each rule must quote the source verbatim (< 25 words) or it is dropped. **A teammate reviews every rule and sets `reviewed: true`.** Unreviewed rules never change what the app shows. |
 | Tradeoff explanations (runtime, `server/explain.py`) | Gemini, `LLM_MODEL` (default `gemini-3.8-flash`) | Restate computed metrics as plain-language tradeoffs | Every sentence must cite metric IDs from the input and use only numbers from the input. If not, the server discards the output and shows a deterministic template. The UI says which one you're seeing. |
 
 - With `LLM_PROVIDER=none` the app runs with no AI at runtime.
