@@ -1,12 +1,5 @@
 import type { ParcelSummary } from '../types'
 
-export type Layout = '1a' | '1b' | '1c'
-const LAYOUT_NAMES: [Layout, string][] = [
-  ['1a', 'Command bar'],
-  ['1b', 'Dock'],
-  ['1c', 'Bottom sheet'],
-]
-
 interface Props {
   mode: 'city' | 'lot'
   lot: ParcelSummary | null
@@ -20,8 +13,6 @@ interface Props {
   onClear: () => void
   onReset: () => void
   onMemo: () => void
-  layout: Layout
-  setLayout: (l: Layout) => void
   disclaimer: string
 }
 
@@ -75,14 +66,6 @@ export function TopBar(p: Props) {
             </button>
           </div>
         )}
-        <div className="layout-switch">
-          <span className="eyebrow">Layout</span>
-          {LAYOUT_NAMES.map(([id, name]) => (
-            <button key={id} title={name} className={id === p.layout ? 'on' : ''} onClick={() => p.setLayout(id)}>
-              {id}
-            </button>
-          ))}
-        </div>
       </header>
       <div className="strip">{p.disclaimer}</div>
     </>

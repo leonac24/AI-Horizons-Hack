@@ -29,3 +29,16 @@
   submitted content to improve its products.
 - **What AI never does here:** set a weight, change a metric, rank options,
   or decide a zoning status without human review.
+
+## Zoning rules (2026-09-26)
+
+- **Who extracted them:** Claude Code, by hand. It read Title Nine on eCode360
+  through the team's browser, because the site blocks scripted requests.
+- **What each fact carries:** its section, a dated snapshot of the source text
+  (`data/sources/zoning/`) and verbatim quotes. `pipeline/zoning/build_rules.py`
+  refuses to build if any quote is 25 words or longer, or isn't found word for
+  word in its snapshot.
+- **Who decides what counts:** a person. They review each fact in
+  `pipeline/zoning/REVIEW.md`, and `--apply` records their name and the date.
+  Only reviewed facts change what the app shows. Everything else displays
+  "Needs planner review."

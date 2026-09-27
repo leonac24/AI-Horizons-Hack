@@ -222,13 +222,24 @@ sources:
     verified: false
 
   epa_egrid:
-    name: EPA eGRID
+    name: EPA eGRID2023 summary tables (rev 2)
     publisher: U.S. EPA
-    url: https://www.epa.gov/egrid
+    url: https://www.epa.gov/system/files/documents/2025-06/summary_tables_rev2.pdf
     access: manual
-    vintage: not yet retrieved
+    vintage: eGRID2023 (2023 data, published 2025)
     license: public domain
-    verified: false
+    verified: "2026-09-26"
+    note: Table 1 (subregion output emission rates, RFCW) and Table 3 (state rates, PA).
+
+  hud_tdc_2024:
+    name: HUD 2024 Unit Total Development Cost (TDC) and Housing Construction Cost (HCC) limits
+    publisher: U.S. Department of Housing and Urban Development, Office of Public and Indian Housing
+    url: https://www.hud.gov/sites/dfiles/PIH/documents/2024_Units_TDC_Limits.pdf
+    access: manual
+    vintage: "2024"
+    license: public domain
+    verified: "2026-09-26"
+    note: Region III, Pennsylvania, Pittsburgh rows. Limits (caps) for public housing development, used as a cost benchmark.
 
   epa_smart_location:
     name: EPA Smart Location Database

@@ -1,0 +1,8 @@
+§ 911.02 Use Table. Pittsburgh Urban Zoning Code Use Table
+Column headers (Base Zoning Districts), in order: Residential: R1D R1A R2 R3 RM | Mixed Use: NDO LNC NDI UNC HC GI UI UC-MU UC-E R-MU | Special: P H EMI | DT: GT (blank) | RIV: RM MU NS GI IMU | Standard
+Cells below are listed in that column order; "-" marks an empty cell (no letter).
+Single-Unit Detached Residential means the use of a zoning lot for one detached housing unit. | P P P P P | P P P P - - - - - P | P A P | - - | - - - - - | § 911.04A.69
+Single-Unit Attached Residential means the use of a zoning lot for one dwelling unit that is attached to one or more dwelling units by a party wall or separate abutting wall and that is located on its own separate lot. | P/S P P P P | P P P P - - - P - P | - S - | - - | - - - - - | § 911.04A.69; § 911.04A.69A
+Two-Unit Residential means the use of a zoning lot for two dwelling units that are contained within a single building. | - - P P P | P P P P - - - P - P | - - - | - - | - - - - - |
+Three-Unit Residential means the use of a zoning lot for three dwelling units that are contained within a single building. | - - - P P | P P P P - - - P - P | - - - | - - | - - - - - |
+Multi-Unit Residential means the use of a zoning lot for four or more dwelling units that are contained within a single building. | - - - - P | P P P P - - S P A P | - - A | - - | - - - - - | § 911.04A.85

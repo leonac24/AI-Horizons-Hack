@@ -140,6 +140,14 @@ export interface ZoningCheck {
   quote: string | null
 }
 
+export interface Setback {
+  rule_id: string
+  label: string
+  value_ft: number
+  citation: string | null
+  quote: string | null
+}
+
 export interface ZoningResult {
   district: string | null
   status: string
@@ -149,6 +157,7 @@ export interface ZoningResult {
   use_quote: string | null
   checks: ZoningCheck[]
   max_units_by_rule: number | null
+  setbacks: Record<string, Setback>
   note: string | null
   disqualified: boolean
   disqualified_reason: string | null

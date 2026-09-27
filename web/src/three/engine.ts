@@ -66,11 +66,20 @@ export interface EngineOptions {
   onRedo?: () => void
 }
 
+/** Buildable area inside the setbacks, in feet from each lot edge (street = front). */
+export interface Envelope {
+  front: number
+  rear: number
+  left: number
+  right: number
+}
+
 export interface Engine {
   goLot(lot: LotInput, list?: Placement[]): Promise<void>
   goCity(): Promise<void>
   setPlacements(list: Placement[]): void
   setWarnings(uids: string[]): void
+  setEnvelope(env: Envelope | null): void
   setShowPlan(v: boolean): void
   setVisibleParcels(ids: Set<string> | null): void
   setPins(pins: PinLot[]): void
@@ -546,6 +555,33 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   let warnSet = new Set<string>()
   let showPlan = true
   const dims = (typ: string, rot: number): [number, number] => (rot % 2 ? [F[typ].d, F[typ].w] : [F[typ].w, F[typ].d])
+
+  let envelope: Envelope | null = null
+  let envelopeLine: THREE.Line | null = null
+  function drawEnvelope(): void {
+    if (!lotScene) return
+    if (envelopeLine) {
+      lotScene.scene.remove(envelopeLine)
+      envelopeLine.geometry.dispose()
+      envelopeLine = null
+    }
+    const e = envelope
+    if (!e || e.front + e.rear + e.left + e.right === 0) return
+    const { W, D } = lotScene
+    const x0 = -W / 2 + e.left
+    const x1 = W / 2 - e.right
+    const z0 = -D / 2 + e.rear
+    const z1 = D / 2 - e.front
+    if (x1 <= x0 || z1 <= z0) return // setbacks swallow the lot; the zoning box says so
+    const y = 0.9
+    const g = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(x0, y, z0), new THREE.Vector3(x1, y, z0), new THREE.Vector3(x1, y, z1),
+      new THREE.Vector3(x0, y, z1), new THREE.Vector3(x0, y, z0),
+    ])
+    envelopeLine = new THREE.Line(g, new THREE.LineDashedMaterial({ color: '#ffb800', dashSize: 3, gapSize: 2 }))
+    envelopeLine.computeLineDistances()
+    lotScene.scene.add(envelopeLine)
+  }
 
   function buildLot(lot: LotInput) {
     const s = new THREE.Scene()
@@ -1040,6 +1076,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       if (lotScene) lotScene.scene.traverse((o) => (o as THREE.Mesh).geometry?.dispose?.())
       placed.clear()
       lotScene = buildLot(lot)
+      drawEnvelope()
       placements = list.map((p) => ({ ...p }))
       selUid = null
       rebuildPlaced()
@@ -1082,6 +1119,10 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       if (k === [...warnSet].sort().join(',')) return
       warnSet = new Set(uids)
       refreshMarks()
+    },
+    setEnvelope(env) {
+      envelope = env
+      drawEnvelope()
     },
     setShowPlan(v) {
       showPlan = v

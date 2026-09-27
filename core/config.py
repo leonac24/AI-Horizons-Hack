@@ -285,7 +285,7 @@ class ZoningStatus(_Model):
 class DimensionalTarget(_Model):
     label: str
     unit: str
-    check: Literal["lot_area_at_least", "lot_area_per_unit_at_least", "height_at_most", "stories_at_most"]
+    check: Literal["lot_area_at_least", "lot_area_per_unit_at_least", "height_at_most", "stories_at_most", "setback"]
 
 
 class ExtractionTargets(_Model):
