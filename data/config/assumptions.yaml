@@ -71,26 +71,38 @@ assumptions:
 
   soft_cost_share:
     label: Soft costs (design, fees, financing)
-    value: 0.75
-    low: 0.4
-    high: 0.75
+    value: 0.25
+    low: 0.15
+    high: 0.40
     unit: share of hard cost
     provenance: assumption
+    source: null
+    rationale: >-
+      Declared 15–40% planning allowance for design, permits, insurance, and
+      project financing, centered at 25%. It is separate from site work, land,
+      and contingency. HUD TDC is only a benchmark and is never subtracted
+      from HCC to estimate this share. Replace with a project budget.
+
+  hud_tdc_multiplier:
+    label: HUD total development cost limit divided by HCC limit
+    value: 1.75
+    low: 1.60
+    high: 1.75
+    unit: TDC/HCC ratio
+    provenance: observed
     source: hud_tdc_2024
     rationale: >-
-      HUD's 2024 Total Development Cost limit for Pittsburgh is 1.75 x HCC for
-      non-elevator buildings and 1.60 x for elevator buildings; the difference
-      is everything beyond construction (design, fees, financing, site,
-      contingency — and land, which Lotline also adds separately from the
-      assessment). The TDC ratio is therefore an upper bound; the low end (0.4)
-      is a judgment for projects with lower soft costs.
+      Published HUD 2024 Pittsburgh limits use TDC/HCC multipliers of 1.75 for
+      non-elevator forms and 1.60 for elevator forms. This is retained only as
+      a separate public-housing cap benchmark, never as a soft-cost share or
+      project sources-and-uses line.
     by_typology:
-      detached: { value: 0.75, low: 0.4, high: 0.75 }
-      adu_pair: { value: 0.75, low: 0.4, high: 0.75 }
-      two_unit: { value: 0.75, low: 0.4, high: 0.75 }
-      rowhouse: { value: 0.75, low: 0.4, high: 0.75 }
-      small_multi: { value: 0.75, low: 0.4, high: 0.75 }
-      midrise: { value: 0.6, low: 0.4, high: 0.6 }
+      detached: { value: 1.75, low: 1.75, high: 1.75 }
+      adu_pair: { value: 1.75, low: 1.75, high: 1.75 }
+      two_unit: { value: 1.75, low: 1.75, high: 1.75 }
+      rowhouse: { value: 1.75, low: 1.75, high: 1.75 }
+      small_multi: { value: 1.75, low: 1.75, high: 1.75 }
+      midrise: { value: 1.60, low: 1.60, high: 1.60 }
 
   steep_slope_cost_share:
     label: Steep-slope site allowance

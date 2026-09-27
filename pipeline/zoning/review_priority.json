@@ -1,19 +1,19 @@
 [
  {
   "district": "H",
-  "vacant_parcels": 3230
+  "vacant_parcels": 3227
  },
  {
   "district": "R1D-H",
-  "vacant_parcels": 3021
+  "vacant_parcels": 3023
  },
  {
   "district": "RM-M",
-  "vacant_parcels": 2461
+  "vacant_parcels": 2459
  },
  {
   "district": "R1D-L",
-  "vacant_parcels": 2121
+  "vacant_parcels": 2119
  },
  {
   "district": "R2-L",
@@ -21,11 +21,11 @@
  },
  {
   "district": "R1A-VH",
-  "vacant_parcels": 1483
+  "vacant_parcels": 1484
  },
  {
   "district": "P",
-  "vacant_parcels": 1207
+  "vacant_parcels": 1208
  },
  {
   "district": "R1D-M",
@@ -33,19 +33,19 @@
  },
  {
   "district": "R2-H",
-  "vacant_parcels": 1166
+  "vacant_parcels": 1168
  },
  {
   "district": "R1A-H",
-  "vacant_parcels": 963
+  "vacant_parcels": 962
  },
  {
   "district": "LNC",
-  "vacant_parcels": 949
+  "vacant_parcels": 947
  },
  {
   "district": "UI",
-  "vacant_parcels": 460
+  "vacant_parcels": 463
  },
  {
   "district": "R1A-M",
@@ -53,7 +53,7 @@
  },
  {
   "district": "NDI",
-  "vacant_parcels": 185
+  "vacant_parcels": 186
  },
  {
   "district": "RIV-MU",
@@ -64,12 +64,12 @@
   "vacant_parcels": 99
  },
  {
-  "district": "UPR-B",
+  "district": "RIV-IMU",
   "vacant_parcels": 98
  },
  {
-  "district": "RIV-IMU",
-  "vacant_parcels": 97
+  "district": "UPR-B",
+  "vacant_parcels": 98
  },
  {
   "district": "R2-M",
@@ -85,7 +85,7 @@
  },
  {
   "district": "RP",
-  "vacant_parcels": 77
+  "vacant_parcels": 80
  },
  {
   "district": "RM-H",
@@ -96,12 +96,16 @@
   "vacant_parcels": 59
  },
  {
+  "district": "(none)",
+  "vacant_parcels": 55
+ },
+ {
   "district": "HC",
-  "vacant_parcels": 52
+  "vacant_parcels": 53
  },
  {
   "district": "GI",
-  "vacant_parcels": 42
+  "vacant_parcels": 43
  },
  {
   "district": "AP",
@@ -113,7 +117,7 @@
  },
  {
   "district": "GPRB",
-  "vacant_parcels": 32
+  "vacant_parcels": 33
  },
  {
   "district": "UC-MU",
@@ -153,10 +157,6 @@
  },
  {
   "district": "R3-M",
-  "vacant_parcels": 12
- },
- {
-  "district": "(none)",
   "vacant_parcels": 12
  },
  {

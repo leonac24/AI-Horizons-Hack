@@ -1,0 +1,52 @@
+{
+  "artifact_sha256": {
+    "parcel_evidence.jsonl": "0b0505e54cc8e15e13a71fd9774f89d056b30b0d4d56557a1b899857ebc944b8",
+    "valid_parcel_sales.jsonl": "e8931b0a8f7405090d2b7bd25cf97db8aaf93f6bd339c93b9938478b281d6727"
+  },
+  "record_count": 22233,
+  "schema_version": "lotline.parcel-evidence.v1",
+  "source_manifest_hash": "ea4caac0148a8cd64c610ac04859336406d1fcd0c9e413d63bf18a69594b5dd7",
+  "source_registry_sha256": "34f8046f7e5fa5a5bb724917faafd5f22eda7ea8f72e278a99a3eee65b7d03c7",
+  "source_snapshots": {
+    "acs_2024_b25118": "64cd9a281e2a41ca9ff3dafd278cf53354d99a2b3b7900292773faa40c97257a",
+    "acs_5yr": "837b576e5a1106557fb362ffce5e3e09cb7962d2d6d3cab8082b4683202b4a02",
+    "allegheny_address_points": "66ea18721dbee63707106addd5fb7b2f37801ae0e32379adccd6287f4264b2c4",
+    "allegheny_parcel_boundaries": "a9c8fba7ceedd8645d9d6688f0472ac9a618c8ef6d5eeff0bacbb4b325014ebd",
+    "allegheny_property_sales": "99f4c38632c79492ed961c2e952a18a2be68702c2467e76f6faa83db67e373c3",
+    "wprdc_assessments": "c8515a379835491825834c81fd1981d057629739555e9e26d455e32afe339646"
+  },
+  "source_status": {
+    "acs_2024_b25118": {
+      "matched_tracts": 395,
+      "status": "loaded"
+    },
+    "allegheny_address_points": {
+      "matched_parcels": 15,
+      "sha256": "66ea18721dbee63707106addd5fb7b2f37801ae0e32379adccd6287f4264b2c4",
+      "status": "loaded"
+    },
+    "allegheny_parcel_boundaries": {
+      "matched_parcels": 22037,
+      "sha256": "a9c8fba7ceedd8645d9d6688f0472ac9a618c8ef6d5eeff0bacbb4b325014ebd",
+      "status": "partial",
+      "unmatched_parcels": 196
+    },
+    "allegheny_property_sales": {
+      "funnel": {
+        "parcel_id_overlap": 16009,
+        "parseable_sale_date": 83,
+        "positive_parcel_area": 83,
+        "positive_price": 83,
+        "raw_records": 503747,
+        "unique_single_parcel_deed": 83,
+        "valid_sale_code": 83
+      },
+      "status": "loaded",
+      "valid_single_parcel_rows": 83
+    },
+    "wprdc_assessments": {
+      "sha256": "c8515a379835491825834c81fd1981d057629739555e9e26d455e32afe339646",
+      "status": "cached"
+    }
+  }
+}

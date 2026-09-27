@@ -33,8 +33,9 @@ methods:
   site.land_value:
     title: Assessed land value
     how: >-
-      The county's assessed value of the land alone. Lotline adds it to development
-      cost as a stand-in for what the land costs.
+      The county's assessed value of the land alone. The finance model first seeks
+      qualified vacant-land sales for a comparable estimate. If unavailable, a
+      separately labeled acquisition scenario may use this assessment.
     limits: >-
       Assessed value is not a market price and not an acquisition price. Publicly
       held and Land Bank lots can transfer for far less.
@@ -147,15 +148,16 @@ methods:
 
   # --- Criteria (scored) --------------------------------------------------------
   demand.units_serving_need:
-    title: Serves local housing need
+    title: Homes affordable to nearby cost-burdened renters
     how: >-
-      Roughly how many of the new homes land where the need is: homes, times the
-      share of nearby renters who are cost-burdened, times how affordable one
-      home is to a typical nearby household (capped at 1).
-    formula: homes × renter_cost_burden × min(1, tract_median_income / income_needed)
+      Proposed homes multiplied by the tract renter cost-burden share and the
+      modeled share of renters above the required income. If renter-income bins
+      are missing, a visibly provisional median-income fallback is used.
+    formula: homes × renter_cost_burden × (1 − renter_share_below_required_income)
     limits: >-
-      Compatibility, not a finding about what the neighborhood needs. It doesn't
-      model who actually moves in.
+      The ACS marginals do not reveal which cost-burdened renters have sufficient
+      income. Their independence is a scenario assumption; this is not a count of
+      identified households, displacement, or a prediction of who moves in.
 
   feasibility.zoning_score:
     title: Zoning path
@@ -183,54 +185,56 @@ methods:
   affordability.monthly_cost:
     title: Monthly cost per home
     how: >-
-      What each home must bring in per month to cover its share of development
-      cost (spread over time at a yearly capital rate) plus operating costs.
-    formula: >-
-      dev_cost_per_home × annual_capital_cost_share / 12 + operating_cost_per_unit_month
-    limits: A cost-recovery rent, not a market rent or an appraised value.
+      For ownership, a declared target sale price from line-item cost plus margin
+      feeds a mortgage and tax payment scenario. For rental, sources-and-uses,
+      financing, vacancy and operating lines determine required rent. When inputs
+      are missing, the configured fallback is shown as such.
+    limits: A modeled payment or cost-recovery rent, not an observed sale price, market rent, or lender quote.
 
   affordability.dev_cost_per_unit:
     title: Development cost per home
     how: >-
-      Hard cost from HUD's 2024 Pittsburgh construction-cost limits, plus soft
-      costs, any hillside site allowance, and the assessed land value, divided by
-      the number of homes.
-    formula: >-
-      (homes × unit_size_sf × hard_cost_psf × (1 + soft_cost_share + site_share) + land_value) / homes
-    limits: HUD limits are caps for publicly funded housing, a benchmark rather than a bid.
+      Scenario sources and uses add hard construction, site work, soft costs,
+      contingency and acquisition, then divide by homes. Public HUD limits are
+      reference bounds, not contractor bids. A legacy configured fallback is
+      shown when required inputs remain unresolved.
+    formula: (hard construction + site work + soft costs + contingency + acquisition) / homes
+    limits: Acquisition estimates and allowances require title, contractor and utility confirmation.
 
   affordability_gap.share_above_local_rents:
-    title: Share priced above nearby renter incomes
+    title: Nearby renters below required income
     how: >-
-      How far one home's required income sits above what a typical nearby
-      household earns, as a share: 0% means affordable at the tract median, and
-      higher means further out of reach.
-    formula: 1 − min(1, tract_median_income / income_needed)
+      Interpolates 2024 ACS B25118 renter household income bins to estimate the
+      share below the income required for this housing scenario. Published bin
+      margins and the cost scenario determine a bounded interval. If the bins
+      are unavailable, a tract all-household median fallback is labeled.
+    formula: interpolated renter households below required income / renter households with computed income
     limits: >-
-      A pressure indicator, not a count of displaced households. Estimating
-      displacement needs longitudinal data and a causal method we don't have.
+      Tract context, not parcel observations. Within-bin income is modeled; no
+      displaced households or causal effect are estimated.
 
   infrastructure.load_index:
-    title: Strain on infrastructure
+    title: Added wastewater or infrastructure screen
     how: >-
-      A relative load index: more homes, site hazards and a more stressed
-      sewershed all raise it.
-    formula: homes × (1 + Σ infrastructure_hazard_weight of flags present) × sewer_stress
+      When a sourced design-flow rate is available, homes times per-home flow
+      estimates added wastewater in gallons per day. Otherwise the card shows
+      the configured provisional relative-load index.
+    formula: homes × design gallons per home per day; fallback = homes × (1 + hazard weights) × sewer_stress
     limits: >-
-      Proximity is not capacity. This is a relative screen, not an engineering
-      estimate of pipe or road capacity.
+      Added flow is not available pipe capacity. A written PWSA or ALCOSAN
+      determination is required; sewershed membership cannot establish capacity.
 
   carbon.per_household_horizon:
-    title: Carbon per household
+    title: Carbon scenario per household
     how: >-
-      Whole-life carbon for one home over the analysis horizon: materials to build
-      it (year 0), then yearly home energy on a decarbonizing PA grid, plus car
-      travel.
-    formula: >-
-      embodied + Σ_years [ kWh × grid × (1 − decarb)^(y−1) + vmt × kgCO2e_per_mile ]
+      A partial scenario combines upfront materials, operating electricity and
+      household vehicle travel when matched source inputs are available. Annual
+      grid factors may be supplied as a year-by-year trajectory. The configured
+      placeholder comparison remains visible where inputs are unresolved.
+    formula: embodied + Σ_years (electricity × annual grid factor + vehicle miles × vehicle factor)
     limits: >-
-      Most inputs are placeholders. Compare options against each other rather
-      than reading the tonnes as absolute.
+      Fuel use, future vehicle fleet changes and construction-specific quantities
+      are omitted. Placeholder totals are not measured emissions.
 
   carbon.embodied_per_household:
     title: Upfront carbon per household

@@ -151,6 +151,127 @@ sources:
     verified: "2026-09-26"
     note: Key-free official table-based summary files B19013 and B25070; tract estimates and 90% margins of error. Rent-burden ratio bounds in Lotline are approximate, not Census-published MOEs.
 
+  acs_2024_b25118:
+    name: 2024 ACS Tenure by Household Income
+    publisher: U.S. Census Bureau
+    url: https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b25118.dat
+    access: census_bulk
+    vintage: 2020–2024 ACS 5-year, 2024 tract geography
+    license: public domain
+    verified: "2026-09-27"
+    note: Renter-occupied household income-bin estimates and 90% MOEs; schema reference is https://api.census.gov/data/2024/acs/acs5/groups/B25118.html. Geography is retained as tract context, never a parcel household count.
+
+  allegheny_property_sales:
+    name: Allegheny County Property Sale Transactions
+    publisher: Allegheny County Department of Real Estate via WPRDC
+    url: https://data.wprdc.org/dataset/real-estate-sales
+    access: ckan_datastore
+    resource_id: 5bbe6c55-bce6-4edb-9d04-68edeb6bf7b1
+    vintage: current extract (fetched at pipeline run)
+    license: Creative Commons CCZero
+    verified: "2026-09-27"
+    note: Retain only valid sale-code single-parcel deeds. Assessment cohort status is current and does not prove vacant status on the historic sale date.
+
+  allegheny_address_points:
+    name: Allegheny County Address Points
+    publisher: Allegheny County GIS
+    url: https://gisdata.alleghenycounty.us/arcgis/rest/services/Addressing/Addressing_AddressPoints/MapServer/0
+    access: arcgis
+    vintage: live county addressing layer (cached at pipeline run)
+    license: see Allegheny County GIS terms
+    verified: "2026-09-27"
+    note: PIN-matched PARCELID fallback coordinates; approximate address-point location, not parcel centroid or zoning/hazard determination.
+
+  pa_dep_domestic_wastewater_manual:
+    name: Domestic Wastewater Facilities Manual
+    publisher: Pennsylvania Department of Environmental Protection
+    url: https://greenport.pa.gov/elibrary/PDFProvider.ashx?PromptToSave=False&Size=789525&ViewerMode=2&action=PDFStream&docID=9232038&docName=DOMESTIC+WASTEWATER+FACILITIES+MANUAL&nativeExt=pdf&overlay=0&revision=0
+    access: manual
+    vintage: revision and cover date require verification at use
+    license: public agency manual
+    verified: "2026-09-27"
+    note: Section 24.1, page 22, is the planned reference for domestic wastewater system design flow (at least 100 gpd/person unless rigorously justified, including normal infiltration); confirm current manual revision and project applicability before use.
+
+  phfa_operating_budget_2025:
+    name: PHFA Core Operating Budget Instructions
+    publisher: Pennsylvania Housing Finance Agency
+    url: https://www.phfa.org/forms/multifamily_application_guidelines/submission/tab_02/tab_02_01.pdf
+    access: manual
+    vintage: 2025 and 2026 multifamily application guidance
+    license: public guidance
+    verified: "2026-09-27"
+    note: Underwriting categories and sample minimums; not observed Pittsburgh operating costs.
+
+  phfa_core_application_2025:
+    name: PHFA Core Application
+    publisher: Pennsylvania Housing Finance Agency
+    url: https://www.phfa.org/forms/multifamily_application_guidelines/submission/tab_02/tab_02_02.pdf
+    access: manual
+    vintage: 2025 and 2026 multifamily application guidance
+    license: public guidance
+    verified: "2026-09-27"
+    note: Application assumptions include a sample 5 percent vacancy factor; not a project-specific observed rate.
+
+  pittsburgh_tax_rates_2026:
+    name: Pittsburgh 2026 Property Tax Rates
+    publisher: Allegheny County Treasurer
+    url: https://apps.alleghenycounty.us/website/munipgh.asp
+    access: manual
+    vintage: 2026 tax year
+    license: public information
+    verified: "2026-09-27"
+    note: Dated City, County, and school millage components; refresh for later tax years.
+
+  pittsburgh_transfer_tax_city:
+    name: City of Pittsburgh Realty Transfer Tax
+    publisher: City of Pittsburgh Finance Department
+    url: https://www.pittsburghpa.gov/City-Government/Finance-Budget/Taxes
+    access: manual
+    vintage: live guidance; checked 2026-09-27
+    license: public information
+    verified: "2026-09-27"
+    note: Listed components total 4 percent; conflicts with the County's Pittsburgh total, so requires source review before a definitive transaction-cost result.
+
+  pittsburgh_transfer_tax_county:
+    name: Allegheny County Realty Transfer Tax
+    publisher: Allegheny County
+    url: https://www.alleghenycounty.us/Services/Property-Assessments-and-Real-Estate/Realty-Transfer-Taxes
+    access: manual
+    vintage: live guidance; checked 2026-09-27
+    license: public information
+    verified: "2026-09-27"
+    note: States Pittsburgh total is 5 percent; conflicts with the City's listed component total, so requires source review before a definitive transaction-cost result.
+
+  freddie_mac_pmms:
+    name: Freddie Mac Primary Mortgage Market Survey Archives
+    publisher: Freddie Mac
+    url: https://www.freddiemac.com/pmms/pmms_archives
+    access: manual
+    vintage: weekly mortgage rates; latest checked 2026-09-27
+    license: public information
+    verified: "2026-09-27"
+    note: Dated national 30-year fixed-rate benchmark; not an offered borrower rate.
+
+  pwsa_rates_2026:
+    name: PWSA Water and Sewer Rates
+    publisher: Pittsburgh Water and Sewer Authority
+    url: https://www.pgh2o.com/residential-commercial-customers/rates
+    access: manual
+    vintage: effective 2026-03-08
+    license: public information
+    verified: "2026-09-27"
+    note: Published tariffs and fees; project bills depend on use, service, and applicable charges.
+
+  lotline_finance_scenario_defaults:
+    name: Lotline Declared Finance Scenario Defaults
+    publisher: Lotline
+    url: null
+    access: manual
+    vintage: versioned with finance model configuration
+    license: internal declared assumptions
+    verified: "2026-09-27"
+    note: Scenario inputs are not observed parcel, market, or project facts.
+
   allegheny_parcel_boundaries:
     name: Allegheny County Parcel Boundaries
     publisher: Allegheny County GIS

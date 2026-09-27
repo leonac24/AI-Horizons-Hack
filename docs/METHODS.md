@@ -8,7 +8,7 @@ Two layers, kept apart on purpose:
   the evidence using weights that the user controls.
 
 Model parameters come from `data/config/assumptions.yaml`; joined site estimates
-come from the processed parcel index. Housing types come from `typologies.yaml`,
+come from the processed parcel index and the per-PIN evidence artifact. Housing types come from `typologies.yaml`,
 and criteria and their directions from `criteria.yaml`.
 
 ## Uncertainty ranges
@@ -67,10 +67,19 @@ combined:
 
 ## Cost and affordability
 
+The finance model seeks qualified recent vacant-land sales and selects local,
+size-matched comparables when available. The result is a modeled acquisition
+scenario, never a current bid. Its line-item budget separates hard construction,
+site work, soft costs, contingency and land; HUD HCC/TDC remain reference limits
+and TDC is not added to the budget. An assessed-land acquisition scenario is
+explicitly labeled if sales are unavailable. Rental terms require debt/equity,
+operating and vacancy inputs; ownership uses a declared target sale price and
+dated mortgage and tax inputs. Missing lines remain null in the finance model;
+the card can display the older configured placeholder as a fallback.
+
     gross_sf       = homes × unit_size_sf
-    site_share     = Σ cost_share of each hazard flag present (steep slope, landslide, undermined)
-    dev_cost       = gross_sf × hard_cost_psf × (1 + soft_cost_share + site_share) + assessed_land_value
-    monthly_cost   = dev_cost / homes × annual_capital_cost_share / 12 + operating_cost_per_unit_month
+    dev_cost       = hard construction + site work + soft costs + contingency + acquisition
+    monthly_cost   = modeled required rental revenue or ownership payment; configured fallback if unresolved
     income_needed  = monthly_cost × 12 / housing_cost_share            (housing_cost_share = 0.30)
     ami_needed_pct = income_needed / ami_4person × 100
 
@@ -89,12 +98,17 @@ facts appear once, under "About this lot".
 
 | Criterion | Formula | Direction |
 |---|---|---|
-| Serves local housing need | `homes × renter_cost_burden_share × min(1, tract_median_income / income_needed)` | higher better |
+| Homes affordable to nearby cost-burdened renters | `homes × renter_cost_burden_share × (1 − renter_share_below_required_income)` when renter-income bins exist; median-income fallback otherwise | higher better |
 | Zoning path | status from a rule in force → score (`zoning_status_score.by_key`); no rule → placeholder spanning all outcomes | higher better |
 | Income needed | `ami_needed_pct` | lower better |
-| Share priced above nearby renter incomes | `1 − min(1, tract_median_income / income_needed)` | lower better |
-| Strain on infrastructure | `homes × (1 + Σ hazard weights present) × sewer_stress_index` | lower better |
-| Carbon per household | see below | lower better |
+| Nearby renters below required income | Interpolation of ACS B25118 renter-income bins at required income; median-income fallback otherwise | lower better |
+| Added wastewater or infrastructure screen | `homes × design flow per home` when sourced; provisional load index otherwise | lower better |
+| Carbon scenario per household | Partial sourced scenario when inputs are present; configured placeholder otherwise | lower better |
+
+The demand criterion multiplies separate tract marginals under an explicit
+independence assumption. It is a comparison scenario, not a count of identified
+households. ACS income-bin margins and the required-cost range bound the
+local-affordability estimate.
 
 Two changes on 2026-09-26, both to stop the criteria overstating what the
 evidence supports:
@@ -118,6 +132,12 @@ site context (`site.jobs_access`). If a future access measure varies by housing
 type, it belongs back in this table.
 
 ## Carbon over time (per household)
+
+When material, energy, annual travel and grid inputs have sourced envelopes,
+the environment model uses their year-specific grid path and returns a partial
+series with component and omission details. It does not infer sewer capacity
+from a mapped sewershed. Where those inputs are absent, the following legacy
+configured comparison remains explicitly labeled placeholder:
 
     year 0:  embodied = embodied_kgco2e_psf × unit_size_sf / 1000                         (t)
     year y:  energy   = operational_kwh_psf_yr × unit_size_sf × grid_kgco2e_per_kwh × (1 − decarb)^(y−1)

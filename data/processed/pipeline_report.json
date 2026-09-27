@@ -1,5 +1,5 @@
 {
-  "config_hash": "ccee62af18d1",
+  "config_hash": "e1a443786872",
   "sources": {
     "wprdc_assessments": {
       "provenance": "observed",
@@ -33,26 +33,54 @@
   "counts": {
     "vacant_in_city": 22233,
     "lot_dims_from_legal_description": 15718,
-    "missing_location": 50,
-    "flag_steep_slope": 5743,
-    "flag_landslide": 5155,
-    "flag_undermined": 5946,
+    "parcel_polygons_matched": 22037,
+    "missing_location": 26,
+    "location_from_polygon": 22037,
+    "location_from_centroid": 155,
+    "location_from_address_point": 15,
+    "flag_steep_slope": 5711,
+    "flag_landslide": 5167,
+    "flag_undermined": 5949,
+    "assessment_zero_lot_area": 7,
+    "assessment_zero_land_value": 26,
     "acs_income_values": 22113,
     "acs_renter_burden_values": 22132,
-    "parcel_polygons_matched": 22028,
-    "fema_classified": 22183,
-    "fema_sfha_flagged": 359,
-    "combined_sewershed_matched": 19444,
-    "indexed": 22183,
-    "suggested": 12,
-    "geometry_dimensions_estimated": 5965,
-    "transit_access_matched": 15553
+    "acs_renter_income_bin_tracts": 125,
+    "acs_renter_income_bin_records": 22233,
+    "acs_renter_income_bin_county_fallbacks": 50,
+    "geometry_dimensions_estimated": 5971,
+    "transit_access_matched": 15553,
+    "fema_classified": 22192,
+    "fema_sfha_flagged": 360,
+    "combined_sewershed_matched": 19447,
+    "county_valid_single_parcel_sales": 83,
+    "indexed": 22233,
+    "suggested": 12
   },
   "context": {
     "acs": {
       "source": "acs_5yr",
       "status": "loaded",
       "join": "11-digit tract GEOID; 2024 ACS geography"
+    },
+    "acs_renter_income": {
+      "source": "acs_2024_b25118",
+      "status": "loaded",
+      "join": "11-digit tract GEOID; B25118 renter-occupied income bins",
+      "vintage": "2020-2024 ACS 5-year; 2024 tract geography"
+    },
+    "acs_renter_income_fallback": {
+      "status": "loaded",
+      "geography": "county",
+      "filled_records": 50,
+      "reason": "tract estimate unavailable or suppressed; county context substituted"
+    },
+    "transit_jobs": {
+      "source": "epa_smart_location",
+      "status": "loaded",
+      "vintage": "EPA Smart Location Database 3.0 (2021); 2020 GTFS and travel times; 2017 LEHD",
+      "join": "2020 block-group GEOID20 reconstructed from state, county, tract and group fields",
+      "measure": "D5DRI relative transit jobs accessibility index and D5BR distance-decay-weighted jobs"
     },
     "flood": {
       "source": "fema_nfhl",
@@ -66,17 +94,30 @@
       "polygons": 182,
       "join": "parcel interior point; centroid fallback"
     },
-    "generated_at_utc": "2026-09-27T01:58:49.421455+00:00",
+    "generated_at_utc": "2026-09-27T20:39:12.553888+00:00",
     "join_methods": {
-      "point inside county parcel polygon": 22028,
+      "point inside county parcel polygon": 22037,
+      "unmatched": 41,
       "published parcel centroid (boundary unavailable)": 155
     },
-    "transit_jobs": {
-      "source": "epa_smart_location",
+    "county_sales": {
+      "source": "allegheny_property_sales",
       "status": "loaded",
-      "vintage": "EPA Smart Location Database 3.0 (2021); 2020 GTFS and travel times; 2017 LEHD",
-      "join": "2020 block-group GEOID20 reconstructed from state, county, tract and group fields",
-      "measure": "D5DRI relative transit jobs accessibility index and D5BR distance-decay-weighted jobs"
+      "valid_single_parcel_rows": 83,
+      "funnel": {
+        "raw_records": 503747,
+        "parcel_id_overlap": 16009,
+        "valid_sale_code": 83,
+        "positive_price": 83,
+        "unique_single_parcel_deed": 83,
+        "parseable_sale_date": 83,
+        "positive_parcel_area": 83
+      },
+      "filter": "SALEDESC=Valid Sale, positive price, valid date, one parcel per deed book/page",
+      "limitations": [
+        "Historical consideration is not a current asking price.",
+        "Current assessment vacancy class does not establish sale-date condition."
+      ]
     }
   }
 }

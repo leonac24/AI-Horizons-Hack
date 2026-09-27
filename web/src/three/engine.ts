@@ -32,8 +32,8 @@ export interface PinLot extends ParcelPoint {
 
 export interface LotInput {
   id: string
-  lon: number
-  lat: number
+  lon: number | null
+  lat: number | null
   frontage: number
   depth: number
   hill: boolean
@@ -1144,7 +1144,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     async goLot(lot, list = []) {
       stopSpin()
       selLot = lot.id
-      if (mode === 'city') {
+      if (mode === 'city' && lot.lon !== null && lot.lat !== null) {
         const [x, z] = toXZ(lot.lon, lot.lat)
         const y = heightAt(x, z)
         await flyTo([x + 70, y + 150, z + 170], [x, y, z], 750)

@@ -39,16 +39,16 @@ export function MetricBox({ m, label, domain, question, sources, typologyId }: {
         <ProvTag p={m.provenance} />
       </div>
       <div>
-        <strong className="mbox-val">{fmt(m.value, m.unit)}</strong>
-        <span className="muted">{unitSuffix(m.unit)}</span>
-        {m.low !== m.high && (
+        <strong className="mbox-val">{m.unavailable ? 'Unknown' : fmt(m.value, m.unit)}</strong>
+        {!m.unavailable && <span className="muted">{unitSuffix(m.unit)}</span>}
+        {!m.unavailable && m.low !== m.high && (
           <span className="dim small">
             {' '}
             (range {fmt(m.low, m.unit)}–{fmt(m.high, m.unit)})
           </span>
         )}
       </div>
-      {domain && (
+      {domain && !m.unavailable && (
         <div className="band-track">
           <div className="band" style={{ left: `${pct(m.low)}%`, width: `${Math.max(1, pct(m.high) - pct(m.low))}%` }} />
           <div className="tick" style={{ left: `${pct(m.value)}%` }} />

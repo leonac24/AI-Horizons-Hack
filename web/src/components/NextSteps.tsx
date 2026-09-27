@@ -181,7 +181,7 @@ function Handout({ config, analysis, ranking, profileLabel, step, onClose }: { c
           </div>
         </div>
         <p>
-          {p.neighborhood} · zoning {p.zoning ?? '—'} · {Math.round(p.lot_area_sf ?? 0).toLocaleString()} sq ft · parcel {p.id}
+          {p.neighborhood} · zoning {p.zoning ?? '—'} · {p.lot_area_sf == null ? 'area unknown' : `${Math.round(p.lot_area_sf).toLocaleString()} sq ft`} · parcel {p.id}
           {p.public ? ' · publicly held' : ''} · {new Date().toLocaleDateString()}
         </p>
         <p className="memo-disclaimer">{config.app.disclaimer}</p>

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 from pydantic import BaseModel
@@ -27,6 +28,12 @@ class Metric(BaseModel):
     # actual arithmetic. core/inquiries.py walks these to work out which real
     # unknowns hold a metric up.
     dependsOn: list[str] = []
+    # The numeric source or model envelope used for this result. A derived
+    # metric may include several envelopes keyed by input name.
+    evidence: dict[str, Any] | None = None
+    # A numeric zero may be needed internally by older calculations, but it
+    # must not be rendered as a measured zero when the input was absent.
+    unavailable: bool = False
 
 
 def weakest(*provs: str) -> Provenance:
@@ -117,14 +124,42 @@ class Trace:
 
 
 def to_metric(id: str, label: str, arr: np.ndarray, unit: str, trace: Trace,
-              note: str | None = None, provenance: Provenance | None = None) -> Metric:
+              note: str | None = None, provenance: Provenance | None = None,
+              evidence: dict[str, Any] | None = None) -> Metric:
     central = float(arr[0])
     draws = arr[1:] if arr.size > 1 else arr
     lo, hi = np.percentile(draws, [5, 95]) if draws.size > 1 else (central, central)
     prov = provenance or weakest(trace.prov(), "modeled")
     return Metric(id=id, label=label, value=_r(central), low=_r(min(lo, central)), high=_r(max(hi, central)),
                   unit=unit, provenance=prov, sourceIds=sorted(trace.sources), note=note,
-                  dependsOn=sorted(trace.keys))
+                  dependsOn=sorted(trace.keys), evidence=evidence)
+
+
+def envelope_samples(samples: Samples, envelope: dict[str, Any] | None, *stream_key: str) -> np.ndarray | None:
+    """Use the published evidence interval as a reproducible scenario band."""
+    if not isinstance(envelope, dict):
+        return None
+    try:
+        value = float(envelope["value"])
+        low = float(envelope.get("low", value))
+        high = float(envelope.get("high", value))
+    except (KeyError, TypeError, ValueError):
+        return None
+    if not (np.isfinite(value) and np.isfinite(low) and np.isfinite(high)) or low > value or value > high:
+        return None
+    rng = samples.stream("parcel-evidence", *stream_key)
+    draws = rng.uniform(low, high, samples.n) if high > low else np.full(samples.n, value)
+    return np.concatenate([[value], draws])
+
+
+def envelope_trace(envelope: dict[str, Any] | None) -> Trace:
+    if not isinstance(envelope, dict):
+        return Trace({"placeholder"})
+    provenance = envelope.get("provenance", "modeled")
+    if provenance not in _RANK:
+        provenance = "modeled"
+    source_ids = envelope.get("source_ids") or []
+    return Trace({str(provenance)}, {str(source) for source in source_ids if source})
 
 
 def _r(x: float) -> float:

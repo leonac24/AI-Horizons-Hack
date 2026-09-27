@@ -38,6 +38,17 @@ def test_site_hazard_raises_cost(cfg, lot):
     assert steep.scenarios[0].metrics[k].value > flat.scenarios[0].metrics[k].value
 
 
+def test_missing_assessment_area_is_unknown_not_zero_sized_lot(cfg, lot):
+    a = analyze(cfg, {**lot, "lot_area_sf": None, "land_value_usd": None,
+                      "frontage_ft": None, "depth_ft": None})
+    area = next(m for m in a.site_context if m.id == "site.lot_area_sf")
+    land = next(m for m in a.site_context if m.id == "site.land_value")
+    assert area.unavailable and land.unavailable
+    assert area.provenance == "placeholder"
+    assert a.lot_shape.provenance == "placeholder"
+    assert all(not s.form_fits and "fit is unknown" in s.notes[0] for s in a.scenarios)
+
+
 def test_unknown_hazard_is_not_silently_false(cfg, lot):
     a = analyze(cfg, lot)
     und = next(m for m in a.site_context if m.id == "site.undermined")

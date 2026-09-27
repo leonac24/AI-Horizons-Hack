@@ -6,19 +6,19 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `ccee62af18d1`._
+_Auto-generated for config `cf2630839c79`._
 
-- **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
+- **Vacant parcels indexed:** 22,233 (City of Pittsburgh only).
 - **Zoning rules in force:** AI-extracted rules are in force once their quotes verify against the saved code text; they are labelled as not checked by a planner (`require_human_review` in zoning.yaml).
-- **Share of vacant parcels covered by zoning rules:** 88.1% (7 of 41 base districts); by human-reviewed rules: 0.0%.
-- **Largest base districts with no rules yet:** LNC (949), UI (460), NDI (185), RIV-MU (148), UPR-B (98), RIV-IMU (97), RIV-RM (88), RIV-NS (87), RP (77), HC (52), GI (42), AP (41).
+- **Share of vacant parcels covered by zoning rules:** 87.9% (7 of 41 base districts); by human-reviewed rules: 0.0%.
+- **Largest base districts with no rules yet:** LNC (947), UI (463), NDI (186), RIV-MU (148), RIV-IMU (98), UPR-B (98), RIV-RM (88), RIV-NS (87), RP (80), (no district) (55), HC (53), GI (43).
 - **Uses settled city-wide (1):** `single_unit_detached_with_adu`. These are decided by a rule that applies in every district, so they are excluded from the ranking everywhere, with a citation.
 - **Placeholder assumptions (14):** `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
 - **2024 ACS median income / renter burden:** 22,113 / 22,132 indexed lots have tract estimates.
-- **FEMA point screen:** 22,183 classified; 359 in a mapped Special Flood Hazard Area at the tested point.
-- **2018 PWSA combined sewersheds:** 19,444 indexed lots have a point match.
+- **FEMA point screen:** 22,192 classified; 360 in a mapped Special Flood Hazard Area at the tested point.
+- **2018 PWSA combined sewersheds:** 19,447 indexed lots have a point match.
 - **EPA SLD transit access:** 15,553 indexed lots have a 2021 block-group match (D5DRI relative access; D5BR weighted jobs within 45 minutes).
-- **County geometry dimensions:** 5,965 lots have modeled parcel axes where legal dimensions were absent; these are not survey dimensions.
+- **County geometry dimensions:** 5,971 lots have modeled parcel axes where legal dimensions were absent; these are not survey dimensions.
 - **Sources not yet connected (5):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, ResStock.
 <!-- AUTO:END -->
 

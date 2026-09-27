@@ -18,6 +18,22 @@ function rangeOf(a: Assumption, typologyId?: string) {
   return { ...(t ?? a), varies: !t && !!a.by_typology }
 }
 
+function evidenceEntries(value: Record<string, unknown> | null | undefined): [string, Record<string, unknown>][] {
+  if (!value) return []
+  if ('evidence_tier' in value || 'geography' in value) return [['Estimate', value]]
+  return Object.entries(value).filter((entry): entry is [string, Record<string, unknown>] =>
+    !!entry[1] && typeof entry[1] === 'object' && !Array.isArray(entry[1]))
+}
+
+function evidenceText(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') return null
+  if (Array.isArray(value)) {
+    const items = value.map(evidenceText).filter((item): item is string => !!item)
+    return items.length ? items.join('; ') : null
+  }
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : null
+}
+
 interface Props {
   /** Key into methods.yaml. For a metric, its metric id. */
   id: string
@@ -76,9 +92,9 @@ export function InfoTip({ id, metric, sourceIds, dependsOn, provenance, typology
 
             {metric && (
               <div className="info-value">
-                On this lot: <strong>{fmt(metric.value, metric.unit)}</strong>
+                On this lot: <strong>{metric.unavailable ? 'Unknown' : fmt(metric.value, metric.unit)}</strong>
                 <span className="muted">{unitSuffix(metric.unit)}</span>
-                {metric.low !== metric.high && (
+                {!metric.unavailable && metric.low !== metric.high && (
                   <span className="dim">
                     {' '}
                     (range {fmt(metric.low, metric.unit)}–{fmt(metric.high, metric.unit)})
@@ -86,6 +102,34 @@ export function InfoTip({ id, metric, sourceIds, dependsOn, provenance, typology
                 )}
                 {metric.note && <div className="dim small">{metric.note}</div>}
               </div>
+            )}
+
+            {evidenceEntries(metric?.evidence).length > 0 && (
+              <>
+                <div className="info-sec">Evidence behind this estimate</div>
+                {evidenceEntries(metric?.evidence).map(([name, detail]) => (
+                  <div className="info-source small" key={name}>
+                    <strong>{name === 'Estimate' ? 'Source and method' : name.replaceAll('_', ' ')}</strong>
+                    <div className="dim">
+                      {[
+                        evidenceText(detail.evidence_tier),
+                        evidenceText(detail.geography),
+                        evidenceText(detail.as_of),
+                        evidenceText(detail.interval_type),
+                      ].filter(Boolean).join(' · ')}
+                    </div>
+                    {!!(detail.model_id || detail.model_version) &&
+                      <div className="dim">Model: {[evidenceText(detail.model_id), evidenceText(detail.model_version)].filter(Boolean).join(' · ')}</div>}
+                    {detail.sample_size !== undefined && detail.sample_size !== null &&
+                      <div className="dim">Comparable observations: {String(detail.sample_size)}</div>}
+                    {Array.isArray(detail.source_ids) && detail.source_ids.length > 0 &&
+                      <div className="dim">Sources: {detail.source_ids.map(String).join(', ')}</div>}
+                    {evidenceText(detail.limitations) && <div className="muted">{evidenceText(detail.limitations)}</div>}
+                    {evidenceText(detail.confirmation_needed) &&
+                      <div className="muted">Confirm: {evidenceText(detail.confirmation_needed)}</div>}
+                  </div>
+                ))}
+              </>
             )}
 
             {criterion && (

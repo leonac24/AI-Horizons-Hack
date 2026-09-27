@@ -66,7 +66,7 @@ export function Hud(p: {
         )}
         {!p.showPlan && <div className="hud-note info">Before: the lot as it is today. Switch to After to edit your plan.</div>}
         <div className={`hud-note shape prov-${p.analysis.lot_shape.provenance}`}>
-          Lot {Math.round(p.analysis.lot_shape.frontage_ft)} × {Math.round(p.analysis.lot_shape.depth_ft)} ft — {p.analysis.lot_shape.note} Neighbors are illustrative.
+          {p.analysis.parcel.lot_area_sf == null ? 'Lot dimensions unknown' : `Lot ${Math.round(p.analysis.lot_shape.frontage_ft)} × ${Math.round(p.analysis.lot_shape.depth_ft)} ft`} — {p.analysis.lot_shape.note} Neighbors are illustrative.
         </div>
         </>
       )}
@@ -165,7 +165,7 @@ export function Palette(p: {
             </div>
             <div className="pal-name">{t.short_label}</div>
             <div className={`pal-meta ${fits ? '' : 'warn'}`}>
-              {fits ? `${t.building.homes} ${t.building.homes === 1 ? 'home' : 'homes'} · ${t.stories} st · ${w}×${d}` : `too big for ${W}×${D} lot`}
+              {fits ? `${t.building.homes} ${t.building.homes === 1 ? 'home' : 'homes'} · ${t.stories} st · ${w}×${d}` : p.analysis.parcel.lot_area_sf == null ? 'fit unknown until area is confirmed' : `too big for ${W}×${D} lot`}
             </div>
             {n > 0 && <div className="pal-count">{n}</div>}
           </div>

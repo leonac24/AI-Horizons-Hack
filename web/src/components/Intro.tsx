@@ -18,7 +18,7 @@ export function Intro({ app, lotCount, ready, leaving, error, onEnter }: { app: 
           <p className="intro-error">Could not load: {error}</p>
         ) : ready ? (
           <button className="go-btn intro-enter" onClick={onEnter} disabled={leaving} autoFocus>
-            Explore {lotCount ? `${lotCount.toLocaleString()} vacant lots` : 'the city'} →
+            Explore {lotCount ? `${lotCount.toLocaleString()} mapped lots` : 'the city'} →
           </button>
         ) : (
           <div className="intro-loading">
