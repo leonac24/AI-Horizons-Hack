@@ -96,10 +96,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 .seg button { border: none; padding: 6px 10px; cursor: pointer; font-size: 12.5px; font-weight: 700; background: transparent; color: var(--ink-2); }
 .seg .on-lime { background: var(--lime); color: var(--bg); }
 .seg .on-info { background: var(--info); color: var(--bg); }
-.layout-switch { display: flex; align-items: center; gap: 4px; padding-left: 12px; border-left: 2px solid var(--border); flex-shrink: 0; }
-.layout-switch .eyebrow { margin-right: 4px; }
-.layout-switch button { border: 1px solid var(--border); background: transparent; color: var(--ink-2); padding: 5px 8px; border-radius: 8px; cursor: pointer; font: 600 11px var(--display); }
-.layout-switch button.on { background: var(--lime); border-color: var(--lime); color: var(--bg); }
 .strip {
   position: absolute; top: 52px; left: 0; right: 0; height: 22px; background: var(--strip); color: #ffd66b; font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; z-index: 5; border-bottom: 1px solid var(--card-hover); white-space: nowrap; overflow: hidden;

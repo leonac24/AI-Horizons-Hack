@@ -4,7 +4,7 @@ import { AnalysisPanel, type Tab } from './components/AnalysisPanel'
 import { CityPanel, type Filters } from './components/CityPanel'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
 import { MemoModal } from './components/MemoModal'
-import { TopBar, type Layout } from './components/TopBar'
+import { TopBar } from './components/TopBar'
 import { buildingForms, buildPool, countsOf, PLAN_ID, rank, envelopeOf, setbackCrossings } from './lib/plan'
 import { createEngine, type Engine, type ParcelPoint, type Placement } from './three/engine'
 import type { Analysis, Config, ParcelSummary, PlanResult } from './types'
@@ -22,12 +22,8 @@ interface PointProps {
 }
 export type ParcelFeature = GeoJSON.Feature<GeoJSON.Point, PointProps>
 
-// Where each layout puts the viewport, HUD, palette, inspector and panel.
-const LAYOUTS: Record<Layout, Record<string, string>> = {
-  '1a': { vpRight: '0px', vpBottom: '0px', hudLeft: '16px', hudMax: 'calc(100% - 458px)', palLeft: '16px', palRight: 'auto', palTop: 'auto', palBottom: '16px', palDir: 'row', palMax: 'calc(100% - 458px)', palMaxH: 'none', pTop: '90px', pRight: '16px', pBottom: '16px', pLeft: 'auto', pWidth: '410px', pHeight: 'auto', pRadius: '10px', inspLeft: '16px', inspBottom: '150px' },
-  '1b': { vpRight: '460px', vpBottom: '0px', hudLeft: '176px', hudMax: 'calc(100% - 652px)', palLeft: '16px', palRight: 'auto', palTop: '90px', palBottom: 'auto', palDir: 'column', palMax: 'none', palMaxH: 'calc(100% - 106px)', pTop: '74px', pRight: '0px', pBottom: '0px', pLeft: 'auto', pWidth: '460px', pHeight: 'auto', pRadius: '0px', inspLeft: '176px', inspBottom: '16px' },
-  '1c': { vpRight: '0px', vpBottom: '40%', hudLeft: '16px', hudMax: 'calc(100% - 200px)', palLeft: 'auto', palRight: '16px', palTop: '90px', palBottom: 'auto', palDir: 'column', palMax: 'none', palMaxH: 'calc(60% - 110px)', pTop: 'auto', pRight: '0px', pBottom: '0px', pLeft: '0px', pWidth: 'auto', pHeight: '40%', pRadius: '0px', inspLeft: '16px', inspBottom: 'calc(40% + 16px)' },
-}
+// Where the viewport, HUD, palette, inspector and panel sit.
+const L: Record<string, string> = { vpRight: '0px', vpBottom: '0px', hudLeft: '16px', hudMax: 'calc(100% - 458px)', palLeft: '16px', palRight: 'auto', palTop: 'auto', palBottom: '16px', palDir: 'row', palMax: 'calc(100% - 458px)', palMaxH: 'none', pTop: '90px', pRight: '16px', pBottom: '16px', pLeft: 'auto', pWidth: '410px', pHeight: 'auto', pRadius: '10px', inspLeft: '16px', inspBottom: '150px' }
 
 export default function App() {
   const [config, setConfig] = useState<Config | null>(null)
@@ -52,7 +48,6 @@ export default function App() {
   const [hits, setHits] = useState<ParcelSummary[]>([])
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
-  const [layout, setLayout] = useState<Layout>('1a')
   const vp = useRef<HTMLDivElement>(null)
   const engine = useRef<Engine | null>(null)
   const placementsRef = useRef<Placement[]>([])
@@ -239,7 +234,6 @@ export default function App() {
   const ranking = useMemo(() => (config ? rank(config, pool, weights) : null), [config, pool, weights])
 
   if (!config) return <div className="boot">{error ? `Could not load: ${error}` : 'Loading Lotline…'}</div>
-  const L = LAYOUTS[layout]
   const toCity = () => {
     if (mode !== 'lot') return
     void engine.current?.goCity()
@@ -272,8 +266,6 @@ export default function App() {
         onClear={() => placements.length && place([])}
         onReset={() => engine.current?.resetView()}
         onMemo={() => setMemo(true)}
-        layout={layout}
-        setLayout={setLayout}
         disclaimer={config.app.disclaimer}
       />
       {error && <div className="error-toast">{error}</div>}
