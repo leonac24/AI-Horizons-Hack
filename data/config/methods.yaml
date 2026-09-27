@@ -1,0 +1,280 @@
+# How each number is made, in plain language. The (i) button next to a number
+# opens its entry here, together with the live inputs that number was computed
+# from on this lot (the metric's `dependsOn` assumptions and `sourceIds`).
+#
+# Keys are metric ids from core/engine.py (e.g. `site.lot_area_sf`), plus a few
+# ids for things that are not a single metric (`zoning.status`, ...).
+#   title    — heading in the popover
+#   how      — what the number is and how it is computed, in plain words
+#   formula  — optional; the arithmetic, using assumption ids from assumptions.yaml
+#   limits   — optional; what this number does not tell you
+#
+# Keep these in step with docs/METHODS.md and the engine. tests/test_methods.py
+# checks every metric the engine emits and every <InfoTip id> in web/src has an
+# entry.
+methods:
+
+  # --- About this lot -----------------------------------------------------------
+  site.area_mfi:
+    title: Area median family income
+    how: >-
+      HUD's published median family income for the Pittsburgh metro area, for a
+      four-person household. Every "% of area median" in Lotline is measured
+      against this one number.
+    limits: >-
+      It describes the whole metro area, not this neighborhood or any household.
+      Nearby incomes are shown separately as the tract median.
+
+  site.lot_area_sf:
+    title: Lot area
+    how: Lot area recorded in the Allegheny County property assessment for this parcel.
+    limits: Assessment area can differ from a survey. Confirm with a boundary survey before design.
+
+  site.land_value:
+    title: Assessed land value
+    how: >-
+      The county's assessed value of the land alone. Lotline adds it to development
+      cost as a stand-in for what the land costs.
+    limits: >-
+      Assessed value is not a market price and not an acquisition price. Publicly
+      held and Land Bank lots can transfer for far less.
+
+  site.tract_median_income:
+    title: Nearby household income
+    how: >-
+      Median household income in this lot's census tract, from the 2020–2024
+      American Community Survey (table B19013). The range is the published 90%
+      margin of error.
+    limits: >-
+      A tract average, not this block or any household. Where the tract has no
+      estimate, a citywide placeholder is shown instead.
+
+  site.renter_cost_burden:
+    title: Renters paying 30%+ of income
+    how: >-
+      Share of renter households in this tract whose gross rent is 30% or more of
+      income, from the 2020–2024 ACS (table B25070), leaving out households whose
+      burden could not be computed.
+    formula: (B25070_E007 + E008 + E009 + E010) / (E001 − E011)
+    limits: >-
+      The range is a conservative envelope built from each component's margin of
+      error, not an official Census ratio margin.
+
+  site.jobs_access:
+    title: Transit access to jobs
+    how: >-
+      Jobs reachable by transit, relative to the city average (1 = average). It
+      scales the travel part of carbon.
+    limits: >-
+      Placeholder until a Pittsburgh Regional Transit travel-time matrix is
+      built. Every lot currently shows the same band.
+
+  site.sewer_stress:
+    title: Combined-sewer stress
+    how: >-
+      Overflow pressure in the lot's combined sewershed, relative to the city
+      average (1 = average). It scales the infrastructure-load criterion.
+    limits: >-
+      Placeholder until ALCOSAN / PWSA overflow data is joined. Being in a
+      combined sewershed is not evidence of spare or missing capacity.
+
+  site.steep_slope:
+    title: Steep slope
+    how: >-
+      Whether the parcel's center point falls in the City's 25%-or-steeper slope
+      layer. If it does, a site-cost allowance is added to development cost and
+      the infrastructure load goes up.
+    formula: dev_cost × (1 + steep_slope_cost_share) when flagged
+    limits: Tested at one point. Part of a lot can be steep when the center is not, and the reverse.
+
+  site.landslide:
+    title: Landslide-prone
+    how: >-
+      Whether the parcel's center point falls in the City's landslide-prone
+      layer. If it does, a stabilization allowance is added to cost.
+    formula: dev_cost × (1 + landslide_cost_share) when flagged
+    limits: A screen, not a geotechnical finding. Only a site investigation can say how much stabilization a lot needs.
+
+  site.undermined:
+    title: Undermined area
+    how: >-
+      Whether the parcel's center point is over mapped underground mines. If so,
+      a mine-subsidence investigation allowance is added to cost.
+    formula: dev_cost × (1 + undermined_cost_share) when flagged
+    limits: The mine layer has no depth of cover, so it can't say whether subsidence is likely.
+
+  site.fema_flood:
+    title: FEMA flood map
+    how: >-
+      Which FEMA National Flood Hazard Layer zone this lot falls in, matched using
+      a point inside the parcel boundary where one is available.
+    limits: >-
+      A point screen. Another part of the lot can cross a zone boundary. FEMA maps
+      river flooding, not the flash and basement flooding common on Pittsburgh hillsides.
+
+  site.combined_sewershed:
+    title: Combined sewershed
+    how: >-
+      Which PWSA combined sewershed (2018 boundaries) the lot falls in, meaning
+      stormwater and sewage share the same pipes downstream.
+    limits: Says nothing about pipe capacity, condition or overflow frequency. Ask PWSA for a capacity letter.
+
+  lot.shape:
+    title: Frontage × depth
+    how: >-
+      Width along the street and depth, used to fit buildings on the lot. Taken
+      from the deed legal description ("LOT 30X100") when it agrees with the
+      assessed area. Otherwise the lot is drawn from its area and a typical
+      depth-to-width ratio.
+    formula: >-
+      observed if 0.6 ≤ (frontage × depth) / lot_area ≤ 1.6;
+      else frontage = √(lot_area / lot_depth_to_frontage_ratio)
+    limits: Irregular, corner and flag lots are drawn as rectangles.
+
+  # --- Criteria (scored) --------------------------------------------------------
+  demand.units_serving_need:
+    title: Serves local housing need
+    how: >-
+      Roughly how many of the new homes land where the need is: homes, times the
+      share of nearby renters who are cost-burdened, times how affordable one
+      home is to a typical nearby household (capped at 1).
+    formula: homes × renter_cost_burden × min(1, tract_median_income / income_needed)
+    limits: >-
+      Compatibility, not a finding about what the neighborhood needs. It doesn't
+      model who actually moves in.
+
+  feasibility.zoning_score:
+    title: Zoning path
+    how: >-
+      How hard the approval path is under Title Nine, as a 0–1 score: by right
+      scores highest, then administrator exception, special exception,
+      conditional use and variance. A use the code prohibits is removed from the
+      ranking before any weights are applied.
+    formula: zoning_status_score[status]
+    limits: >-
+      The mapping from path to score is our judgment, not the City's. Where no
+      rule covers the district, the range spans every possible outcome.
+
+  affordability.ami_needed_pct:
+    title: Income needed
+    how: >-
+      The household income, as a share of area median, needed to cover one home's
+      monthly cost while spending 30% of income on housing, with no subsidy.
+    formula: >-
+      monthly_cost × 12 / housing_cost_share / ami_4person × 100
+    limits: >-
+      No subsidy, tax credit or below-market land is modeled, so this is the
+      unsubsidized ceiling. Work backwards shows the gap to a target income.
+
+  affordability.monthly_cost:
+    title: Monthly cost per home
+    how: >-
+      What each home must bring in per month to cover its share of development
+      cost (spread over time at a yearly capital rate) plus operating costs.
+    formula: >-
+      dev_cost_per_home × annual_capital_cost_share / 12 + operating_cost_per_unit_month
+    limits: A cost-recovery rent, not a market rent or an appraised value.
+
+  affordability.dev_cost_per_unit:
+    title: Development cost per home
+    how: >-
+      Hard cost from HUD's 2024 Pittsburgh construction-cost limits, plus soft
+      costs, any hillside site allowance, and the assessed land value, divided by
+      the number of homes.
+    formula: >-
+      (homes × unit_size_sf × hard_cost_psf × (1 + soft_cost_share + site_share) + land_value) / homes
+    limits: HUD limits are caps for publicly funded housing, a benchmark rather than a bid.
+
+  affordability_gap.share_above_local_rents:
+    title: Share priced above nearby renter incomes
+    how: >-
+      How far one home's required income sits above what a typical nearby
+      household earns, as a share: 0% means affordable at the tract median, and
+      higher means further out of reach.
+    formula: 1 − min(1, tract_median_income / income_needed)
+    limits: >-
+      A pressure indicator, not a count of displaced households. Estimating
+      displacement needs longitudinal data and a causal method we don't have.
+
+  infrastructure.load_index:
+    title: Strain on infrastructure
+    how: >-
+      A relative load index: more homes, site hazards and a more stressed
+      sewershed all raise it.
+    formula: homes × (1 + Σ infrastructure_hazard_weight of flags present) × sewer_stress
+    limits: >-
+      Proximity is not capacity. This is a relative screen, not an engineering
+      estimate of pipe or road capacity.
+
+  carbon.per_household_horizon:
+    title: Carbon per household
+    how: >-
+      Whole-life carbon for one home over the analysis horizon: materials to build
+      it (year 0), then yearly home energy on a decarbonizing PA grid, plus car
+      travel scaled by transit access.
+    formula: >-
+      embodied + Σ_years [ kWh × grid × (1 − decarb)^(y−1) + vmt / jobs_access × kgCO2e_per_mile ]
+    limits: >-
+      Most inputs are placeholders. Compare options against each other rather
+      than reading the tonnes as absolute.
+
+  carbon.embodied_per_household:
+    title: Upfront carbon per household
+    how: Carbon emitted making and installing the building's materials, per home, before anyone moves in.
+    formula: embodied_kgco2e_psf × unit_size_sf / 1000
+    limits: Covers life-cycle stages A1–A5 only. Demolition and end-of-life are not counted.
+
+  units.count:
+    title: Homes
+    how: >-
+      How many of this housing type's buildings fit side by side along the
+      frontage, times the homes in each building.
+    formula: min(max_in_a_row, floor(frontage / footprint_width)) × homes_per_building
+    limits: A geometric screen, not a design. It ignores access, parking and topography.
+
+  # --- Not single metrics -------------------------------------------------------
+  zoning.status:
+    title: Zoning status and citations
+    how: >-
+      Rules were extracted by AI from the Pittsburgh Zoning Code (Title Nine).
+      Each rule is kept only if its quote appears word for word in the saved code
+      text. The use rule sets the approval path; lot area, lot area per home and
+      height rules are checked against this lot. A prohibited use leaves the
+      ranking, whatever the weights.
+    limits: >-
+      AI-extracted rules are not checked by a planner unless marked reviewed.
+      Overlays, conditions on a use and site-plan review are not applied.
+      Confirm with the Department of City Planning.
+
+  households.check:
+    title: Could this household afford it?
+    how: >-
+      Each illustrative household's income is area median × their HUD household-size
+      factor × their income tier. They can afford 30% of that per month. Yes means
+      that covers the high end of the monthly cost range; No means it falls below
+      the low end; Maybe is anything in between.
+    formula: >-
+      affordable = ami_4person × household_size_factor × ami_pct × housing_cost_share / 12
+    limits: Households are illustrative, not real people. Tenure and commute are not used in the verdict yet.
+
+  carbon.series:
+    title: Carbon over time
+    how: >-
+      Each line starts at the embodied carbon of building one home, then adds a
+      year of home energy and travel at a time. Where two lines cross, the option
+      that cost more to build has paid back its extra carbon.
+    formula: >-
+      year 0: embodied; year y: + kWh × grid × (1 − decarb)^(y−1) + vmt / jobs_access × kgCO2e_per_mile
+    limits: >-
+      Grid decarbonization, travel and embodied carbon are placeholders. The shape
+      of the lines is more reliable than the tonnes.
+
+  backwards.subsidy_gap:
+    title: Subsidy gap per home
+    how: >-
+      The monthly gap between the home's cost and what a household at the target
+      income can pay (30% of income), turned back into an up-front amount at the
+      same yearly capital rate.
+    formula: >-
+      max(0, monthly_cost − ami_4person × target_pct × housing_cost_share / 12) × 12 / annual_capital_cost_share
+    limits: Doesn't model any specific program's per-home limits, compliance period or layering rules.

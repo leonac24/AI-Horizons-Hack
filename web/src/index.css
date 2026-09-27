@@ -443,6 +443,33 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 .help-pop-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 700 14px var(--display); }
 .help-x { background: none; border: none; color: var(--ink-3); font: 700 18px/1 var(--display); cursor: pointer; padding: 0 2px; }
 .help-x:hover { color: var(--ink); }
+/* (i): where a number comes from */
+.info-tip {
+  display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 6px; padding: 0; vertical-align: 2px;
+  border-radius: 50%; border: 2px solid var(--border); background: var(--inset); color: var(--ink-2); font: italic 700 11px/1 Georgia, serif;
+  cursor: pointer; flex-shrink: 0; text-transform: none; letter-spacing: 0;
+}
+.info-tip:hover, .info-tip.on { border-color: var(--info); color: var(--info); }
+.info-tip:focus-visible { outline: 2px solid var(--info); outline-offset: 1px; }
+.info-pop {
+  position: fixed; z-index: 40; width: min(380px, calc(100vw - 24px)); max-height: min(70vh, 560px); overflow-y: auto;
+  padding: 10px 12px 12px; background: var(--card); color: var(--ink); text-align: left; text-transform: none; letter-spacing: 0;
+  border: 2px solid var(--info); border-bottom-width: 4px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); font: 600 13px/1.45 var(--ui);
+}
+.info-pop p { margin: 4px 0 0; color: var(--ink-2); }
+.info-pop .help-pop-head .grow { flex: 1; }
+.info-value { margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: var(--inset); }
+.info-values { color: var(--values-light) !important; }
+.info-sec { margin-top: 10px; padding-bottom: 2px; border-bottom: 1px solid var(--border); font: 700 10.5px var(--display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); }
+.info-formula { display: block; margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: var(--inset); color: var(--ink); font: 500 11.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.info-input { border-bottom: 1px dashed var(--border); padding: 3px 0; }
+.info-input summary { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12.5px; list-style: none; }
+.info-input summary::-webkit-details-marker { display: none; }
+.info-input summary .grow { flex: 1; }
+.info-input summary .num { white-space: nowrap; }
+.info-source { margin-top: 5px; }
+.info-quote { margin: 4px 0 0; padding-left: 8px; border-left: 3px solid var(--border); color: var(--ink-2); font-style: italic; }
+.info-limits { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--amber); color: var(--ink-2) !important; }
 .help-btn { width: 32px; height: 32px; padding: 0; border-radius: 50%; font: 700 15px/1 var(--display); flex-shrink: 0; }
 
 /* Walk-through */

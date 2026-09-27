@@ -271,6 +271,8 @@ class Range(_Model):
 
 
 class Assumption(_Model):
+    # Plain name shown where a number lists what it was computed from.
+    label: str | None = None
     value: float
     low: float
     high: float
@@ -615,6 +617,16 @@ class NextStepsConfig(_Model):
         return self
 
 
+# --- methods.yaml ---------------------------------------------------------------
+class Method(_Model):
+    """How one number is made, shown behind its (i) button."""
+
+    title: str
+    how: str
+    formula: str | None = None
+    limits: str | None = None
+
+
 class Config(_Model):
     app: AppConfig
     city: _Open
@@ -627,6 +639,7 @@ class Config(_Model):
     sources: SourcesConfig
     inquiries: InquiriesConfig
     next_steps: NextStepsConfig
+    methods: dict[str, Method]
     hash: str = ""
 
     @model_validator(mode="after")
@@ -646,6 +659,9 @@ class Config(_Model):
                 errors.append(f"stakeholder {p.id!r}: negative weight")
 
         _unique("criterion metric_id", [c.metric_id for c in self.criteria], errors)
+        for c in self.criteria:
+            if c.metric_id not in self.methods:
+                errors.append(f"criterion {c.id!r}: no methods.yaml entry for {c.metric_id!r}")
 
         use_keys = set(self.zoning.extraction_targets.use_keys)
         typ_ids = {t.id for t in self.typologies}
@@ -814,6 +830,7 @@ _FILES = {
     "sources": "sources.yaml",
     "inquiries": "inquiries.yaml",
     "next_steps": "next_steps.yaml",
+    "methods": "methods.yaml",
 }
 
 
@@ -833,7 +850,7 @@ def load_config(config_dir: Path | str = DEFAULT_CONFIG_DIR) -> Config:
         except yaml.YAMLError as e:
             raise ConfigError(f"{path}: invalid YAML: {e}") from e
         # Some files wrap their list in a same-named key.
-        if key in ("typologies", "criteria", "assumptions") and isinstance(data, dict):
+        if key in ("typologies", "criteria", "assumptions", "methods") and isinstance(data, dict):
             data = data.get(key, data)
         raw[key] = data
     digest = hashlib.sha256(json.dumps(raw, sort_keys=True, default=str).encode()).hexdigest()[:12]

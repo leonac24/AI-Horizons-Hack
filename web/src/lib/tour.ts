@@ -1,8 +1,11 @@
 import { createContext } from 'react'
-import type { TourChapter } from '../types'
+import type { Config, TourChapter } from '../types'
 
 /** Text for the small ? buttons, from `app.yaml: help`. */
 export const HelpContext = createContext<Record<string, { title: string; body: string }>>({})
+
+/** The served config, so an (i) anywhere can look up methods, assumptions and sources. */
+export const ConfigContext = createContext<Config | null>(null)
 
 // --- which tutorial chapters this browser has already seen ---------------------
 

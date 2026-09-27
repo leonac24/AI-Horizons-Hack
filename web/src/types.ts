@@ -14,6 +14,8 @@ export interface Metric {
   provenance: Provenance
   sourceIds: string[]
   note?: string | null
+  /** Assumption ids (keys into Config.assumptions) this number was computed from. */
+  dependsOn?: string[]
 }
 
 export interface SiteFact {
@@ -83,6 +85,26 @@ export interface Source {
   note?: string | null
 }
 
+export interface Assumption {
+  label: string | null
+  value: number
+  low: number
+  high: number
+  unit: string
+  provenance: Provenance
+  source: string | null
+  rationale: string
+  by_typology: Record<string, { value: number; low: number; high: number }> | null
+}
+
+/** How one number is made (data/config/methods.yaml), shown behind its (i) button. */
+export interface Method {
+  title: string
+  how: string
+  formula: string | null
+  limits: string | null
+}
+
 export interface Config {
   app: {
     name: string
@@ -120,7 +142,7 @@ export interface Config {
   }
   zoning: {
     statuses: Record<string, { label: string; role: 'permitted' | 'staff_review' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
-    code: { name: string; url: string; citation_format: string }
+    code: { name: string; url: string; citation_format: string; source: string }
     district_colors: { prefix: string; color: string }[]
   }
   typologies: Typology[]
@@ -128,7 +150,8 @@ export interface Config {
   households: { households: Household[]; destinations: Record<string, { label: string }> }
   stakeholders: { profiles: StakeholderProfile[] }
   sources: { sources: Record<string, Source> }
-  assumptions: Record<string, { value: number; low: number; high: number; unit: string; provenance: Provenance; source: string | null; rationale: string }>
+  assumptions: Record<string, Assumption>
+  methods: Record<string, Method>
   hash: string
 }
 
