@@ -83,6 +83,8 @@ export interface Engine {
   setShowPlan(v: boolean): void
   setVisibleParcels(ids: Set<string> | null): void
   setPins(pins: PinLot[]): void
+  /** City view only: fly the camera so these lots fill the screen. */
+  frameLots(lots: { lon: number; lat: number }[]): void
   beginDrag(typ: string, e?: PointerLike): void
   rotateSelected(): void
   deleteSelected(): void
@@ -1156,6 +1158,18 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     setPins(list) {
       pinList = list
       renderPins()
+    },
+    frameLots(list) {
+      if (mode !== 'city' || !list.length) return
+      const xz = list.map((l) => toXZ(l.lon, l.lat))
+      const xs = xz.map((p) => p[0])
+      const zs = xz.map((p) => p[1])
+      const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+      const cz = (Math.min(...zs) + Math.max(...zs)) / 2
+      // Far enough to see the spread, never so close that one lot fills the screen.
+      const r = Math.min(Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) * 1.2, 1000)
+      const d = Math.max(r, 180)
+      void flyTo([cx + d * 0.35, d * 0.8, cz + d * 0.8], [cx, 0, cz], 1100)
     },
     beginDrag(typ, e) {
       if (mode !== 'lot' || !showPlan) return
