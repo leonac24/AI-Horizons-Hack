@@ -80,3 +80,13 @@ def test_extra_sentences_truncated_not_rejected(cfg, lot):
     mid = payload["scenarios"][0]["metrics"][0]["id"]
     out = {"sentences": [{"text": "Ranks first.", "metric_ids": [mid]}] * 10}
     assert len(validate(payload, out, 6)) == 6
+
+
+def test_numbers_inside_non_ascii_labels_are_allowed(cfg, lot):
+    """A label like "Small apartment building (3–12)" uses an en dash. JSON-escaping
+    it to \\u2013 used to glue the digits together, so "12" read as invented."""
+    _a, _ranking, payload = _setup(cfg, lot)
+    payload["scenarios"][0]["housing_type"] = "Small apartment building (3–12)"
+    mid = payload["scenarios"][0]["metrics"][0]["id"]
+    out = {"sentences": [{"text": "Small apartment building (3–12) ranks first.", "metric_ids": [mid]}]}
+    assert validate(payload, out, 6)
