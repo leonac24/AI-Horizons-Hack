@@ -123,6 +123,8 @@ class TutorialStep(_Model):
 
     title: str
     body: str
+    # Wording for touch screens, when `body` talks about a mouse or keys.
+    touch_body: str | None = None
     target: str | None = None
 
 
@@ -154,6 +156,8 @@ class HelpTip(_Model):
 
     title: str
     body: str
+    # Wording for touch screens, when `body` talks about a mouse or keys.
+    touch_body: str | None = None
 
 
 class AppConfig(_Model):

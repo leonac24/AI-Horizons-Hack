@@ -140,7 +140,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px rgba(255, 255, 255, 0.9);
 }
 .pin-detail { display: none; color: var(--ink-2); font: 500 11px/1.3 var(--display); }
-.pin-label:hover .pin-detail { display: block; }
 
 /* City panel */
 .city-panel {
@@ -168,7 +167,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   text-align: left; background: var(--card); border: 2px solid var(--border); border-bottom-width: 4px; color: var(--ink); padding: 9px 11px;
   border-radius: 11px; cursor: pointer; display: flex; flex-direction: column; gap: 3px;
 }
-.lot-card:hover { border-color: var(--lime); background: var(--card-hover); }
 .lc-top { display: flex; justify-content: space-between; gap: 8px; }
 .lc-name { font: 600 15px var(--display); }
 .lc-zone { font: 600 11.5px var(--display); color: #fff; padding: 1px 8px; border-radius: 999px; }
@@ -212,7 +210,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   position: relative; width: 138px; flex-shrink: 0; padding: 6px 6px 8px; border: 2px solid var(--border); border-bottom-width: 5px;
   border-radius: 12px; background: var(--card); cursor: grab; touch-action: none; display: flex; flex-direction: column; gap: 4px; transition: transform 0.12s;
 }
-.pal-card:hover { border-color: var(--typ, var(--lime)); transform: translateY(-3px); }
 .pal-swatch { height: 48px; display: flex; align-items: flex-end; justify-content: center; border-radius: 11px; padding-bottom: 5px; }
 .pal-swatch div { border-radius: 3px; }
 .pal-name { font: 600 14px/1.15 var(--display); padding: 0 3px; }
@@ -501,7 +498,7 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   background: var(--card); border: 2px solid var(--border); border-radius: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 .bar-menu .bar-actions { flex-direction: column; align-items: stretch; }
-.narrow .city-panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 56vh; }
+.narrow .city-panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 56vh; max-height: 56dvh; }
 .narrow .city-panel.tucked { bottom: 8px; }
 .narrow .hint-pill { display: none; }
 .narrow .gauge { min-width: 0; padding: 5px 8px; gap: 6px; }
@@ -514,3 +511,36 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 .narrow .pal-swatch { height: 36px; }
 .narrow .inspector { width: auto; right: 8px; }
 .narrow .compare-grid { grid-template-columns: minmax(0, 1fr); }
+
+/* Hover effects only where there is hover: on touch they stick after a tap */
+@media (hover: hover) {
+  .pin-label:hover .pin-detail { display: block; }
+  .lot-card:hover { border-color: var(--lime); background: var(--card-hover); }
+  .pal-card:hover { border-color: var(--typ, var(--lime)); transform: translateY(-3px); }
+}
+
+/* Touch screens: finger-sized targets, no double-tap zoom, no iOS zoom on focus */
+@media (pointer: coarse) {
+  button, a, input, select, label { touch-action: manipulation; }
+  input, select, textarea { font-size: 16px; }
+  .viewport { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  /* Swipe sideways to scroll the palette; pull a card up to drag it onto the lot. */
+  .pal-card { touch-action: pan-x; }
+  .help-tip { width: 26px; height: 26px; font-size: 13px; position: relative; }
+  .help-tip::after { content: ''; position: absolute; inset: -8px; }
+  .help-x { padding: 6px 10px; font-size: 22px; }
+  .help-btn { width: 40px; height: 40px; }
+  .tuck-btn { min-height: 38px; min-width: 42px; justify-content: center; }
+  .build-head .tuck-btn { min-height: 30px; }
+  .go-btn, .ghost-btn, .stop-btn, .tabs button { min-height: 40px; }
+  .seg button { min-height: 36px; padding: 6px 14px; }
+  input[type='checkbox'] { width: 20px; height: 20px; }
+  .cp-checks label { grid-template-columns: 26px minmax(0, 1fr); padding: 4px 0; }
+  input[type='range'] { height: 28px; }
+  .lot-card { padding: 11px 12px; }
+  .pin-label { padding: 6px 11px; }
+}
+
+.narrow .memo-backdrop { padding: 8px; }
+.narrow #lotline-memo { padding: 16px 18px; }
+

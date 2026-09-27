@@ -107,6 +107,9 @@ tutorial:
         body: >-
           Every dot on the map is a vacant lot. Drag to orbit, right-drag to
           pan, scroll to zoom. Click any lot to zoom in on it.
+        touch_body: >-
+          Every dot on the map is a vacant lot. Drag one finger to orbit, pinch
+          to zoom, drag two fingers to pan. Tap any lot to zoom in on it.
       - target: ai-search
         title: Describe what you're looking for
         body: >-
@@ -128,6 +131,10 @@ tutorial:
           These are spread across neighborhoods, zoning districts and site
           conditions so you can see variety. They are starting points, not
           recommendations. Click one to open it.
+        touch_body: >-
+          These are spread across neighborhoods, zoning districts and site
+          conditions so you can see variety. They are starting points, not
+          recommendations. Tap one to open it.
       - target: help-button
         title: Stuck? Look for the ?
         body: >-
@@ -144,6 +151,10 @@ tutorial:
           Drag a housing type onto the outlined lot. Cards marked "too big"
           don't fit this lot's shape. Select a building to rotate (R) or
           delete it (Del).
+        touch_body: >-
+          Tap a housing type to add it to the lot, or drag it up onto the lot
+          to place it yourself. Cards marked "too big" don't fit this lot's
+          shape. Tap a building to rotate or delete it.
       - target: hud
         title: Your scoreboard
         body: >-
@@ -181,6 +192,9 @@ tutorial:
         body: >-
           Decision support only. Confirm with the City of Pittsburgh Department
           of City Planning. Click ? next to any heading if you need a hand.
+        touch_body: >-
+          Decision support only. Confirm with the City of Pittsburgh Department
+          of City Planning. Tap ? next to any heading if you need a hand.
 
 # Every panel has a ▾ button that tucks it away to its header. The browser
 # remembers the choice under `storage_key`. At or below `narrow_max_px` wide
@@ -196,6 +210,9 @@ help:
     title: Picking a lot
     body: >-
       Click any dot on the map, search an address or parcel ID, or start from a
+      suggested lot. Every vacant lot inside City of Pittsburgh limits works.
+    touch_body: >-
+      Tap any dot on the map, search an address or parcel ID, or start from a
       suggested lot. Every vacant lot inside City of Pittsburgh limits works.
   ai_search:
     title: AI lot search
@@ -230,11 +247,20 @@ help:
       Drag a card onto the lot. Each card shows homes per building, stories and
       footprint. A building turns red when it is off the lot, overlapping
       another, or crossing a setback.
+    touch_body: >-
+      Tap a card to add that building to the lot, or drag it up onto the lot.
+      Each card shows homes per building, stories and footprint. A building
+      turns red when it is off the lot, overlapping another, or crossing a
+      setback.
   plan_controls:
     title: Plan controls
     body: >-
       Before shows the lot today; After shows your plan. Undo and redo step
       through your edits (Ctrl/⌘ Z). Clear lot removes every building.
+    touch_body: >-
+      Before shows the lot today; After shows your plan. Undo and redo step
+      through your edits. Clear lot removes every building. On a phone these
+      are under Tools.
   your_plan:
     title: Your plan
     body: >-

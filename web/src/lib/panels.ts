@@ -36,18 +36,3 @@ export function usePanels(key: string | null, defaults: Tucked) {
   }
   return { isTucked, toggle }
 }
-
-/** True while the window is at most `px` wide. */
-export function useNarrow(px: number | null): boolean {
-  const query = px ? `(max-width: ${px}px)` : null
-  const [narrow, setNarrow] = useState(() => !!query && window.matchMedia(query).matches)
-  useEffect(() => {
-    if (!query) return
-    const mq = window.matchMedia(query)
-    const on = () => setNarrow(mq.matches)
-    on()
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [query])
-  return narrow
-}
