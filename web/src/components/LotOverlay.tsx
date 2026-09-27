@@ -4,6 +4,7 @@ import type { Placement } from '../three/engine'
 import type { Analysis, Config } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
 import { HelpTip } from './help'
+import { TuckButton } from './ui'
 
 type L = Record<string, string>
 
@@ -18,6 +19,8 @@ export function Hud(p: {
   wbAmi: number
   showPlan: boolean
   empty: boolean
+  open: boolean
+  onToggle: () => void
 }) {
   const { config, plan, ranking } = p
   const idx = plan ? ranking.ranked.findIndex((o) => o.id === PLAN_ID) : -1
@@ -28,27 +31,37 @@ export function Hud(p: {
   const short = p.profileLabel.length > 16 ? p.profileLabel.slice(0, 15) + '…' : p.profileLabel
   return (
     <div className="hud" style={{ left: p.L.hudLeft, maxWidth: p.L.hudMax }}>
-      <div className="hud-row" data-tour="hud">
-        <Gauge tile="green" label="Homes" value={String(plan?.units ?? 0)} color="#2fd06b" />
-        <div className="gauge wide">
-          <div className="gauge-tile blue" />
-          <div>
-            <div className="eyebrow">Zoning · {p.analysis.parcel.zoning ?? '—'}</div>
-            <div className="gauge-text" style={{ color: zColor }}>
-              {plan ? plan.zoning.status_label : 'Nothing placed yet'}
+      {!p.open && (
+        <div className="hud-row" data-tour="hud">
+          <TuckButton open={false} onToggle={p.onToggle} label="plan stats" text="Plan stats" />
+        </div>
+      )}
+      {p.open && (
+        <>
+        <div className="hud-row" data-tour="hud">
+          <TuckButton open onToggle={p.onToggle} label="plan stats" />
+          <Gauge tile="green" label="Homes" value={String(plan?.units ?? 0)} color="#2fd06b" />
+          <div className="gauge wide">
+            <div className="gauge-tile blue" />
+            <div>
+              <div className="eyebrow">Zoning · {p.analysis.parcel.zoning ?? '—'}</div>
+              <div className="gauge-text" style={{ color: zColor }}>
+                {plan ? plan.zoning.status_label : 'Nothing placed yet'}
+              </div>
             </div>
           </div>
+          <Gauge tile="pink" label={`Rank · ${short}`} value={rank} labelColor="#ff4fa8" />
+          <Gauge tile="teal" label={`CO₂e / hh · yr ${p.year}`} value={carbon} />
+          <Gauge tile="amber" label={`Gap / home · ${p.wbAmi}% AMI`} value={gap} />
+          <span className="hud-help"><HelpTip id="hud" /></span>
         </div>
-        <Gauge tile="pink" label={`Rank · ${short}`} value={rank} labelColor="#ff4fa8" />
-        <Gauge tile="teal" label={`CO₂e / hh · yr ${p.year}`} value={carbon} />
-        <Gauge tile="amber" label={`Gap / home · ${p.wbAmi}% AMI`} value={gap} />
-        <span className="hud-help"><HelpTip id="hud" /></span>
-      </div>
-      {p.empty && p.showPlan && <div className="hud-note lime">Drag a building from the palette onto the outlined lot. R rotates · Del removes.</div>}
-      {!p.showPlan && <div className="hud-note info">Before: the lot as it is today. Switch to After to edit your plan.</div>}
-      <div className={`hud-note shape prov-${p.analysis.lot_shape.provenance}`}>
-        Lot {Math.round(p.analysis.lot_shape.frontage_ft)} × {Math.round(p.analysis.lot_shape.depth_ft)} ft — {p.analysis.lot_shape.note} Neighbors are illustrative.
-      </div>
+        {p.empty && p.showPlan && <div className="hud-note lime">Drag a building from the palette onto the outlined lot. R rotates · Del removes.</div>}
+        {!p.showPlan && <div className="hud-note info">Before: the lot as it is today. Switch to After to edit your plan.</div>}
+        <div className={`hud-note shape prov-${p.analysis.lot_shape.provenance}`}>
+          Lot {Math.round(p.analysis.lot_shape.frontage_ft)} × {Math.round(p.analysis.lot_shape.depth_ft)} ft — {p.analysis.lot_shape.note} Neighbors are illustrative.
+        </div>
+        </>
+      )}
     </div>
   )
 }
@@ -76,6 +89,8 @@ export function Palette(p: {
   counts: Record<string, number>
   onDown: (id: string, e: RPointerEvent) => void
   onHeight?: (px: number) => void
+  open: boolean
+  onToggle: () => void
 }) {
   const { L, onHeight } = p
   const box = useRef<HTMLDivElement>(null)
@@ -94,15 +109,16 @@ export function Palette(p: {
   return (
     <div
       ref={box}
-      className="palette"
+      className={`palette${p.open ? '' : ' tucked'}`}
       data-tour="palette"
       style={{ left: L.palLeft, right: L.palRight, top: L.palTop, bottom: L.palBottom, flexDirection: L.palDir as 'row' | 'column', maxWidth: L.palMax, maxHeight: L.palMaxH }}
     >
       <div className="build-head">
         <span className="build-tag">BUILD</span>
         <HelpTip id="palette" />
+        <TuckButton open={p.open} onToggle={p.onToggle} label="the building palette" />
       </div>
-      {p.config.typologies.map((t) => {
+      {p.open && p.config.typologies.map((t) => {
         const s = p.analysis.scenarios.find((x) => x.typology_id === t.id)
         const fits = s?.form_fits ?? false
         const [w, d] = t.building.footprint_ft

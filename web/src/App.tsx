@@ -8,6 +8,7 @@ import { CityPanel, type Filters } from './components/CityPanel'
 import { Intro } from './components/Intro'
 import { Tour } from './components/help'
 import { HelpContext, readSeen, writeSeen } from './lib/tour'
+import { type PanelId, useNarrow, usePanels } from './lib/panels'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
 import { MemoModal } from './components/MemoModal'
 import { TopBar } from './components/TopBar'
@@ -30,6 +31,9 @@ export type ParcelFeature = GeoJSON.Feature<GeoJSON.Point, PointProps>
 
 // Where the viewport, HUD, palette, inspector and panel sit.
 const L: Record<string, string> = { vpRight: '0px', vpBottom: '0px', hudLeft: '16px', hudMax: 'calc(100% - 458px)', palLeft: '16px', palRight: 'auto', palTop: 'auto', palBottom: '16px', palDir: 'row', palMax: 'calc(100% - 458px)', palMaxH: 'none', pTop: '90px', pRight: '16px', pBottom: '16px', pLeft: 'auto', pWidth: '410px', pHeight: 'auto', pRadius: '10px', inspLeft: '16px', inspBottom: '150px' }
+// Phone width: the panel is a bottom sheet, the palette sits just above it
+// (its bottom is set from the sheet's measured height) and the HUD spans the top.
+const L_NARROW: Record<string, string> = { ...L, hudLeft: '8px', hudMax: 'calc(100% - 16px)', palLeft: '8px', palRight: '8px', palBottom: '8px', palMax: 'none', pTop: 'auto', pRight: '8px', pBottom: '8px', pLeft: '8px', pWidth: 'auto', pHeight: 'min(48vh, 460px)', pRadius: '14px', inspLeft: '8px' }
 
 export default function App() {
   const [config, setConfig] = useState<Config | null>(null)
@@ -66,10 +70,14 @@ export default function App() {
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
   const [palH, setPalH] = useState(0)
+  const [panH, setPanH] = useState(0)
   const [ready, setReady] = useState(false)
   const [entered, setEntered] = useState(false)
   const [introDone, setIntroDone] = useState(false)
   const [tour, setTour] = useState<TourChapter | null>(null)
+  const narrow = useNarrow(config?.app.panels.narrow_max_px ?? null)
+  // On a phone the HUD starts tucked (its numbers are also on Compare) so the palette fits.
+  const panels = usePanels(config?.app.panels.storage_key ?? null, narrow ? { hud: true } : {})
   const vp = useRef<HTMLDivElement>(null)
   const engine = useRef<Engine | null>(null)
   const placementsRef = useRef<Placement[]>([])
@@ -298,7 +306,10 @@ export default function App() {
 
   if (!config) return <Intro app={null} ready={false} leaving={false} error={error} onEnter={() => {}} />
   // Bottom-tray layout: stack the inspector above the palette's measured height.
-  const lotL = L.palDir === 'row' && palH ? { ...L, inspBottom: `calc(${L.palBottom} + ${palH + 12}px)` } : L
+  const base = narrow ? { ...L_NARROW, palBottom: `calc(${L_NARROW.pBottom} + ${panH + 8}px)` } : L
+  const lotL = base.palDir === 'row' && palH ? { ...base, inspBottom: `calc(${base.palBottom} + ${palH + 12}px)` } : base
+  // The tour points into panels, so it shows them all while it runs.
+  const isOpen = (id: PanelId) => !!tour || !panels.isTucked(id)
   const runAiSearch = (q: string) => {
     setAiLoading(true)
     setAiError(null)
@@ -330,7 +341,7 @@ export default function App() {
 
   return (
     <HelpContext.Provider value={config.app.help}>
-    <div className={`shell${entered ? '' : ' pre-intro'}`}>
+    <div className={`shell${entered ? '' : ' pre-intro'}${narrow ? ' narrow' : ''}`}>
       <div ref={vp} className="viewport" style={{ right: lotL.vpRight, bottom: mode === 'lot' ? lotL.vpBottom : '0px' }} />
       <TopBar
         mode={mode}
@@ -358,6 +369,8 @@ export default function App() {
         }}
         onHelp={() => setTour(mode)}
         disclaimer={config.app.disclaimer}
+        narrow={narrow}
+        menuOpen={tour === 'lot'}
       />
       {error && <div className="error-toast">{error}</div>}
       {toast && (
@@ -393,6 +406,8 @@ export default function App() {
             />
           }
           onOpen={openLot}
+          open={isOpen('city')}
+          onToggle={() => panels.toggle('city')}
         />
       )}
       {mode === 'lot' && analysis && ranking && (
@@ -408,8 +423,10 @@ export default function App() {
             wbAmi={wb.ami}
             showPlan={showPlan}
             empty={!placements.length}
+            open={isOpen('hud')}
+            onToggle={() => panels.toggle('hud')}
           />
-          <Palette config={config} L={lotL} analysis={analysis} counts={countsOf(placements)} onDown={(id, e) => engine.current?.beginDrag(id, e)} onHeight={setPalH} />
+          <Palette config={config} L={lotL} analysis={analysis} counts={countsOf(placements)} onDown={(id, e) => engine.current?.beginDrag(id, e)} onHeight={setPalH} open={isOpen('palette')} onToggle={() => panels.toggle('palette')} />
           {sel && showPlan && (
             <Inspector
               config={config}
@@ -438,6 +455,9 @@ export default function App() {
             onPlace={place}
             envelope={envelope}
             crossings={crossings}
+            open={isOpen('analysis')}
+            onToggle={() => panels.toggle('analysis')}
+            onHeight={setPanH}
           />
         </>
       )}

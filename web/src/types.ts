@@ -102,6 +102,7 @@ export interface Config {
     evidence: { topics: Record<string, { label: string; listed: boolean }> }
     ask: { search_example: string; examples: string[] }
     tutorial: { storage_key: string; chapters: Partial<Record<TourChapter, TourStep[]>> }
+    panels: { storage_key: string; narrow_max_px: number }
     help: Record<string, { title: string; body: string }>
   }
   city: {

@@ -141,6 +141,14 @@ class TutorialSettings(_Model):
         return self
 
 
+class PanelSettings(_Model):
+    # Where the browser remembers which panels someone tucked away.
+    storage_key: str = Field(min_length=1)
+    # At or below this window width the panels become full-width sheets and the
+    # top bar's actions move into a dropdown.
+    narrow_max_px: int = Field(ge=320, le=1600)
+
+
 class HelpTip(_Model):
     """Text behind one of the small ? buttons."""
 
@@ -160,6 +168,7 @@ class AppConfig(_Model):
     ask: AskSettings
     evidence: EvidenceSettings
     tutorial: TutorialSettings
+    panels: PanelSettings
     help: dict[str, HelpTip] = Field(default_factory=dict)
 
 
