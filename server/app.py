@@ -170,8 +170,9 @@ ParcelId = Field(**_PID)
 @api.get("/health", summary="Liveness plus what this instance loaded")
 def health() -> dict:
     cfg = get_config()
+    provider = get_provider()
     return {"ok": True, "config_hash": cfg.hash, "parcels": len(_index()["parcels"]),
-            "llm": get_provider().name}
+            "llm": provider.name, "llm_note": getattr(provider, "reason", None)}
 
 
 @api.get("/config", summary="Labels, criteria, typologies and assumptions for the UI")

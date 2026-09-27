@@ -44,3 +44,7 @@ smaa:
   profile_concentration: 40
 explanation:
   max_sentences: 6
+  # Restating given numbers is light work; low effort keeps the click responsive.
+  effort: low
+  timeout_s: 30
+  max_tokens: 4000

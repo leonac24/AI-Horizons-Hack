@@ -25,7 +25,7 @@ import yaml
 from pydantic import BaseModel, Field, ValidationError
 
 from core.config import ROOT, Config, load_config
-from server.llm import GeminiProvider, LLMUnavailable
+from server.llm import DEFAULT_MODEL, AnthropicProvider, LLMUnavailable
 
 log = logging.getLogger("zoning")
 
@@ -52,26 +52,49 @@ class DistrictRules(BaseModel):
 SYSTEM = """You extract zoning rules from the Pittsburgh Zoning Code text provided.
 Use ONLY the provided text. If a rule is not stated for the district, omit it.
 Every rule needs: code_section (e.g. "911.02"), a verbatim quote of at most 25 words
-copied exactly from the text, and confidence 0-1. Return JSON only."""
+copied exactly from the text, and confidence 0-1."""
 
 
 def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
-def extract_district(cfg: Config, provider: GeminiProvider, district: str, text: str, model: str) -> DistrictRules:
+STATUSES = ["by_right", "special_exception", "conditional_use", "not_permitted"]
+
+
+def _schema(cfg: Config) -> dict:
+    """Structured-output schema. Keys are enums from zoning.yaml, so the model
+    cannot invent a use or rule the app doesn't know about."""
+    t = cfg.zoning.extraction_targets
+
+    def rows(key: str, keys: list[str], value: dict) -> dict:
+        props = {key: {"type": "string", "enum": keys}, **value,
+                 "code_section": {"type": "string"}, "quote": {"type": "string"},
+                 "confidence": {"type": "number"}}
+        return {"type": "array", "items": {"type": "object", "properties": props,
+                                           "required": list(props), "additionalProperties": False}}
+
+    return {"type": "object",
+            "properties": {"uses": rows("use_key", list(t.use_keys), {"status": {"type": "string", "enum": STATUSES}}),
+                           "dimensional": rows("rule_id", list(t.dimensional), {"value": {"type": "number"}})},
+            "required": ["uses", "dimensional"], "additionalProperties": False}
+
+
+def extract_district(cfg: Config, provider: AnthropicProvider, district: str, text: str, model: str) -> DistrictRules:
     t = cfg.zoning.extraction_targets
     prompt = json.dumps({
         "district": district,
         "use_keys": t.use_keys,
         "dimensional_rules": {k: f"{v.label} ({v.unit})" for k, v in t.dimensional.items()},
-        "statuses": ["by_right", "special_exception", "conditional_use", "not_permitted"],
-        "output_shape": {"uses": {"<use_key>": {"status": "...", "code_section": "...", "quote": "...", "confidence": 0.0}},
-                         "dimensional": {"<rule_id>": {"value": 0, "code_section": "...", "quote": "...", "confidence": 0.0}}},
         "code_text": text,
     })
-    raw = provider.complete_json(SYSTEM, prompt, model=model)
-    rules = DistrictRules.model_validate(raw)
+    # Long legal text and accuracy matters: high effort, streamed, generous output room.
+    raw = provider.complete_json(SYSTEM, prompt, schema=_schema(cfg), model=model, effort="high",
+                                 max_tokens=32000)
+    rules = DistrictRules.model_validate({
+        "uses": {r.pop("use_key"): r for r in raw.get("uses", [])},
+        "dimensional": {r.pop("rule_id"): r for r in raw.get("dimensional", [])},
+    })
     haystack = _norm(text)
     for group in (rules.uses, rules.dimensional):
         for k in list(group):
@@ -102,10 +125,10 @@ def main() -> None:
         districts = [d["district"] for d in prio if d["district"] != "(none)"][: args.limit]
 
     try:
-        provider = GeminiProvider()
+        provider = AnthropicProvider()
     except LLMUnavailable as e:
         raise SystemExit(f"LLM unavailable: {e}") from e
-    model = os.environ.get("ZONING_EXTRACT_MODEL", "gemini-2.5-pro")
+    model = os.environ.get("ZONING_EXTRACT_MODEL", DEFAULT_MODEL)
 
     rules_path = ROOT / cfg.zoning.rules_file
     doc = yaml.safe_load(rules_path.read_text(encoding="utf-8")) or {}

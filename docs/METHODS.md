@@ -160,7 +160,7 @@ The sentence reports the criterion j with t* in [0, 1] that needs the smallest
 
 ## Zoning
 
-`pipeline/zoning/extract.py` sends Title Nine text to an LLM (Gemini). Each rule
+`pipeline/zoning/extract.py` sends Title Nine text to an LLM (Claude, via the Anthropic API). Each rule
 it returns must quote the supplied text verbatim, in fewer than 25 words.
 Otherwise the rule is dropped. Rules land in `rules_review.yaml` with
 `reviewed: false`. Only rules a person marks `reviewed: true` affect the app.

@@ -9,7 +9,7 @@ class Fake:
     def __init__(self, out):
         self.out = out
 
-    def complete_json(self, system, prompt, model=None):
+    def complete_json(self, system, prompt, **_):
         if isinstance(self.out, Exception):
             raise self.out
         return self.out

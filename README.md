@@ -72,7 +72,7 @@ Requirements: [uv](https://docs.astral.sh/uv/) and Node 20+.
 
 ```bash
 uv sync                                   # Python 3.14 + runtime/dev deps
-cp .env.example .env                      # optional: add GEMINI_API_KEY, set LLM_PROVIDER=gemini
+cp .env.example .env                      # optional: add ANTHROPIC_API_KEY, set LLM_PROVIDER=anthropic
 uv run uvicorn server.app:app --port 8000 --reload
 cd web && npm install && npm run dev      # http://localhost:5173 (proxies /api to :8000)
 ```
@@ -103,7 +103,7 @@ flood and sewer screens test a point inside the parcel where a boundary is
 available, so they can miss hazards covering only another part of a lot.
 
 To extract zoning rules, save the Title Nine sections as text in
-`data/raw/zoning/` (eCode360 blocks scripts), set `GEMINI_API_KEY`, then run:
+`data/raw/zoning/` (eCode360 blocks scripts), set `ANTHROPIC_API_KEY`, then run:
 
 ```bash
 uv run python -m pipeline.zoning.extract --districts R1D-H RM-M R2-L
@@ -120,12 +120,12 @@ cd web && npx tsc -b && npm run lint
 
 **Deploy (Vercel).** Import the repo in Vercel. `vercel.json` builds `web/` as
 static files and serves `api/index.py` (FastAPI) as a Python function. Add
-`LLM_PROVIDER` and `GEMINI_API_KEY` as environment variables.
+`LLM_PROVIDER` and `ANTHROPIC_API_KEY` as environment variables.
 
 ## Stack
 
 - **Pipeline:** Python 3.14 (uv), pandas, GeoPandas, shapely, pyogrio, requests.
-- **Engine and API:** numpy, pydantic, PyYAML, FastAPI, google-genai.
+- **Engine and API:** numpy, pydantic, PyYAML, FastAPI, anthropic (Claude API SDK).
 - **Web:** Vite, React 19, TypeScript (strict), three.js for the 3D city and
   lot views, with Fredoka and Nunito fonts from Google Fonts. Pipeline adds
   Pillow to decode elevation tiles for the terrain bake.

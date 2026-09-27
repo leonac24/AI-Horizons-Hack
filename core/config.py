@@ -83,6 +83,9 @@ class ApiSettings(_Model):
 
 class ExplanationSettings(_Model):
     max_sentences: int = Field(gt=0)
+    effort: Literal["low", "medium", "high", "xhigh", "max"]
+    timeout_s: float = Field(gt=0)
+    max_tokens: int = Field(gt=0)
 
 
 class AppConfig(_Model):
