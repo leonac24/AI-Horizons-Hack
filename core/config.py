@@ -88,6 +88,17 @@ class ExplanationSettings(_Model):
     max_tokens: int = Field(gt=0)
 
 
+class EvidenceTopic(_Model):
+    label: str
+    description: str
+    listed: bool = True  # shown as a filter choice in the UI
+
+
+class EvidenceSettings(_Model):
+    question: str
+    topics: dict[str, EvidenceTopic] = Field(min_length=1)
+
+
 class AppConfig(_Model):
     name: str
     tagline: str
@@ -97,6 +108,7 @@ class AppConfig(_Model):
     api: ApiSettings
     smaa: SmaaSettings
     explanation: ExplanationSettings
+    evidence: EvidenceSettings
 
 
 # --- typologies.yaml -------------------------------------------------------------

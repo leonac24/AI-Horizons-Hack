@@ -119,6 +119,12 @@ def test_compiled_evidence_is_served_as_leads_without_zoning_verdict(monkeypatch
     assert "reviewed" not in payload["items"][0]
 
 
+def test_evidence_topics_come_from_config(cfg):
+    topics = list(cfg.app.evidence.topics)
+    assert client.get("/api/evidence", params={"topic": topics[-1]}).status_code == 200
+    assert client.get("/api/evidence", params={"topic": "not-a-topic"}).status_code == 422
+
+
 def test_route_limits_are_taken_from_config_not_retyped():
     """The limits the API enforces must BE the config values, not copies of them.
 

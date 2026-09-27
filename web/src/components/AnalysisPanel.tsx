@@ -53,7 +53,7 @@ export function AnalysisPanel(p: Props) {
         {p.tab === 'households' && <Households {...p} />}
         {p.tab === 'emissions' && <Carbon {...p} />}
         {p.tab === 'backwards' && <Backwards {...p} />}
-        {p.tab === 'unknowns' && <UnknownsTab />}
+        {p.tab === 'unknowns' && <UnknownsTab config={p.config} />}
       </div>
     </section>
   )
@@ -525,11 +525,12 @@ function Backwards({ config, analysis, wb, setWb }: Props) {
   )
 }
 
-function UnknownsTab() {
+function UnknownsTab({ config }: Pick<Props, 'config'>) {
+  const topics = Object.entries(config.app.evidence.topics).filter(([, t]) => t.listed)
   const [u, setU] = useState<Unknowns | null>(null)
   const [evidence, setEvidence] = useState<EvidenceLeads | null>(null)
   const [evidenceError, setEvidenceError] = useState(false)
-  const [topic, setTopic] = useState('zoning')
+  const [topic, setTopic] = useState(topics[0]?.[0] ?? '')
   const [evidencePage, setEvidencePage] = useState(0)
   useEffect(() => {
     api.unknowns().then(setU)
@@ -580,13 +581,7 @@ function UnknownsTab() {
           setEvidencePage(0)
           setTopic(event.target.value)
         }}>
-          <option value="zoning">Zoning</option>
-          <option value="cost">Costs</option>
-          <option value="carbon">Carbon</option>
-          <option value="transit_jobs">Transit access to jobs</option>
-          <option value="housing_need">Housing need</option>
-          <option value="sewer">Sewer</option>
-          <option value="site">Site conditions</option>
+          {topics.map(([id, t]) => <option key={id} value={id}>{t.label}</option>)}
         </select>
       </label>}
       {evidence?.items.map((item) => (

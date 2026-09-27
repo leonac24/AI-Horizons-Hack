@@ -31,22 +31,14 @@ OUTPUT = ROOT / "data" / "processed" / "laya_evidence.json"
 SUPPORTED = {".txt", ".md", ".pdf"}
 MAX_CHARS = 1400
 
-QUESTIONS = {
-    "topic": {
-        "type": "choice",
-        "instructions": "Which Lotline input does this passage most directly address? Choose other if none applies.",
-        "criteria": {
-            "zoning": "Land use, permitted housing, dimensions, or zoning approval",
-            "transit_jobs": "Jobs reachable by transit or transit travel time",
-            "carbon": "Building energy, embodied carbon, electricity, or travel emissions",
-            "housing_need": "Housing affordability or income-specific housing need",
-            "sewer": "Sewer overflow, sewer sheds, or available sewer capacity",
-            "cost": "Construction, operating, financing, or subsidy costs",
-            "site": "Parcel geometry, flood, slope, mine, or other site condition",
-            "other": "None of these inputs",
-        },
-    },
-}
+def _questions() -> dict:
+    """Built from app.yaml so the compile, the API and the UI share one topic list."""
+    ev = yaml.safe_load((ROOT / "data/config/app.yaml").read_text(encoding="utf-8"))["evidence"]
+    return {"topic": {"type": "choice", "instructions": ev["question"],
+                      "criteria": {k: t["description"] for k, t in ev["topics"].items()}}}
+
+
+QUESTIONS = _questions()
 
 
 def sha256(data: bytes) -> str:
