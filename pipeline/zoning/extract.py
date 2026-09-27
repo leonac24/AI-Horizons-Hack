@@ -94,11 +94,11 @@ def main() -> None:
     files = sorted(Path(text_dir).glob("*.txt")) if text_dir.exists() else []
     if not files:
         raise SystemExit(f"No code text in {text_dir}. Save Title Nine sections there first (see docstring).")
-    text = "\n\n".join(f"[§ {f.stem}]\n{f.read_text()}" for f in files)
+    text = "\n\n".join(f"[§ {f.stem}]\n{f.read_text(encoding='utf-8')}" for f in files)
 
     districts = args.districts
     if not districts:
-        prio = json.loads((ROOT / cfg.zoning.priority_file).read_text())
+        prio = json.loads((ROOT / cfg.zoning.priority_file).read_text(encoding="utf-8"))
         districts = [d["district"] for d in prio if d["district"] != "(none)"][: args.limit]
 
     try:
@@ -108,7 +108,7 @@ def main() -> None:
     model = os.environ.get("ZONING_EXTRACT_MODEL", "gemini-2.5-pro")
 
     rules_path = ROOT / cfg.zoning.rules_file
-    doc = yaml.safe_load(rules_path.read_text()) or {}
+    doc = yaml.safe_load(rules_path.read_text(encoding="utf-8")) or {}
     all_rules = doc.get("districts") or {}
     for d in districts:
         try:
@@ -125,7 +125,7 @@ def main() -> None:
                 cur.setdefault(group, {})[k] = {**r.model_dump(), **stamp}
         log.info("%s: %d use rules, %d dimensional rules", d, len(got.uses), len(got.dimensional))
     doc["districts"] = all_rules
-    rules_path.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True))
+    rules_path.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True), encoding="utf-8")
 
 
 if __name__ == "__main__":

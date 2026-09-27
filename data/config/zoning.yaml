@@ -2,7 +2,7 @@ code:
   name: Pittsburgh Zoning Code (Title Nine, Pittsburgh Code of Ordinances)
   source: pgh_zoning_code
   url: https://ecode360.com/45474054
-  citation_format: "Pittsburgh Code Â§ {section}"
+  citation_format: "Pittsburgh Code § {section}"
   # eCode360 returns 403 to scripted requests. Save district/use-table text to
   # this folder (one .txt per section, filename = section number) and run
   # `uv run python -m pipeline.zoning.extract`.

@@ -31,7 +31,7 @@ class CkanDatastore:
         cache = RAW_DIR / f"{self.source_id}.json"
         if cache.exists():
             log.info("%s: using cached %s", self.source_id, cache.name)
-            return AdapterResult(self.source_id, json.loads(cache.read_text()), "observed")
+            return AdapterResult(self.source_id, json.loads(cache.read_text(encoding="utf-8")), "observed")
         url = f"{config.sources.ckan_api}/datastore_search"
         rows: list[dict] = []
         offset = 0
@@ -59,7 +59,7 @@ class CkanDatastore:
         for row in rows:
             row.pop("_id", None)
         cache.parent.mkdir(parents=True, exist_ok=True)
-        cache.write_text(json.dumps(rows))
+        cache.write_text(json.dumps(rows), encoding="utf-8")
         return AdapterResult(self.source_id, rows, "observed")
 
 

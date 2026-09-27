@@ -50,7 +50,7 @@ class ZoningResult(BaseModel):
 
 @lru_cache(maxsize=4)
 def _load_rules(path: str, mtime: float) -> dict:
-    return (yaml.safe_load(Path(path).read_text()) or {}).get("districts") or {}
+    return (yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}).get("districts") or {}
 
 
 def load_rules(cfg: Config) -> dict:
@@ -95,6 +95,8 @@ def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_
     max_units: int | None = None
     lot = float(lot_area_sf or 0)
     stories = typ.stories
+    # The code states height in feet; a typology is described in stories.
+    height_ft = typ.stories * typ.floor_height_ft
     for rule_id, target in cfg.zoning.extraction_targets.dimensional.items():
         rule = (d.get("dimensional") or {}).get(rule_id)
         if not rule or not rule.get("reviewed") or rule.get("value") is None:
@@ -107,7 +109,7 @@ def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_
                 actual, ok = lot / max(units, 1), lot / max(units, 1) >= req
                 max_units = int(lot // req) if req > 0 else None
             case "height_at_most":
-                continue  # form heights are not modeled in feet yet
+                actual, ok = height_ft, height_ft <= req
             case "stories_at_most":
                 actual, ok = stories, stories <= req
         checks.append(Check(rule_id=rule_id, label=target.label, required=req, actual=round(actual, 1),
