@@ -8,7 +8,8 @@ import { CityPanel, type Filters } from './components/CityPanel'
 import { Intro } from './components/Intro'
 import { Tour } from './components/help'
 import { HelpContext, readSeen, writeSeen } from './lib/tour'
-import { type PanelId, useNarrow, usePanels } from './lib/panels'
+import { useNarrow } from './lib/media'
+import { type PanelId, usePanels } from './lib/panels'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
 import { MemoModal } from './components/MemoModal'
 import { TopBar } from './components/TopBar'
@@ -33,7 +34,7 @@ export type ParcelFeature = GeoJSON.Feature<GeoJSON.Point, PointProps>
 const L: Record<string, string> = { vpRight: '0px', vpBottom: '0px', hudLeft: '16px', hudMax: 'calc(100% - 458px)', palLeft: '16px', palRight: 'auto', palTop: 'auto', palBottom: '16px', palDir: 'row', palMax: 'calc(100% - 458px)', palMaxH: 'none', pTop: '90px', pRight: '16px', pBottom: '16px', pLeft: 'auto', pWidth: '410px', pHeight: 'auto', pRadius: '10px', inspLeft: '16px', inspBottom: '150px' }
 // Phone width: the panel is a bottom sheet, the palette sits just above it
 // (its bottom is set from the sheet's measured height) and the HUD spans the top.
-const L_NARROW: Record<string, string> = { ...L, hudLeft: '8px', hudMax: 'calc(100% - 16px)', palLeft: '8px', palRight: '8px', palBottom: '8px', palMax: 'none', pTop: 'auto', pRight: '8px', pBottom: '8px', pLeft: '8px', pWidth: 'auto', pHeight: 'min(48vh, 460px)', pRadius: '14px', inspLeft: '8px' }
+const L_NARROW: Record<string, string> = { ...L, hudLeft: '8px', hudMax: 'calc(100% - 16px)', palLeft: '8px', palRight: '8px', palBottom: '8px', palMax: 'none', pTop: 'auto', pRight: '8px', pBottom: '8px', pLeft: '8px', pWidth: 'auto', pHeight: 'min(48dvh, 460px)', pRadius: '14px', inspLeft: '8px' }
 
 export default function App() {
   const [config, setConfig] = useState<Config | null>(null)
@@ -333,6 +334,14 @@ export default function App() {
     setSel(null)
     setMemo(false)
   }
+  // Tap or click on a palette card: drop that building wherever it fits.
+  const addBuilding = (id: string) => {
+    if (!showPlan) return setToast('Switch to After to add buildings to your plan.')
+    if (engine.current?.addBuilding(id) === false) {
+      const label = config.typologies.find((t) => t.id === id)?.label ?? id
+      setToast(`No room for a ${label} on this lot as it stands. Move or remove a building, or try a smaller type.`)
+    }
+  }
   const onWeights = (w: Record<string, number>, pid: string | null) => {
     setWeights(w)
     setProfileId(pid)
@@ -426,7 +435,17 @@ export default function App() {
             open={isOpen('hud')}
             onToggle={() => panels.toggle('hud')}
           />
-          <Palette config={config} L={lotL} analysis={analysis} counts={countsOf(placements)} onDown={(id, e) => engine.current?.beginDrag(id, e)} onHeight={setPalH} open={isOpen('palette')} onToggle={() => panels.toggle('palette')} />
+          <Palette
+            config={config}
+            L={lotL}
+            analysis={analysis}
+            counts={countsOf(placements)}
+            onDown={(id, e) => engine.current?.beginDrag(id, e)}
+            onAdd={addBuilding}
+            onHeight={setPalH}
+            open={isOpen('palette')}
+            onToggle={() => panels.toggle('palette')}
+          />
           {sel && showPlan && (
             <Inspector
               config={config}

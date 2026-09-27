@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import type { ParcelFeature } from '../App'
 import { districtColor } from '../lib/format'
+import { useTouch } from '../lib/media'
 import { HelpTip } from './help'
 import { TuckButton } from './ui'
 import { MARKER_COLORS } from '../three/engine'
@@ -36,6 +37,7 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
     for (const f of features) if (f.properties.z) c[f.properties.z] = (c[f.properties.z] ?? 0) + 1
     return Object.entries(c).sort((a, b) => b[1] - a[1])
   }, [features])
+  const touch = useTouch()
   const hazardsOf = useMemo(() => {
     const byId = new Map(features.map((f) => [f.properties.id, f.properties]))
     return (id: string) => {
@@ -135,7 +137,9 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
         </>
         )}
       </aside>
-      <div className="hint-pill" data-tour="map-hint">Drag to orbit · right-drag to pan · scroll to zoom · click a lot to zoom in</div>
+      <div className="hint-pill" data-tour="map-hint">
+        {touch ? 'Drag to orbit · pinch to zoom · two fingers to pan · tap a lot to zoom in' : 'Drag to orbit · right-drag to pan · scroll to zoom · click a lot to zoom in'}
+      </div>
     </>
   )
 }
