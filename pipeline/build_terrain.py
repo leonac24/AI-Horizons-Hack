@@ -80,6 +80,34 @@ class Mosaic:
         return (E[j, i] * (1 - u) + E[j, i + 1] * u) * (1 - v) + (E[j + 1, i] * (1 - u) + E[j + 1, i + 1] * u) * v
 
 
+def _pool_fill(e: np.ndarray, X: np.ndarray, Z: np.ndarray, step: float, level: float,
+               seed: tuple[float, float], dam: tuple[float, float, float, float]) -> np.ndarray:
+    """Cells below `level` 4-connected to `seed` without crossing the dam segment.
+    The dam line itself is wetted afterwards so the river doesn't break at the dam."""
+    ax, az, bx, bz = dam
+    dx, dz = bx - ax, bz - az
+    s = np.clip(((X - ax) * dx + (Z - az) * dz) / (dx * dx + dz * dz), 0, 1)
+    on_dam = np.hypot(X - ax - s * dx, Z - az - s * dz) <= step
+    open_ = (e < level) & ~on_dam
+    wet = np.zeros_like(open_)
+    # Start from the lowest cell near the seed so a coarse grid doesn't land on a bank.
+    near = np.hypot(X - seed[0], Z - seed[1]) < 2 * step
+    i, j = np.unravel_index(np.argmin(np.where(near, e, np.inf)), X.shape)
+    if not open_[i, j]:
+        return wet  # seed outside this grid or on dry ground
+    wet[i, j] = True
+    while True:
+        grown = wet.copy()
+        grown[1:] |= wet[:-1]
+        grown[:-1] |= wet[1:]
+        grown[:, 1:] |= wet[:, :-1]
+        grown[:, :-1] |= wet[:, 1:]
+        grown &= open_
+        if (grown == wet).all():
+            return wet | (on_dam & (e < level)) if wet.any() else wet
+        wet = grown
+
+
 def build(cfg: Config) -> dict:
     scene = cfg.city.model_dump()["scene"]
     t = scene["terrain"]
@@ -99,6 +127,10 @@ def build(cfg: Config) -> dict:
         h = (r / t["m_per_unit"]) * t["vertical_exaggeration"] * (1 + r / t["steepen_m"]) / t["damping"]
         q = np.round(h * SCALE).clip(-32000, 32000).astype(np.int16)
         q[e < t["river_pool_m"] + t["water_margin_m"]] = WATER
+        for pool in t.get("pools", []):
+            (ax, az), (bx, bz) = (((lo - lon0) * kx, (lat0 - la) * kz) for lo, la in pool["dam"])
+            sx, sz = (pool["seed"][0] - lon0) * kx, (lat0 - pool["seed"][1]) * kz
+            q[_pool_fill(e, X, Z, step, pool["surface_m"] + t["water_margin_m"], (sx, sz), (ax, az, bx, bz))] = WATER
         return q, n
 
     coarse, cn = grid(t["coarse"]["extent"], t["coarse"]["step"])

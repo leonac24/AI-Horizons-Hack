@@ -50,6 +50,16 @@ scene:
     outer: { zoom: 10, half_lon: 0.42, half_lat: 0.33 }
     river_pool_m: 217
     water_margin_m: 1.6
+    # Navigation pools above river_pool_m. Each dam steps the water surface up, so
+    # one cutoff reads the upper pool as dry valley floor. Water spreads from
+    # `seed` through ground below surface_m + water_margin_m and stops at `dam`
+    # ([lon, lat] endpoints, bank to bank). Surface read off the DEM (the river
+    # steps ~216.4 → ~219.5 m at Allegheny Lock & Dam 2, lon −79.913).
+    pools:
+      - name: Allegheny Lock & Dam 2 upper pool
+        surface_m: 219.5
+        seed: [-79.895, 40.4838]
+        dam: [[-79.9128, 40.480], [-79.9128, 40.498]]
     m_per_unit: 17
     vertical_exaggeration: 4.5
     steepen_m: 170
