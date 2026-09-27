@@ -74,3 +74,32 @@ criteria:
     direction: lower_is_better
     group: climate
     default_weight: 1
+
+  # Added 2026-09-26 (spec: docs/superpowers/specs/2026-09-26-tax-metrics-design.md).
+  # Total property tax the parcel yields over the analysis horizon, net of any
+  # reviewed abatement. It passes both tests at the top of this file: it varies by
+  # housing type (homes x per-home assessed value, and the county comps give each
+  # type its own value), and that value comes from observed comps rather than from
+  # development cost, so it is not a restatement of `affordability`.
+  # tests/test_tax.py enforces the second point on real lots.
+  - id: public_revenue
+    metric_id: revenue.public_horizon
+    label: Public revenue
+    question: How much property tax would this option return to the City, the school district and the county over the analysis horizon?
+    direction: higher_is_better
+    group: fiscal
+    default_weight: 1
+
+# Patterns worth naming out loud. The option best on `top_on` that is also worst
+# on any of `bottom_on` gets this message in the tradeoff receipt and the memo.
+# A rank on one criterion involves no weights, so this is evidence, computed by
+# the engine, not a judgment about what should be built.
+tension_flags:
+  - id: revenue_vs_affordability
+    label: High revenue, high exclusion
+    top_on: public_revenue
+    bottom_on: [affordability, local_affordability_gap]
+    message: >-
+      This option yields the most public revenue and is also the least affordable
+      of the options compared. Both are true at once; which matters more is a
+      values question, not an evidence one.

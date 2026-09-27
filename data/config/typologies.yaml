@@ -24,12 +24,19 @@
 # own footprint and the `site_area_per_building_footprint` assumption, so it
 # follows the footprint instead of being a separate number to keep in step.
 # Add `min_lot_sf_for_form:` to a typology only to override that derivation.
+#
+# `assessment_use_classes` are the county assessment USEDESC values whose
+# existing buildings stand in for this form when estimating what a new one would
+# be assessed at (tax.yaml comps.use_classes has the full table). A proxy is a
+# proxy: house + ADU uses TWO FAMILY because that is the closest class holding
+# two homes on one lot.
 typologies:
   - id: detached
     label: Detached house
     short_label: Detached
     color: "#ff9f1c"
     use_key: single_unit_detached
+    assessment_use_classes: ["SINGLE FAMILY"]
     unit_size_sf: 1400
     stories: 2
     floor_height_ft: 10
@@ -47,6 +54,7 @@ typologies:
     short_label: House + ADU
     color: "#ffc300"
     use_key: single_unit_detached_with_adu
+    assessment_use_classes: ["TWO FAMILY"]
     unit_size_sf: 1050
     stories: 2
     floor_height_ft: 10
@@ -64,6 +72,7 @@ typologies:
     short_label: Duplex
     color: "#ff5d8f"
     use_key: two_unit
+    assessment_use_classes: ["TWO FAMILY"]
     unit_size_sf: 1100
     stories: 2.5
     floor_height_ft: 10
@@ -81,6 +90,7 @@ typologies:
     short_label: Rowhouse
     color: "#ff5a4e"
     use_key: single_unit_attached
+    assessment_use_classes: ["ROWHOUSE", "TOWNHOUSE"]
     unit_size_sf: 1300
     stories: 3
     floor_height_ft: 10
@@ -98,6 +108,7 @@ typologies:
     short_label: Small apartments
     color: "#1f8bff"
     use_key: multi_unit
+    assessment_use_classes: ["APART: 5-19 UNITS"]
     unit_size_sf: 800
     stories: 3
     floor_height_ft: 11
@@ -116,6 +127,7 @@ typologies:
     short_label: Mid-rise
     color: "#9b7bff"
     use_key: multi_unit
+    assessment_use_classes: ["APART:20-39 UNITS", "APART:40+ UNITS"]
     unit_size_sf: 750
     stories: 5
     floor_height_ft: 11

@@ -247,3 +247,45 @@ sources:
     verified: "2026-09-26"
     note: Used only to shape the stylized 3D city. Baked into web/public/data/terrain.bin by pipeline/build_terrain.py; never used in any metric.
 
+  # --- Property tax (added 2026-09-26) --------------------------------------------
+  # Rates and program terms are published law. None is scripted yet; each stays a
+  # placeholder in assumptions.yaml / tax.yaml until a teammate transcribes it.
+  pgh_city_millage:
+    name: City of Pittsburgh real estate tax rate and homestead exclusion
+    publisher: City of Pittsburgh, Department of Finance
+    url: null
+    access: manual
+    vintage: not yet retrieved
+    license: public record
+    verified: false
+    note: Set annually in the City budget ordinance. Fill assumptions.yaml millage_city and homestead_exclusion_city for the current year, record the URL and retrieval date here.
+
+  pps_millage:
+    name: Pittsburgh Public Schools real estate tax rate and homestead exclusion
+    publisher: School District of Pittsburgh
+    url: null
+    access: manual
+    vintage: not yet retrieved
+    license: public record
+    verified: false
+    note: Fill assumptions.yaml millage_school and homestead_exclusion_school from the District's adopted budget.
+
+  allegheny_millage:
+    name: Allegheny County real estate tax rate and homestead exclusion
+    publisher: Allegheny County Treasurer
+    url: null
+    access: manual
+    vintage: not yet retrieved
+    license: public record
+    verified: false
+    note: Fill assumptions.yaml millage_county and homestead_exclusion_county from the County's adopted budget.
+
+  pgh_tax_abatement:
+    name: City of Pittsburgh residential tax abatement programs (Pittsburgh Code of Ordinances)
+    publisher: City of Pittsburgh (hosted by General Code / eCode360)
+    url: null
+    access: manual
+    vintage: not yet retrieved
+    license: public law
+    verified: false
+    note: eCode360 blocks scripted requests. Read the abatement chapters in a browser, fill tax.yaml abatements (code_section, quote) and the abatement_* assumptions, then set reviewed true.

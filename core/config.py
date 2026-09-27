@@ -128,6 +128,10 @@ class Typology(_Model):
     short_label: str
     color: str
     use_key: str
+    # County assessment use classes whose existing buildings stand in for this
+    # form's assessed value (keys into tax.yaml comps.use_classes). Empty means
+    # the placeholder assumption is used.
+    assessment_use_classes: list[str] = []
     unit_size_sf: float = Field(gt=0)
     stories: float = Field(gt=0)
     # Floor-to-floor height. The zoning code caps height in feet, a typology is
@@ -153,6 +157,17 @@ class Criterion(_Model):
     direction: Literal["higher_is_better", "lower_is_better"]
     group: str
     default_weight: float = Field(ge=0)
+
+
+class TensionFlag(_Model):
+    """A pattern worth naming: the option best on `top_on` is also worst on any of
+    `bottom_on`. A rank on one criterion involves no weights, so this is evidence."""
+
+    id: str
+    label: str
+    top_on: str
+    bottom_on: list[str]
+    message: str
 
 
 # --- households.yaml -----------------------------------------------------------
@@ -368,6 +383,104 @@ class ZoningConfig(_Model):
         return s is not None and s.role == "prohibited"
 
 
+# --- tax.yaml ------------------------------------------------------------------
+# Property tax structure. Every NUMBER (a millage rate, an exclusion, an abatement
+# term) is an assumptions.yaml entry referenced here by key, so it carries a
+# range, a provenance and a source and shows up in inquiries and LIMITATIONS like
+# any other number the engine uses. This file says how those numbers combine and
+# which legal terms a person has verified.
+class TaxingBody(_Model):
+    id: str
+    label: str
+    millage: str  # assumptions.yaml key, in mills
+    homestead_exclusion: str | None = None  # assumptions.yaml key, USD of assessed value
+
+
+class HomesteadRule(_Model):
+    applies_to_tenure: list[Literal["owner", "renter"]]
+
+
+class AbatementProgram(_Model):
+    id: str
+    label: str
+    eligible_use_keys: list[str]
+    applies_to_bodies: list[str]
+    years: str  # assumptions.yaml key
+    exempt_assessed_cap_usd: str  # assumptions.yaml key
+    code_section: str | None = None
+    quote: str | None = None
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    reviewed: bool = False
+    note: str | None = None
+
+
+class TaxStatusRule(_Model):
+    # Values of the assessment file's tax-status column that mean "pays no tax".
+    exempt_values: list[str]
+
+
+class CompClass(_Model):
+    """One assessment use class and how many homes a parcel of it holds. Multi-unit
+    classes are unit bands, so `homes` is a midpoint with the band edges as range."""
+
+    homes: float = Field(gt=0)
+    low: float | None = Field(default=None, gt=0)
+    high: float | None = Field(default=None, gt=0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> CompClass:
+        lo, hi = self.band()
+        if not (lo <= self.homes <= hi):
+            raise ValueError(f"need low <= homes <= high, got {lo}/{self.homes}/{hi}")
+        return self
+
+    def band(self) -> tuple[float, float]:
+        return (self.low if self.low is not None else self.homes,
+                self.high if self.high is not None else self.homes)
+
+
+class CompsRule(_Model):
+    fields: dict[str, str]  # raw assessment column -> canonical name
+    min_comps: int = Field(gt=0)
+    built_since_year: int
+    quantiles: tuple[float, float]
+    fallback: list[Literal["neighborhood", "citywide"]]
+    file: str
+    use_classes: dict[str, CompClass]
+
+    @model_validator(mode="after")
+    def _shape(self) -> CompsRule:
+        need = {"id", "use_class", "building_value", "year_built", "municipality"}
+        got = set(self.fields.values())
+        if got != need:
+            raise ValueError(f"comps.fields must map onto exactly {sorted(need)}, got {sorted(got)}")
+        lo, hi = self.quantiles
+        if not (0 <= lo <= 0.5 <= hi <= 1):
+            raise ValueError("comps.quantiles must satisfy 0 <= low <= 0.5 <= high <= 1")
+        if not self.fallback:
+            raise ValueError("comps.fallback needs at least one level")
+        return self
+
+
+class TaxConfig(_Model):
+    taxing_bodies: list[TaxingBody]
+    homestead: HomesteadRule
+    abatements: list[AbatementProgram]
+    status: TaxStatusRule
+    comps: CompsRule
+
+    @model_validator(mode="after")
+    def _bodies(self) -> TaxConfig:
+        ids = [b.id for b in self.taxing_bodies]
+        if not ids or len(set(ids)) != len(ids):
+            raise ValueError(f"taxing_bodies ids must be unique and non-empty, got {ids}")
+        for a in self.abatements:
+            bad = set(a.applies_to_bodies) - set(ids)
+            if bad:
+                raise ValueError(f"abatement {a.id!r}: unknown taxing bodies {sorted(bad)}")
+        return self
+
+
 # --- inquiries.yaml ------------------------------------------------------------
 # What to go and find out. Lotline may not say what to build, but it can say what
 # is still unknown, who answers it, and what to ask them for — so this file is the
@@ -476,6 +589,8 @@ class Config(_Model):
     assumptions: dict[str, Assumption]
     sources: SourcesConfig
     inquiries: InquiriesConfig
+    tax: TaxConfig
+    tension_flags: list[TensionFlag] = []
     hash: str = ""
 
     @model_validator(mode="after")
@@ -501,6 +616,31 @@ class Config(_Model):
         for t in self.typologies:
             if t.use_key not in use_keys:
                 errors.append(f"typology {t.id!r}: use_key {t.use_key!r} not in zoning.yaml use_keys")
+
+        # tax.yaml points at assumptions, zoning use keys and assessment use
+        # classes; criteria.yaml tension_flags point at criteria.
+        for b in self.tax.taxing_bodies:
+            for key in (b.millage, b.homestead_exclusion):
+                if key and key not in self.assumptions:
+                    errors.append(f"tax.taxing_bodies[{b.id}]: unknown assumption {key!r}")
+        for a in self.tax.abatements:
+            for key in (a.years, a.exempt_assessed_cap_usd):
+                if key not in self.assumptions:
+                    errors.append(f"tax.abatements[{a.id}]: unknown assumption {key!r}")
+            for uk in a.eligible_use_keys:
+                if uk not in use_keys:
+                    errors.append(f"tax.abatements[{a.id}]: use_key {uk!r} not in zoning.yaml use_keys")
+        for t in self.typologies:
+            for uc in t.assessment_use_classes:
+                if uc not in self.tax.comps.use_classes:
+                    errors.append(f"typology {t.id!r}: assessment use class {uc!r} not in tax.yaml comps.use_classes")
+        _unique("tension_flag", [f.id for f in self.tension_flags], errors)
+        for f in self.tension_flags:
+            for cid in (f.top_on, *f.bottom_on):
+                if cid not in crit_ids:
+                    errors.append(f"tension_flag {f.id!r}: unknown criterion {cid!r}")
+            if f.top_on in f.bottom_on:
+                errors.append(f"tension_flag {f.id!r}: top_on also appears in bottom_on")
 
         # Every approval path needs a score, or a reviewed district could return a
         # status the engine cannot price.
@@ -626,6 +766,7 @@ class Config(_Model):
     # narrows an attacker's guessing and there is no reason to hand it over.
     _INTERNAL_ZONING_KEYS = ("rules_file", "priority_file")
     _INTERNAL_CODE_KEYS = ("raw_text_dir",)
+    _INTERNAL_TAX_COMPS_KEYS = ("file",)
 
     def public_json(self) -> dict[str, Any]:
         """What the browser gets: everything needed for labels, legends and sliders,
@@ -636,6 +777,9 @@ class Config(_Model):
             zoning.pop(k, None)
         for k in self._INTERNAL_CODE_KEYS:
             (zoning.get("code") or {}).pop(k, None)
+        comps = (data.get("tax") or {}).get("comps") or {}
+        for k in self._INTERNAL_TAX_COMPS_KEYS:
+            comps.pop(k, None)
         return data
 
 
@@ -658,6 +802,7 @@ _FILES = {
     "assumptions": "assumptions.yaml",
     "sources": "sources.yaml",
     "inquiries": "inquiries.yaml",
+    "tax": "tax.yaml",
 }
 
 
@@ -676,11 +821,16 @@ def load_config(config_dir: Path | str = DEFAULT_CONFIG_DIR) -> Config:
             data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         except yaml.YAMLError as e:
             raise ConfigError(f"{path}: invalid YAML: {e}") from e
-        # Some files wrap their list in a same-named key.
-        if key in ("typologies", "criteria", "assumptions") and isinstance(data, dict):
+        # Some files wrap their list in a same-named key. criteria.yaml also
+        # carries `tension_flags` beside its list.
+        if key == "criteria" and isinstance(data, dict):
+            raw["tension_flags"] = data.get("tension_flags") or []
+            data = data.get("criteria", data)
+        elif key in ("typologies", "assumptions") and isinstance(data, dict):
             data = data.get(key, data)
         raw[key] = data
-    digest = hashlib.sha256(json.dumps(raw, sort_keys=True, default=str).encode()).hexdigest()[:12]
+    raw.setdefault("tension_flags", [])
+    digest =hashlib.sha256(json.dumps(raw, sort_keys=True, default=str).encode()).hexdigest()[:12]
     try:
         cfg = Config(**raw)
     except ValidationError as e:

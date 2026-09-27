@@ -118,6 +118,7 @@ parcels:
     LOTAREA: lot_area_sf
     FAIRMARKETLAND: land_value_usd
     OWNERDESC: owner_type
+    TAXDESC: tax_status
 
 public_land:
   source: wprdc_city_owned

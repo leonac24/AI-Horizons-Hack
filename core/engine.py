@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from core.config import Config, Typology
 from core.metrics import Metric, Samples, Trace, to_metric, weakest
+from core.tax import RevenueSeries, load_comps, scenario_tax, site_tax_context
 from core.zoning import ZoningResult, evaluate, load_rules
 
 
@@ -53,6 +54,7 @@ class Scenario(BaseModel):
     zoning: ZoningResult
     households: list[HouseholdCheck]
     carbon: CarbonSeries
+    revenue: RevenueSeries
     # Mirrors zoning.disqualified so a client never has to know which zoning
     # statuses are hard stops. Disqualified scenarios are still returned in full —
     # a CDC needs to see what it cannot do, and why — but they must be presented
@@ -128,6 +130,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     """`homes_override` pins a typology's home count (work backwards, mixed plans)."""
     S = samples or Samples(cfg)
     rules = load_rules(cfg)
+    comps = load_comps(cfg)
     lot = float(parcel.get("lot_area_sf") or 0)
     flags = _hazard_flags(cfg, parcel)
     hazards_cfg = cfg.hazards
@@ -215,6 +218,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                        "This does not measure sewer capacity or overflow pressure.") if sheds else
                        "Outside or unmatched in the 2018 layer; sewer type and capacity are unknown."),
     ]
+    site_context.extend(site_tax_context(cfg, S, parcel))
 
     # --- Shared affordability inputs --------------------------------------------
     t_inc = Trace()
@@ -262,8 +266,12 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
 
         cap = S.a("annual_capital_cost_share", used=t_cost)
         opex = S.a("operating_cost_per_unit_month", used=t_cost)
-        monthly = per_unit * cap / 12 + opex
-        t_aff = t_cost.merge(t_inc)
+        # Property tax is its own line, from assessed value and millage, so the
+        # cost of living here is not hiding a tax guess inside a flat operating cost.
+        tax = scenario_tax(cfg, S, typ, units, parcel, comps)
+        notes.extend(tax.notes)
+        monthly = per_unit * cap / 12 + opex + tax.monthly_per_home
+        t_aff = t_cost.merge(tax.trace_household).merge(t_inc)
         income_needed = monthly * 12 / share
         ami_needed = income_needed / ami4 * 100
 
@@ -350,6 +358,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                 "carbon.per_household_horizon", f"Carbon per household over {years} years", cumulative[-1], "tCO2e", t_c),
             "carbon.embodied_per_household": to_metric(
                 "carbon.embodied_per_household", "Upfront (embodied) carbon per household", emb, "tCO2e", t_c),
+            **tax.metrics,
             "units.count": to_metric("units.count", "Homes", S.const(units), "homes", Trace({"modeled"})),
         }
 
@@ -368,6 +377,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
         scenarios.append(Scenario(typology_id=typ.id, units=units, buildings=n_buildings,
                                   form_fits=form_fits, notes=notes,
                                   metrics=metrics, zoning=zres, households=hh_checks, carbon=carbon,
+                                  revenue=tax.revenue,
                                   eligible=not zres.disqualified,
                                   ineligible_reason=zres.disqualified_reason))
 

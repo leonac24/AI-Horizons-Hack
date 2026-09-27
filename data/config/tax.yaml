@@ -1,0 +1,102 @@
+# Property tax for the City of Pittsburgh: how the numbers fit together and which
+# legal terms a person has verified.
+#
+# Every NUMBER lives in assumptions.yaml and is referenced here by key: millage
+# per taxing body, homestead exclusions, abatement years and cap. That way each
+# carries value/low/high, a provenance and a source, and shows up automatically
+# in the inquiries work plan and the LIMITATIONS placeholder count. "Reviewed"
+# for a rate therefore means: its assumption is no longer `provenance:
+# placeholder`. Abatement programs carry their own `reviewed` flag because their
+# terms are prose (who is eligible, for how long), not a single number.
+#
+# An unreviewed abatement is NOT applied — the same rule as an unreviewed zoning
+# rule — and the horizon revenue metric is a placeholder until it is. We do not
+# write tax law from memory.
+#
+# Assessed values are base-year (Allegheny County: 2012) values, so the tax bill
+# is assessed value x millage directly. No common level ratio enters: that ratio
+# converts market prices to assessed values, and the comps are already assessed.
+
+taxing_bodies:                 # display order
+  - id: city
+    label: City of Pittsburgh
+    millage: millage_city
+    homestead_exclusion: homestead_exclusion_city
+  - id: school
+    label: Pittsburgh Public Schools
+    millage: millage_school
+    homestead_exclusion: homestead_exclusion_school
+  - id: county
+    label: Allegheny County
+    millage: millage_county
+    homestead_exclusion: homestead_exclusion_county
+
+homestead:
+  # Only owner-occupied homes get a homestead exclusion.
+  applies_to_tenure: [owner]
+
+abatements:
+  # Draft entry. Terms are stand-ins until a teammate reads the ordinance, fills
+  # code_section + quote and sets reviewed: true. Until then the program is not
+  # applied and horizon revenue is shown as a placeholder.
+  - id: residential_new_construction
+    label: Residential new-construction tax abatement (City of Pittsburgh)
+    eligible_use_keys: [single_unit_detached, single_unit_detached_with_adu, two_unit, single_unit_attached, multi_unit]
+    applies_to_bodies: [city, school, county]
+    years: abatement_years
+    exempt_assessed_cap_usd: abatement_exempt_assessed_cap_usd
+    code_section: null
+    quote: null
+    confidence: null
+    reviewed: false
+    note: >-
+      Pittsburgh offers property tax abatements on new residential construction
+      under the City Code, with terms that differ by program and by which taxing
+      bodies participate. Verify the current program, its length, its cap and
+      its participating bodies before setting reviewed: true.
+
+# The assessment file's tax-status column (mapped to `tax_status` in city.yaml
+# keep_fields). Anything not listed here is treated as taxable; a missing value
+# is unknown and shown as a placeholder.
+status:
+  exempt_values: ["10 - Exempt"]
+
+# Observed comparables: what the county assesses EXISTING buildings of each
+# housing type at, per home, near this lot. Built by
+# `uv run python -m pipeline.build_comps` from the same assessment extract the
+# parcel index uses.
+comps:
+  # Raw assessment columns -> the names pipeline/steps/comps.py works with.
+  fields:
+    PARID: id
+    USEDESC: use_class
+    FAIRMARKETBUILDING: building_value
+    YEARBLT: year_built
+    MUNIDESC: municipality
+  # A neighborhood needs this many recent comps of a housing type before its own
+  # median is used; otherwise the citywide median is, and the metric says so.
+  min_comps: 30
+  # We are valuing a NEW building. A 1920 rowhouse's assessment is not evidence
+  # for one built today, so only buildings from this year on are comps.
+  # Modeling choice: recent enough to be modern construction, old enough that
+  # most neighborhoods keep a usable sample.
+  built_since_year: 2005
+  # The range reported around the median. Must straddle 0.5 so low <= median <= high.
+  quantiles: [0.25, 0.75]
+  fallback: [neighborhood, citywide]
+  file: data/processed/assessment_comps.json
+  # USEDESC value -> homes on one parcel of that class. Multi-unit classes are
+  # unit BANDS in the county's vocabulary, so `homes` is a midpoint and low/high
+  # are the band edges; the pipeline widens the per-home range accordingly. The
+  # open-ended 40+ band has no upper edge in the source, so its `high` is a
+  # documented cap and the weakest number in this file (see LIMITATIONS.md).
+  # Strings verified against the WPRDC resource 2026-09-26 (note the inconsistent
+  # spacing after the colon — that is how the county writes them).
+  use_classes:
+    "SINGLE FAMILY":      { homes: 1 }
+    "ROWHOUSE":           { homes: 1 }
+    "TOWNHOUSE":          { homes: 1 }
+    "TWO FAMILY":         { homes: 2 }
+    "APART: 5-19 UNITS":  { homes: 12, low: 5, high: 19 }
+    "APART:20-39 UNITS":  { homes: 29, low: 20, high: 39 }
+    "APART:40+ UNITS":    { homes: 60, low: 40, high: 120 }

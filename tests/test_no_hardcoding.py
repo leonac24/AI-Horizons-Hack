@@ -39,7 +39,7 @@ def test_fake_typologies_work(config_copy, lot):
     def fake(y):
         y["typologies"] = [
             {"id": "zeta", "label": "Zeta", "short_label": "Z", "color": "#000000", "use_key": "multi_unit",
-             "unit_size_sf": 900,
+             "assessment_use_classes": ["ZETA CLASS"], "unit_size_sf": 900,
              "stories": 3, "floor_height_ft": 11, "min_lot_sf_for_form": 1000, "tenure_default": "renter",
              "building": {"footprint_ft": [20, 50], "homes": 6, "massing": "walkup", "body": "#111111",
                           "roof": "#222222", "max_in_a_row": 3}},
@@ -56,6 +56,9 @@ def test_fake_typologies_work(config_copy, lot):
 
     edit("typologies.yaml", fake)
     edit("assumptions.yaml", strip_overrides)
+    # A fake assessment use class too: the tax module must key off config, never
+    # off the county's real class names.
+    edit("tax.yaml", lambda y: y["comps"]["use_classes"].__setitem__("ZETA CLASS", {"homes": 6}))
     cfg = load_config(d)
     a = analyze(cfg, lot)
     assert [s.typology_id for s in a.scenarios] == ["zeta", "omega"]
@@ -63,6 +66,7 @@ def test_fake_typologies_work(config_copy, lot):
     # ratio; however many 20-ft-wide buildings fit that frontage, capped at 3.
     s = a.scenarios[0]
     assert 1 <= s.buildings <= 3 and s.units == s.buildings * 6
+    assert {"revenue.public_horizon", "tax.per_home_monthly"} <= set(s.metrics)
 
 
 def test_no_typology_or_stakeholder_ids_in_code():

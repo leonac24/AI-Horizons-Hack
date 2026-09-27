@@ -107,13 +107,16 @@ assumptions:
     rationale: Debt service plus required return, expressed per year. Drives the rent needed to cover cost.
 
   operating_cost_per_unit_month:
-    value: 450
-    low: 350
-    high: 600
+    value: 300
+    low: 220
+    high: 420
     unit: USD/unit/month
     provenance: placeholder
     source: null
-    rationale: Taxes, insurance, maintenance, management, reserves.
+    rationale: >-
+      Insurance, maintenance, management, reserves. Property tax is NOT in here:
+      it is computed per home from assessed value and millage in core/tax.py and
+      added to the monthly cost separately (tax.per_home_monthly).
 
   # --- Carbon -----------------------------------------------------------------
   embodied_kgco2e_psf:
@@ -260,6 +263,124 @@ assumptions:
     provenance: placeholder
     source: alcosan_cso
     rationale: Combined-sewer overflow pressure at the lot's sewershed. Stand-in until ALCOSAN/PWSA data is joined.
+
+  # --- Property tax --------------------------------------------------------------
+  # Structure (which body, which homes, which program) is in tax.yaml; the
+  # numbers are here so they carry ranges and provenance like everything else.
+  # Every value marked STAND-IN is a placeholder until a teammate verifies it
+  # against the published rate or ordinance and flips provenance to observed.
+  millage_city:
+    value: 8
+    low: 4
+    high: 12
+    unit: mills
+    provenance: placeholder
+    source: pgh_city_millage
+    rationale: >-
+      STAND-IN, not the published rate. City of Pittsburgh real estate tax rate in
+      mills (tax per $1,000 of assessed value). Fill from the City's current
+      budget ordinance.
+
+  millage_school:
+    value: 10
+    low: 5
+    high: 15
+    unit: mills
+    provenance: placeholder
+    source: pps_millage
+    rationale: STAND-IN. Pittsburgh Public Schools real estate tax rate in mills; fill from the District's adopted budget.
+
+  millage_county:
+    value: 5
+    low: 3
+    high: 8
+    unit: mills
+    provenance: placeholder
+    source: allegheny_millage
+    rationale: STAND-IN. Allegheny County real estate tax rate in mills; fill from the County's adopted budget.
+
+  homestead_exclusion_city:
+    value: 10000
+    low: 0
+    high: 30000
+    unit: USD assessed value
+    provenance: placeholder
+    source: pgh_city_millage
+    rationale: STAND-IN. Assessed value excluded from City tax for an owner-occupied home (homestead exclusion). Fill from the City.
+
+  homestead_exclusion_school:
+    value: 10000
+    low: 0
+    high: 30000
+    unit: USD assessed value
+    provenance: placeholder
+    source: pps_millage
+    rationale: STAND-IN. Assessed value excluded from School District tax for an owner-occupied home. Fill from the District.
+
+  homestead_exclusion_county:
+    value: 10000
+    low: 0
+    high: 30000
+    unit: USD assessed value
+    provenance: placeholder
+    source: allegheny_millage
+    rationale: STAND-IN. Assessed value excluded from County tax for an owner-occupied home. Fill from the County Treasurer.
+
+  abatement_years:
+    value: 10
+    low: 0
+    high: 15
+    unit: years
+    provenance: placeholder
+    source: pgh_tax_abatement
+    rationale: >-
+      STAND-IN. Length of the residential new-construction abatement declared in
+      tax.yaml. Fill from the ordinance; applied only once that program is
+      reviewed there.
+
+  abatement_exempt_assessed_cap_usd:
+    value: 150000
+    low: 0
+    high: 300000
+    unit: USD assessed value per home per year
+    provenance: placeholder
+    source: pgh_tax_abatement
+    rationale: STAND-IN. Most building (improvement) assessed value the abatement exempts per home each year. Fill from the ordinance.
+
+  assessed_building_value_per_home:
+    value: 60000
+    low: 20000
+    high: 150000
+    unit: USD assessed value
+    provenance: placeholder
+    source: null
+    rationale: >-
+      Used ONLY when no assessment comps exist for a housing type (comps file not
+      built yet). Base-year assessed value of one new home's building. Run
+      `uv run python -m pipeline.build_comps` to replace it with observed medians.
+    by_typology:
+      detached:    { value: 90000, low: 40000, high: 180000 }
+      adu_pair:    { value: 60000, low: 25000, high: 120000 }
+      two_unit:    { value: 55000, low: 20000, high: 110000 }
+      rowhouse:    { value: 70000, low: 25000, high: 150000 }
+      small_multi: { value: 35000, low: 12000, high: 80000 }
+      midrise:     { value: 45000, low: 15000, high: 100000 }
+
+  criterion_independence_max_corr:
+    value: 0.999
+    low: 0.999
+    high: 0.999
+    unit: "|r|"
+    provenance: assumption
+    source: null
+    rationale: >-
+      Guardrail used by tests/test_tax.py, not by the engine. On one lot, a
+      criterion that is an affine function of another has |r| = 1 to machine
+      precision and cancels against it in the weighted sum (the `opportunity`
+      failure of 2026-09-26). Two criteria that merely share home count as a
+      driver land near 0.99 on lots where one option is far denser than the rest;
+      that is a fact about the lot, not a defect. So the guard sits just under 1:
+      it catches identities, not tendencies.
 
   # --- Scoring conventions ----------------------------------------------------
   zoning_status_score:
