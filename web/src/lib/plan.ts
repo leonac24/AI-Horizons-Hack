@@ -3,7 +3,7 @@
 // Scoring stays in lib/scoring.ts; nothing here weighs anything.
 import type { BuildingForm } from '../three/typologyMeshes'
 import type { Placement } from '../three/engine'
-import type { Analysis, CarbonSeries, Config, HouseholdCheck, LotShape, Metric, PlanResult, ZoningResult } from '../types'
+import type { Analysis, CarbonSeries, Config, HouseholdCheck, LotShape, Metric, PlanResult, RevenueSeries, ZoningResult } from '../types'
 import { rankOrder, rankingFlip, scores, smaa, type Flip } from './scoring'
 
 export const PLAN_ID = '__plan__'
@@ -18,6 +18,7 @@ export interface Option {
   zoning: ZoningResult
   households: HouseholdCheck[]
   carbon: CarbonSeries
+  revenue: RevenueSeries
   eligible: boolean
   reason: string | null
   fits: boolean
@@ -58,7 +59,7 @@ export function buildPool(config: Config, analysis: Analysis, plan: PlanResult |
     const t = config.typologies.find((x) => x.id === s.typology_id)!
     return {
       id: t.id, label: t.label, short: t.short_label, color: t.color, units: s.units, metrics: s.metrics,
-      zoning: s.zoning, households: s.households, carbon: s.carbon, eligible: s.eligible, reason: s.ineligible_reason,
+      zoning: s.zoning, households: s.households, carbon: s.carbon, revenue: s.revenue, eligible: s.eligible, reason: s.ineligible_reason,
       fits: s.form_fits, isPlan: false, placements: purePlacements(config, t.id, s.buildings, analysis.lot_shape),
       notes: s.notes,
     }
@@ -66,7 +67,7 @@ export function buildPool(config: Config, analysis: Analysis, plan: PlanResult |
   if (!plan || plan.units === 0) return pure
   const own: Option = {
     id: PLAN_ID, label: 'Your plan', short: 'Your plan', color: '#2fd06b', units: plan.units, metrics: plan.metrics,
-    zoning: plan.zoning, households: plan.households, carbon: plan.carbon, eligible: plan.eligible,
+    zoning: plan.zoning, households: plan.households, carbon: plan.carbon, revenue: plan.revenue, eligible: plan.eligible,
     reason: plan.ineligible_reason, fits: true, isPlan: true, zoningByType: plan.zoning_by_typology, notes: plan.notes,
   }
   return [...pure, own]

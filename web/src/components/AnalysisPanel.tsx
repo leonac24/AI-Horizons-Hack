@@ -69,6 +69,10 @@ function Presets({ config, profileId, onWeights }: Pick<Props, 'config' | 'profi
   )
 }
 
+// Metric ids from core/tax.py shown under "Your plan" beside the criteria. They
+// are not criteria (never weighted), so config.criteria does not list them.
+const RECEIPT_EXTRAS = ['revenue.annual_stabilized', 'tax.per_home_monthly']
+
 function CompareTab(p: Props) {
   const { config, analysis, ranking, pool } = p
   const plan = pool.find((o) => o.id === PLAN_ID) ?? null
@@ -144,6 +148,11 @@ function CompareTab(p: Props) {
                 <MetricBox key={c.id} m={plan.metrics[c.metric_id]} label={c.label} question={c.question} domain={domains[c.metric_id]} />
               ))}
             </div>
+            <div className="col tight">
+              {RECEIPT_EXTRAS.filter((id) => plan.metrics[id]).map((id) => (
+                <MetricBox key={id} m={plan.metrics[id]} />
+              ))}
+            </div>
             {plan.notes.map((n) => (
               <div key={n} className="dim small">
                 {n}
@@ -181,6 +190,11 @@ function CompareTab(p: Props) {
               Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}`).join('; ')}
             </div>
           )}
+          {analysis.tension_flags.map((f) => (
+            <div key={`${f.id}-${f.typology_id}`} className="note-box small">
+              <strong>{f.label}:</strong> {labelOf(f.typology_id)}. {f.message}
+            </div>
+          ))}
         </div>
         <div className="flip-box">
           {f && crit
@@ -569,6 +583,13 @@ function UnknownsTab() {
       {u.placeholder_assumptions.map((a) => (
         <div key={a.id} className="small unk-row">
           <code>{a.id}</code> <span className="dim">({a.unit})</span> — {a.rationale}
+        </div>
+      ))}
+      <div className="h-card">Tax terms not yet reviewed ({u.unreviewed_tax_terms.length})</div>
+      {u.unreviewed_tax_terms.map((t) => (
+        <div key={t.id} className="small unk-row">
+          {t.label}
+          {t.note && <span className="muted"> — {t.note}</span>}
         </div>
       ))}
       <div className="h-card">Data sources not connected yet ({u.unverified_sources.length})</div>

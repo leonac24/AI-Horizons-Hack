@@ -120,6 +120,11 @@ export interface Config {
   stakeholders: { profiles: StakeholderProfile[] }
   sources: { sources: Record<string, Source> }
   assumptions: Record<string, { value: number; low: number; high: number; unit: string; provenance: Provenance; source: string | null; rationale: string }>
+  tension_flags: { id: string; label: string; top_on: string; bottom_on: string[]; message: string }[]
+  tax: {
+    taxing_bodies: { id: string; label: string }[]
+    abatements: { id: string; label: string; reviewed: boolean; note?: string | null }[]
+  }
   hash: string
 }
 
@@ -180,6 +185,7 @@ export interface Scenario {
   zoning: ZoningResult
   households: HouseholdCheck[]
   carbon: CarbonSeries
+  revenue: RevenueSeries
 }
 
 export interface CarbonSeries {
@@ -188,6 +194,21 @@ export interface CarbonSeries {
   low: number[]
   high: number[]
   provenance: Provenance
+}
+
+/** Cumulative property tax the lot yields, net of any reviewed abatement. */
+export interface RevenueSeries extends CarbonSeries {
+  abated_years: number
+}
+
+/** Best on one criterion, worst on another — evidence, computed by the engine. */
+export interface TensionFlag {
+  id: string
+  label: string
+  message: string
+  typology_id: string
+  top_on: string
+  bottom_on: string[]
 }
 
 export interface LotShape {
@@ -208,6 +229,7 @@ export interface Analysis {
   site_facts: SiteFact[]
   scenarios: Scenario[]
   placeholder_count: number
+  tension_flags: TensionFlag[]
 }
 
 export interface Explanation {
@@ -220,6 +242,7 @@ export interface Unknowns {
   placeholder_assumptions: { id: string; unit: string; rationale: string; source: string | null }[]
   unverified_sources: { id: string; name: string; note: string | null }[]
   unreviewed_districts: { district: string; vacant_parcels: number }[]
+  unreviewed_tax_terms: { id: string; label: string; note: string | null }[]
   vacant_parcels: number
   share_covered_by_reviewed_rules: number
   pipeline?: { counts?: Record<string, number>; context?: Record<string, unknown> } | null
@@ -247,6 +270,7 @@ export interface PlanResult {
   failed_typologies: string[]
   households: HouseholdCheck[]
   carbon: CarbonSeries
+  revenue: RevenueSeries
   eligible: boolean
   ineligible_reason: string | null
   notes: string[]
