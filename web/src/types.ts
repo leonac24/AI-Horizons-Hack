@@ -124,7 +124,8 @@ export interface Config {
     evidence: { topics: Record<string, { label: string; listed: boolean }> }
     ask: { search_example: string; examples: string[] }
     tutorial: { storage_key: string; chapters: Partial<Record<TourChapter, TourStep[]>> }
-    help: Record<string, { title: string; body: string }>
+    panels: { storage_key: string; narrow_max_px: number }
+    help: Record<string, HelpText>
   }
   city: {
     name: string
@@ -357,8 +358,16 @@ export interface PlanResult {
 }
 
 export type TourChapter = 'city' | 'lot'
+/** Text behind a ? button; `touch_body` replaces `body` on touch screens. */
+export interface HelpText {
+  title: string
+  body: string
+  touch_body: string | null
+}
 export interface TourStep {
   title: string
   body: string
+  /** Wording for touch screens, when `body` talks about a mouse or keys. */
+  touch_body: string | null
   target: string | null
 }

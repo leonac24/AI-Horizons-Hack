@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useTouch } from '../lib/media'
 import { placeNear, useAnchoredPopover } from '../lib/popover'
 import { HelpContext } from '../lib/tour'
 import type { TourStep } from '../types'
@@ -9,6 +10,7 @@ import type { TourStep } from '../types'
  */
 export function HelpTip({ id }: { id: string }) {
   const tip = useContext(HelpContext)[id]
+  const touch = useTouch()
   const { open, setOpen, toggle, btn, pop, style } = useAnchoredPopover()
 
   if (!tip) return null
@@ -33,7 +35,7 @@ export function HelpTip({ id }: { id: string }) {
                 ×
               </button>
             </div>
-            <p>{tip.body}</p>
+            <p>{(touch && tip.touch_body) || tip.body}</p>
           </div>,
           document.body,
         )}
@@ -58,6 +60,7 @@ export function Tour({ steps, onFinish, onSkip }: { steps: TourStep[]; onFinish:
   const next = useRef<HTMLButtonElement>(null)
   const step = steps[i]
   const last = i === steps.length - 1
+  const touch = useTouch()
 
   // Targets move (panels slide, the palette reflows), so follow them each frame.
   useEffect(() => {
@@ -114,7 +117,7 @@ export function Tour({ steps, onFinish, onSkip }: { steps: TourStep[]; onFinish:
         <div id="tour-title" className="tour-title">
           {step.title}
         </div>
-        <p>{step.body}</p>
+        <p>{(touch && step.touch_body) || step.body}</p>
         <div className="tour-dots" aria-hidden="true">
           {steps.map((_, k) => (
             <span key={k} className={k === i ? 'on' : ''} />

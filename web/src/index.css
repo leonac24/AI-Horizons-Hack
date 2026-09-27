@@ -140,7 +140,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px rgba(255, 255, 255, 0.9);
 }
 .pin-detail { display: none; color: var(--ink-2); font: 500 11px/1.3 var(--display); }
-.pin-label:hover .pin-detail { display: block; }
 
 /* City panel */
 .city-panel {
@@ -168,7 +167,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   text-align: left; background: var(--card); border: 2px solid var(--border); border-bottom-width: 4px; color: var(--ink); padding: 9px 11px;
   border-radius: 11px; cursor: pointer; display: flex; flex-direction: column; gap: 3px;
 }
-.lot-card:hover { border-color: var(--lime); background: var(--card-hover); }
 .lc-top { display: flex; justify-content: space-between; gap: 8px; }
 .lc-name { font: 600 15px var(--display); }
 .lc-zone { font: 600 11.5px var(--display); color: #fff; padding: 1px 8px; border-radius: 999px; }
@@ -212,7 +210,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
   position: relative; width: 138px; flex-shrink: 0; padding: 6px 6px 8px; border: 2px solid var(--border); border-bottom-width: 5px;
   border-radius: 12px; background: var(--card); cursor: grab; touch-action: none; display: flex; flex-direction: column; gap: 4px; transition: transform 0.12s;
 }
-.pal-card:hover { border-color: var(--typ, var(--lime)); transform: translateY(-3px); }
 .pal-swatch { height: 48px; display: flex; align-items: flex-end; justify-content: center; border-radius: 11px; padding-bottom: 5px; }
 .pal-swatch div { border-radius: 3px; }
 .pal-name { font: 600 14px/1.15 var(--display); padding: 0 3px; }
@@ -497,3 +494,80 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 .cp-head [data-tour='filters'] > .cp-label { margin-top: 2px; }
 .hud-help { align-self: center; }
 .back-btn { white-space: nowrap; flex-shrink: 0; }
+
+/* Tuck-away panels: every panel's ▾ folds it to its header */
+.tuck-btn {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; padding: 3px 8px; cursor: pointer;
+  background: var(--card); color: var(--ink); border: 2px solid var(--border); border-bottom-width: 3px; border-radius: 9px; font: 700 12.5px/1 var(--display);
+}
+.tuck-btn:hover { border-color: var(--lime); }
+.tuck-chev { display: inline-block; font-size: 15px; line-height: 1; transition: transform 0.2s; }
+[aria-expanded='false'] > .tuck-chev { transform: rotate(-90deg); }
+.cp-title { display: flex; align-items: center; }
+.cp-hero .tuck-btn { background: rgba(11, 58, 31, 0.14); color: var(--bg); border-color: rgba(11, 58, 31, 0.35); }
+.city-panel.tucked { bottom: auto; }
+.hud-row > .tuck-btn { margin-left: 0; align-self: center; padding: 8px 10px; border-radius: 12px; background: var(--panel); }
+.build-head .tuck-btn { margin-left: 6px; padding: 1px 6px; }
+.palette.tucked { padding: 6px 10px; }
+.palette.tucked .build-head { position: static; }
+.tabs { align-items: flex-start; }
+.tab-list { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; min-width: 0; }
+.tabs .tuck-btn { margin-left: auto; background: var(--card); color: var(--ink); border: 2px solid var(--border); border-bottom-width: 3px; padding: 3px 8px; }
+.panel.tucked .tabs { border-bottom: none; }
+
+/* Phone width (app.yaml: panels.narrow_max_px): sheets, compact gauges, Tools menu */
+.narrow .topbar { gap: 8px; padding: 0 10px; z-index: 6; }
+.narrow .brand-name, .narrow .brand-tag { display: none; }
+.narrow .strip { height: auto; min-height: 22px; padding: 2px 8px; white-space: normal; text-align: center; font-size: 10.5px; line-height: 1.2; }
+.tools-btn { flex-shrink: 0; white-space: nowrap; }
+.bar-menu {
+  position: absolute; top: 58px; right: 8px; flex-direction: column; align-items: stretch; gap: 6px; padding: 10px; z-index: 6;
+  background: var(--card); border: 2px solid var(--border); border-radius: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.bar-menu .bar-actions { flex-direction: column; align-items: stretch; }
+.narrow .city-panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 56vh; max-height: 56dvh; }
+.narrow .city-panel.tucked { bottom: 8px; }
+.narrow .hint-pill { display: none; }
+.narrow .gauge { min-width: 0; padding: 5px 8px; gap: 6px; }
+.narrow .gauge-tile { width: 18px; height: 18px; border-radius: 8px; }
+.narrow .gauge-val { font-size: 16px; }
+.narrow .gauge-text { font-size: 13px; white-space: normal; }
+.narrow .hud-note { max-width: 100%; }
+.narrow .tab-list { flex-wrap: nowrap; overflow-x: auto; }
+.narrow .pal-card { width: 112px; }
+.narrow .pal-swatch { height: 36px; }
+.narrow .inspector { width: auto; right: 8px; }
+.narrow .compare-grid { grid-template-columns: minmax(0, 1fr); }
+
+/* Hover effects only where there is hover: on touch they stick after a tap */
+@media (hover: hover) {
+  .pin-label:hover .pin-detail { display: block; }
+  .lot-card:hover { border-color: var(--lime); background: var(--card-hover); }
+  .pal-card:hover { border-color: var(--typ, var(--lime)); transform: translateY(-3px); }
+}
+
+/* Touch screens: finger-sized targets, no double-tap zoom, no iOS zoom on focus */
+@media (pointer: coarse) {
+  button, a, input, select, label { touch-action: manipulation; }
+  input, select, textarea { font-size: 16px; }
+  .viewport { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  /* Swipe sideways to scroll the palette; pull a card up to drag it onto the lot. */
+  .pal-card { touch-action: pan-x; }
+  .help-tip { width: 26px; height: 26px; font-size: 13px; position: relative; }
+  .help-tip::after { content: ''; position: absolute; inset: -8px; }
+  .help-x { padding: 6px 10px; font-size: 22px; }
+  .help-btn { width: 40px; height: 40px; }
+  .tuck-btn { min-height: 38px; min-width: 42px; justify-content: center; }
+  .build-head .tuck-btn { min-height: 30px; }
+  .go-btn, .ghost-btn, .stop-btn, .tabs button { min-height: 40px; }
+  .seg button { min-height: 36px; padding: 6px 14px; }
+  input[type='checkbox'] { width: 20px; height: 20px; }
+  .cp-checks label { grid-template-columns: 26px minmax(0, 1fr); padding: 4px 0; }
+  input[type='range'] { height: 28px; }
+  .lot-card { padding: 11px 12px; }
+  .pin-label { padding: 6px 11px; }
+}
+
+.narrow .memo-backdrop { padding: 8px; }
+.narrow #lotline-memo { padding: 16px 18px; }
+

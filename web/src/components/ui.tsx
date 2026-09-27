@@ -2,6 +2,16 @@ import type { Metric, Provenance, Source } from '../types'
 import { fmt, unitSuffix } from '../lib/format'
 import { InfoTip } from './info'
 
+/** The ▾ on a panel header: tucks the panel away to its header, or brings it back. */
+export function TuckButton({ open, onToggle, label, text }: { open: boolean; onToggle: () => void; label: string; text?: string }) {
+  return (
+    <button type="button" className="tuck-btn" aria-expanded={open} title={open ? `Tuck away ${label}` : `Show ${label}`} aria-label={open ? `Tuck away ${label}` : `Show ${label}`} onClick={onToggle}>
+      {text && <span>{text}</span>}
+      <span className="tuck-chev" aria-hidden="true">▾</span>
+    </button>
+  )
+}
+
 export function ProvTag({ p }: { p: Provenance }) {
   return <span className={`prov-tag prov-${p}`}>{p}</span>
 }

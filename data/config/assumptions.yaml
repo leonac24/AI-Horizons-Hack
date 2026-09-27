@@ -209,18 +209,26 @@ assumptions:
     high: 16000
     unit: miles/yr
     provenance: placeholder
-    source: epa_smart_location
-    rationale: Household vehicle miles traveled at a location with average transit access. Scaled by the lot's access index.
+    source: null
+    rationale: >-
+      No defensible household VMT observation is connected. EPA Smart Location
+      transit accessibility is not VMT; this stand-in is not scaled by transit
+      access and should be removed from ranking claims until a matching regional
+      travel model is integrated.
 
   kgco2e_per_vmt:
     label: Carbon per mile driven
-    value: 0.35
-    low: 0.28
-    high: 0.42
+    value: 0.393
+    low: 0.393
+    high: 0.393
     unit: kgCO2e/mile
-    provenance: placeholder
-    source: null
-    rationale: Average light-duty fleet tailpipe emissions per mile, declining fleet ignored.
+    provenance: assumption
+    source: epa_ghg_factors
+    rationale: >-
+      EPA's greenhouse-gas equivalencies calculation uses 0.393 kg CO2e per
+      vehicle-mile for an average U.S. passenger vehicle (2022 fleet and fuel
+      economy baseline). This is a national tailpipe proxy, not Pittsburgh
+      household VMT or a vehicle-specific estimate.
 
   lot_depth_to_frontage_ratio:
     label: Lot depth-to-width ratio
@@ -232,9 +240,10 @@ assumptions:
     source: null
     rationale: >-
       Only used to draw a lot whose legal description gives no usable dimensions
-      (about 29% of vacant parcels). Many older Pittsburgh lots are roughly
-      25-40 ft wide and 100-120 ft deep; a sourced value would come from parcel
-      boundary geometry.
+      and whose parcel polygon is unavailable or unusable. When a PIN-matched
+      county polygon is available, the pipeline derives approximate axes from
+      its minimum rotated rectangle instead. This fallback remains a placeholder;
+      geometry-derived axes are modeled estimates, not legal frontage.
 
   site_area_per_building_footprint:
     label: Lot area needed per footprint
@@ -265,7 +274,7 @@ assumptions:
     source: null
     rationale: Horizon for cumulative carbon and crossover years.
 
-  # --- Lot context (until tract adapters are connected) -----------------------
+  # --- Context fallbacks (used only where a parcel/tract join is unavailable) -
   tract_median_household_income:
     label: Nearby household income (stand-in)
     value: 60000
@@ -274,7 +283,10 @@ assumptions:
     unit: USD/yr
     provenance: placeholder
     source: acs_5yr
-    rationale: Stand-in until ACS B19013 is joined by tract (Census API key needed).
+    rationale: >-
+      Fallback only when the 2024 ACS B19013 tract estimate is missing or
+      suppressed. The parcel pipeline joins the tract value and published MOE
+      for available records; this citywide stand-in is not an observed tract value.
 
   tract_renter_cost_burden_share:
     label: Renters cost-burdened (stand-in)
@@ -283,18 +295,25 @@ assumptions:
     high: 0.55
     unit: share of renter households
     provenance: placeholder
-    source: hud_chas
-    rationale: Share of renter households paying 30%+ of income. Stand-in until CHAS is joined by tract.
+    source: acs_5yr
+    rationale: >-
+      Fallback only when the 2024 ACS B25070 tract estimate is unavailable. The
+      parcel pipeline computes renter gross-rent cost burden by tract and keeps
+      the numerator/denominator and an approximate uncertainty envelope.
 
   jobs_access_index:
     label: Transit access to jobs
     value: 1.0
     low: 0.6
     high: 1.4
-    unit: index (city average = 1)
+    unit: index (regional max = 1)
     provenance: placeholder
-    source: prt_gtfs
-    rationale: Jobs reachable by transit relative to the city average. Stand-in until the PRT travel-time matrix is built.
+    source: epa_smart_location
+    rationale: >-
+      Fallback only where EPA Smart Location Database D5DRI is unavailable for
+      the parcel's block group. D5DRI is a 0–1 relative transit-job-access score
+      normalized to the highest block group in the Pittsburgh CBSA; it is not a
+      city-average ratio.
 
   sewer_stress_index:
     label: Combined-sewer stress

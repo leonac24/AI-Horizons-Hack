@@ -94,11 +94,13 @@ citation.
 
 **Placeholder or missing (labelled in the app):**
 
-- 15 assumptions, including construction and operating cost, embodied and
-  operational carbon, grid decarbonization, vehicle miles, job access and sewer
-  stress. The app hatches every value that depends on one.
-- Commute times are not modeled. PRT GTFS, HUD CHAS, the EPA Smart Location
-  Database and ResStock are not connected yet.
+- 14 assumptions or fallbacks remain, including construction and operating
+  cost, embodied and operational carbon, grid decarbonization, household VMT
+  and sewer stress. Transit access is joined for 15,553 parcels, with a
+  fallback for unmatched block groups. The app hatches placeholder-dependent
+  values.
+- EPA Smart Location transit access is a 2021 snapshot, not current route-level
+  commute time. Current PRT GTFS, HUD CHAS and ResStock remain unconnected.
 - Zoning overlays (Riverfront, IPOD, historic) and 34 smaller base districts
   have no rules. Those lots show "Needs planner review".
 
@@ -166,6 +168,8 @@ All are public. Full registry, licenses and verification dates:
 | HUD FY2026 Income Limits (Pittsburgh HMFA) | HUD User |
 | HUD 2024 Total Development Cost limits | HUD |
 | 2024 ACS 5-Year Detailed Tables (B19013, B25070) | U.S. Census Bureau summary files |
+| EPA Smart Location Database 3.0 transit access | U.S. EPA (ArcGIS REST) |
+| EPA passenger-vehicle emissions factor | U.S. EPA |
 | EPA eGRID2023 | U.S. EPA |
 | Terrain Tiles (for the 3D city only; never in a metric) | AWS Open Data |
 
@@ -177,7 +181,7 @@ All are public. Full registry, licenses and verification dates:
   the team: pipeline, engine, API, frontend and tests. A person on the team
   decided each design question. Claude Code also hand-extracted the current
   zoning facts from Title Nine and checked the dataset endpoints.
-- **GitHub Copilot coding agent** authored a few commits.
+- **GitHub Copilot coding agent** authored a few commits exclusively for fixing merge conflicts.
 
 **Inside Lotline:**
 
@@ -271,32 +275,20 @@ Rules are in force once their quotes verify. To have a person confirm them,
 tick facts in `pipeline/zoning/REVIEW.md` and run
 `uv run python -m pipeline.zoning.build_rules --apply`.
 
-### Compile source documents with Laya (local only)
+### Local Laya and LLM pipeline
 
-Laya runs only on the developer's machine. The Vercel deployment reads the
-checked-in `data/processed/laya_evidence.json`; it does not install or invoke
-Laya. This step classifies document passages as **leads for review**. It does
-not extract numerical inputs or change zoning status, assumptions, or ranking.
+All Laya tooling, requirements, curated Laya documents, optional local inputs,
+and compiled artifacts live under `dev/laya/`. The app reads the checked-in
+`dev/laya/compiled/laya_evidence.json` index but never installs or invokes Laya.
+See [dev/laya/README.md](dev/laya/README.md) for passage classification and
+structured candidate extraction. Numeric candidates are source-linked and
+unapplied; structured sources such as ACS, parcel geometry, and EPA SLD are
+integrated through deterministic adapters. Laya classification does not create
+or apply zoning rules.
 
-1. The checked-in `data/sources/zoning/*.txt` and
-   `data/sources/laya/<source_id>/` snapshots compile automatically. Their
-   section links and coverage are listed in `data/sources/zoning/README.md`.
-2. Optionally save other public text, Markdown, or PDF source documents in
-   `data/raw/laya/<source_id>/`, using an ID from `data/config/sources.yaml`.
-   Newly added raw files are gitignored by default.
-3. From the repository root:
-
-   ```bash
-   python3 -m venv .venv-laya
-   .venv-laya/bin/python -m pip install 'torch==2.14.0+cpu' --index-url https://download.pytorch.org/whl/cpu
-   .venv-laya/bin/python -m pip install -r requirements-laya.txt
-   .venv-laya/bin/python -m pipeline.laya_compile
-   .venv-laya/bin/python -m pipeline.laya_compile --check
-   ```
-
-   Laya's first run downloads its checkpoint. Inspect the source links and
-   labels in `data/processed/laya_evidence.json`, then commit it with the
-   source and code changes. The "What we don't know" tab reads it.
+Quote-verified AI-extracted zoning rules are currently in force while labeled
+as not checked by a planner. Use the dedicated Title Nine pipeline and
+`require_human_review` setting to control that behavior.
 
 ## Docs
 
@@ -314,10 +306,10 @@ not extract numerical inputs or change zoning status, assumptions, or ranking.
    (LNC, UI, NDI and the Riverfront districts first).
 2. Replace the remaining cost and carbon placeholders with verified local
    evidence; evaluate CHAS for income-tier detail.
-3. Build a measured PRT travel-time matrix with a walking network and job
-   destinations, or obtain the University of Minnesota's block-level 2024
-   transit-access data. Combined-sewershed boundaries are loaded, but sewer
-   stress still needs capacity or overflow observations.
+3. EPA Smart Location Database transit access is joined at block-group level
+   (2021 vintage); refresh it with a newer PRT travel-time matrix if current
+   route-level access is needed. Combined-sewershed boundaries are loaded, but
+   sewer stress still needs capacity or overflow observations.
 4. Make scenarios editable (tenure, affordability mix, parking) and add the
    advocates + referee explanation mode.
 
@@ -331,7 +323,61 @@ can maintain the data without touching code.
 
 ## Team
 
-_TODO: team name, and each member's name, role and affiliation._
+Three people built Lotline during the build window. Who did what below is read
+from the commit history (`git log --no-merges`); everyone also reviewed and
+merged each other's work.
+
+_TODO: team name, affiliations, and Devin's full name._
+
+**Leona Chen** ([@leonac24](https://github.com/leonac24)): project lead,
+frontend and 3D city
+
+- Wrote the first working code: config system, citywide vacant-parcel pipeline,
+  evidence engine and API, then the first web app (map picker, compare view, weights and
+  SMAA, work backwards) and the Vercel deploy.
+- Built the 3D simulator: the city on real terrain with rivers, bridges,
+  streets and neighborhood names; the drag-and-drop lot sandbox with live plan
+  analysis and reviewed setbacks drawn as the buildable area; the intro screen;
+  tuck-away panels, a phone layout and touch controls.
+- Zoning and costs: captured Title Nine text, extracted rules for the R-family,
+  H and P districts, and sourced the construction cost, soft cost and grid
+  emissions assumptions.
+- Merged the Claude Code work (see [AI tool disclosure](#ai-tool-disclosure))
+  that added AI lot search, "Ask about this lot", grounded tradeoff
+  explanations, the Next steps tab with AI-drafted outreach, share links and the
+  first-run tour, and moved the LLM provider from Gemini to the Anthropic API.
+
+**Pranav Singhal** ([@s9kt](https://github.com/s9kt)): product direction,
+evidence and data pipeline
+
+- Set the product direction in the first commit: the product-decision record
+  ([.grill/cdc-housing-scenario-comparison.md](.grill/cdc-housing-scenario-comparison.md))
+  that fixed the CDC as the primary user, and the original project brief
+  (`CLAUDE.md`).
+- Built the Laya evidence pipeline (`dev/laya/`, `pipeline/laya_compile.py`):
+  it compiles versioned Pittsburgh zoning sources into a checked-in evidence
+  index with a freshness check and tests. A second stage asks the model for
+  numeric candidates that must quote their source and are never applied
+  automatically.
+- Added `pipeline/enrich_context.py`, which joins 2024 ACS tract income and
+  renter burden, frontage and depth estimated from parcel polygons, and EPA
+  Smart Location Database transit access to every vacant lot, replacing
+  placeholders with sourced values
+  ([docs/PLACEHOLDER_PIPELINE.md](docs/PLACEHOLDER_PIPELINE.md)).
+
+**Devin Myers** ([@Devin-M5706](https://github.com/Devin-M5706)): backend and zoning engine
+
+- Hardened the API: hard requirements before weights, every input limit and
+  route bound taken from config with tests that keep it that way, the parcel-id
+  format in `city.yaml`, and the auditable contract in
+  [docs/BACKEND.md](docs/BACKEND.md).
+- Zoning engine: separate use and dimensional rules, a citywide ADU rule, the
+  height rule, and lot fit from building footprints.
+- The "what to find out" work plan: `core/inquiries.py` turns each parcel's
+  unknowns into questions, who can answer them and what to ask for, and
+  `web/src/lib/leverage.ts` orders them by how much each answer could move the
+  ranking.
+- Wrote the design for adding tax to the evidence layer.
 
 ## Originality
 

@@ -244,11 +244,22 @@ sources:
   epa_smart_location:
     name: EPA Smart Location Database
     publisher: U.S. EPA
-    url: https://www.epa.gov/smartgrowth/smart-location-mapping
-    access: manual
-    vintage: not yet retrieved
+    url: https://services1.arcgis.com/IqEe3YDHhqT8n4KU/ArcGIS/rest/services/EPA_SmartLocationDatabase_V3_Jan_2021_Final/FeatureServer/0
+    access: arcgis
+    vintage: 2021 SLD 3.0; 2020 GTFS and travel times; 2017 LEHD; GEOID20 block groups
     license: public domain
-    verified: false
+    verified: "2026-09-27"
+    note: D5DRI is transit job accessibility relative to the highest block group in the CBSA (0–1); D5BR is distance-decay-weighted jobs reachable within 45 minutes by transit. It is a site context measure, not household VMT.
+
+  epa_ghg_factors:
+    name: EPA Greenhouse Gas Emission Factors Hub and Equivalencies Calculator
+    publisher: U.S. EPA
+    url: https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references
+    access: manual
+    vintage: 2022 average passenger-vehicle fleet baseline (published in EPA's current references)
+    license: public domain
+    verified: "2026-09-27"
+    note: 0.393 kg CO2e per vehicle-mile is an average U.S. passenger-vehicle tailpipe proxy; it does not specify Pittsburgh household VMT.
 
   nrel_resstock:
     name: ResStock
@@ -268,4 +279,3 @@ sources:
     license: see registry page; attribution to the underlying sources required
     verified: "2026-09-26"
     note: Used only to shape the stylized 3D city. Baked into web/public/data/terrain.bin by pipeline/build_terrain.py; never used in any metric.
-

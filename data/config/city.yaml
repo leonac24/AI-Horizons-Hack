@@ -195,6 +195,12 @@ context:
     service_url: https://maps.pasda.psu.edu/ArcGIS/rest/services/pasda/FEMA_NationalFloodHazardLayer_PA/MapServer/0
   combined_sewersheds:
     source: pwsa_combined_sewersheds
+  transit_jobs:
+    source: epa_smart_location
+    service_url: https://services1.arcgis.com/IqEe3YDHhqT8n4KU/ArcGIS/rest/services/EPA_SmartLocationDatabase_V3_Jan_2021_Final/FeatureServer/0
+    county_filter: { STATEFP: 42, COUNTYFP: 3 }
+    index_field: D5DRI
+    jobs_field: D5BR
 
 # Suggested lots: spread across the city, not favorites.
 suggested_lots:

@@ -87,6 +87,9 @@ export interface Engine {
   /** City view only: fly the camera so these lots fill the screen. */
   frameLots(lots: { lon: number; lat: number }[]): void
   beginDrag(typ: string, e?: PointerLike): void
+  /** Put one building of this type at the free spot nearest the lot's center
+   * (tap-to-add, for touch). False when it fits nowhere. */
+  addBuilding(typ: string): boolean
   rotateSelected(): void
   deleteSelected(): void
   clearSelection(): void
@@ -917,16 +920,29 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
         emit()
       }
     } else {
-      const p: Placement = { uid: 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e4), typ: d.typ, x: d.x, z: d.z, rot: d.rot }
-      placements.push(p)
-      rebuildPlaced()
-      select(p.uid)
-      emit()
+      addPlacement(d.typ, d.x, d.z, d.rot)
     }
   }
+  function addPlacement(typ: string, x: number, z: number, rot: number): void {
+    const p: Placement = { uid: 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e4), typ, x, z, rot }
+    placements.push(p)
+    rebuildPlaced()
+    select(p.uid)
+    emit()
+  }
 
+  // Fingers wobble more than a mouse, so a touch may travel further and still be a tap.
+  const slop = (e: PointerEvent) => (e.pointerType === 'touch' ? 12 : 5)
+  const touching = new Set<number>()
   let down: { x: number; y: number } | null = null
   const onDown = (e: PointerEvent) => {
+    touching.add(e.pointerId)
+    // A second finger means pinch or pan: drop any building move and leave it to the camera.
+    if (touching.size > 1) {
+      if (drag?.uid) endGhost(false)
+      down = null
+      return
+    }
     down = { x: e.clientX, y: e.clientY }
     stopSpin()
     if (mode !== 'lot' || e.button !== 0 || !showPlan || !placedGroup) return
@@ -950,7 +966,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   }
   const onMove = (e: PointerEvent) => {
     if (drag && drag.uid) {
-      if (drag.pending && down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 4) return
+      if (drag.pending && down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < slop(e)) return
       if (drag.pending) {
         drag.pending = false
         const o = placed.get(drag.uid)
@@ -964,7 +980,8 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     else if (showPlan && placedGroup) canvas.style.cursor = pick(e.clientX, e.clientY, placedGroup.children) ? 'grab' : ''
   }
   const onUp = (e: PointerEvent) => {
-    const still = down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 5
+    touching.delete(e.pointerId)
+    const still = down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < slop(e)
     if (drag && drag.uid) {
       endGhost(!drag.pending)
       return
@@ -979,6 +996,14 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   canvas.addEventListener('pointerdown', onDown, { capture: true })
   canvas.addEventListener('pointermove', onMove)
   canvas.addEventListener('pointerup', onUp)
+  // The browser can take a touch over (a scroll, a system gesture); never leave a
+  // drag hanging with the camera switched off.
+  const onCancel = (e: PointerEvent) => {
+    touching.delete(e.pointerId)
+    down = null
+    if (drag) endGhost(false)
+  }
+  canvas.addEventListener('pointercancel', onCancel)
   const onWinMove = (e: PointerEvent) => {
     if (drag && !drag.uid) updateGhost(e.clientX, e.clientY)
   }
@@ -1019,6 +1044,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   }
   window.addEventListener('pointermove', onWinMove)
   window.addEventListener('pointerup', onWinUp)
+  window.addEventListener('pointercancel', onCancel)
   window.addEventListener('keydown', onKey)
 
   // ---------- loop ----------
@@ -1209,6 +1235,27 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       startGhost(typ, 0, null)
       if (e) updateGhost(e.clientX, e.clientY)
     },
+    addBuilding(typ) {
+      if (mode !== 'lot' || !showPlan || !lotScene || !F[typ]) return false
+      const { W, D } = lotScene
+      let best: [number, number, number] | null = null
+      let bestD = Infinity
+      // Same grid snapPos uses, both orientations; keep the spot nearest the center.
+      for (const rot of [0, 1]) {
+        const [fw, fd] = dims(typ, rot)
+        for (let x = -W / 2 + fw / 2; x <= W / 2 - fw / 2 + 0.01; x += snap)
+          for (let z = -D / 2 + fd / 2; z <= D / 2 - fd / 2 + 0.01; z += snap) {
+            const d = Math.hypot(x, z)
+            if (d < bestD && valid(typ, x, z, rot, null)) {
+              bestD = d
+              best = [x, z, rot]
+            }
+          }
+      }
+      if (!best) return false
+      addPlacement(typ, ...best)
+      return true
+    },
     rotateSelected() {
       const p = placements.find((q) => q.uid === selUid)
       if (!p) return
@@ -1247,6 +1294,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       ro.disconnect()
       window.removeEventListener('pointermove', onWinMove)
       window.removeEventListener('pointerup', onWinUp)
+      window.removeEventListener('pointercancel', onCancel)
       window.removeEventListener('keydown', onKey)
       controls.dispose()
       hoods?.dispose()

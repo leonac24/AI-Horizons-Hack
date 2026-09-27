@@ -10,7 +10,8 @@ WEB = ROOT / "web" / "src"
 
 
 def test_every_metric_the_engine_emits_has_a_method(cfg, lot):
-    a = analyze(cfg, lot)
+    # Optional joins add optional facts; include them so their ids are checked too.
+    a = analyze(cfg, {**lot, "transit_access_index": 0.4, "transit_jobs_accessible": 12000})
     ids = {m.id for m in a.site_context} | {f.id for f in a.site_facts}
     for s in a.scenarios:
         ids |= set(s.metrics)

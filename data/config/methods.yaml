@@ -63,11 +63,23 @@ methods:
   site.jobs_access:
     title: Transit access to jobs
     how: >-
-      Jobs reachable by transit, relative to the city average (1 = average). It
-      scales the travel part of carbon.
+      EPA Smart Location Database score (D5DRI) for this lot's block group: jobs
+      reachable by transit, on a 0–1 scale where 1 is the best-connected block
+      group in the Pittsburgh metro. Shown as site context; it is not a scored
+      criterion.
     limits: >-
-      Placeholder until a Pittsburgh Regional Transit travel-time matrix is
-      built. Every lot currently shows the same band.
+      2021-vintage data built on 2020 transit schedules, not today's PRT service
+      or any household's commute. Where EPA has no value, a placeholder band is shown.
+
+  site.transit_jobs_accessible:
+    title: Jobs within a 45-minute transit trip
+    how: >-
+      EPA Smart Location Database estimate (D5BR) of jobs reachable from this
+      block group within a 45-minute transit commute, with closer jobs counting
+      more.
+    limits: >-
+      Uses 2020 transit times and 2017 job locations. Not a current schedule or a
+      prediction of any household's commute.
 
   site.sewer_stress:
     title: Combined-sewer stress
@@ -124,10 +136,12 @@ methods:
     how: >-
       Width along the street and depth, used to fit buildings on the lot. Taken
       from the deed legal description ("LOT 30X100") when it agrees with the
-      assessed area. Otherwise the lot is drawn from its area and a typical
-      depth-to-width ratio.
+      assessed area. Next best, it is estimated from the smallest rectangle
+      around the county parcel outline. Failing both, the lot is drawn from its
+      area and a typical depth-to-width ratio.
     formula: >-
       observed if 0.6 ≤ (frontage × depth) / lot_area ≤ 1.6;
+      else modeled from the parcel polygon's minimum rotated rectangle;
       else frontage = √(lot_area / lot_depth_to_frontage_ratio)
     limits: Irregular, corner and flag lots are drawn as rectangles.
 
@@ -211,9 +225,9 @@ methods:
     how: >-
       Whole-life carbon for one home over the analysis horizon: materials to build
       it (year 0), then yearly home energy on a decarbonizing PA grid, plus car
-      travel scaled by transit access.
+      travel.
     formula: >-
-      embodied + Σ_years [ kWh × grid × (1 − decarb)^(y−1) + vmt / jobs_access × kgCO2e_per_mile ]
+      embodied + Σ_years [ kWh × grid × (1 − decarb)^(y−1) + vmt × kgCO2e_per_mile ]
     limits: >-
       Most inputs are placeholders. Compare options against each other rather
       than reading the tonnes as absolute.
@@ -264,10 +278,11 @@ methods:
       year of home energy and travel at a time. Where two lines cross, the option
       that cost more to build has paid back its extra carbon.
     formula: >-
-      year 0: embodied; year y: + kWh × grid × (1 − decarb)^(y−1) + vmt / jobs_access × kgCO2e_per_mile
+      year 0: embodied; year y: + kWh × grid × (1 − decarb)^(y−1) + vmt × kgCO2e_per_mile
     limits: >-
-      Grid decarbonization, travel and embodied carbon are placeholders. The shape
-      of the lines is more reliable than the tonnes.
+      Grid decarbonization, driving and embodied carbon are placeholders, and
+      driving is the same for every lot. The shape of the lines is more reliable
+      than the tonnes.
 
   backwards.subsidy_gap:
     title: Subsidy gap per home

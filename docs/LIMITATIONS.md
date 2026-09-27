@@ -6,18 +6,20 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `ef5b13cf1ef5`._
+_Auto-generated for config `ccee62af18d1`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
 - **Zoning rules in force:** AI-extracted rules are in force once their quotes verify against the saved code text; they are labelled as not checked by a planner (`require_human_review` in zoning.yaml).
 - **Share of vacant parcels covered by zoning rules:** 88.1% (7 of 41 base districts); by human-reviewed rules: 0.0%.
 - **Largest base districts with no rules yet:** LNC (949), UI (460), NDI (185), RIV-MU (148), UPR-B (98), RIV-IMU (97), RIV-RM (88), RIV-NS (87), RP (77), HC (52), GI (42), AP (41).
 - **Uses settled city-wide (1):** `single_unit_detached_with_adu`. These are decided by a rule that applies in every district, so they are excluded from the ranking everywhere, with a citation.
-- **Placeholder assumptions (15):** `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
+- **Placeholder assumptions (14):** `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
 - **2024 ACS median income / renter burden:** 22,113 / 22,132 indexed lots have tract estimates.
 - **FEMA point screen:** 22,183 classified; 359 in a mapped Special Flood Hazard Area at the tested point.
 - **2018 PWSA combined sewersheds:** 19,444 indexed lots have a point match.
-- **Sources not yet connected (6):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, EPA Smart Location Database, ResStock.
+- **EPA SLD transit access:** 15,553 indexed lots have a 2021 block-group match (D5DRI relative access; D5BR weighted jobs within 45 minutes).
+- **County geometry dimensions:** 5,965 lots have modeled parcel axes where legal dimensions were absent; these are not survey dimensions.
+- **Sources not yet connected (5):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, ResStock.
 <!-- AUTO:END -->
 
 ## What it gets wrong, or can't know
@@ -28,12 +30,13 @@ _Auto-generated for config `ef5b13cf1ef5`._
   "Needs planner review". Only base districts are joined. Overlays (Riverfront,
   IPOD, historic districts) are not joined, and neither are planned-unit
   developments or specially planned districts.
-- **Most cost and carbon numbers remain placeholders.** HUD FY2026 Pittsburgh
-  area median family income is published, and 2024 ACS tract income and renter
-  burden estimates are joined where available. Construction cost, soft cost,
-  capital cost, operating cost, embodied and operational carbon, grid intensity,
-  job access and sewer stress remain stand-ins. The UI hatches values that
-  depend on a placeholder.
+- **Most cost and carbon numbers remain assumptions or placeholders.** HUD FY2026
+  Pittsburgh area median family income is published, and 2024 ACS tract income
+  and renter burden estimates are joined where available. Construction cost,
+  soft cost, capital cost, operating cost, embodied and operational carbon,
+  grid trajectory, household VMT and sewer stress still use assumptions or
+  stand-ins. EPA transit access is joined for matched block groups; unmatched
+  parcels retain the fallback. The UI hatches values that depend on a placeholder.
 - **Mapped site context is checked at a point.** Slope, landslide and undermining
   use the published parcel centroid. FEMA flood and PWSA combined-sewershed
   screens use a point inside the county parcel polygon when its PIN matches,
@@ -51,10 +54,12 @@ _Auto-generated for config `ef5b13cf1ef5`._
   independently verified. Parcel positions (centroids) and lot dimensions are
   real. None of this scenery feeds any metric.
 - **Lot shape is a rectangle.** Frontage × depth comes from the deed legal
-  description when it agrees with the assessed area (71% of vacant parcels);
-  otherwise it is a placeholder from lot area. Irregular, corner and
-  through-lots are drawn as rectangles, and the building fit is a screen,
-  not a site plan: no setbacks, access or topography.
+  description when it agrees with assessed area (about 71% of vacant parcels),
+  otherwise from approximate axes of a matched county parcel polygon (about 27%).
+  The remaining lots use a placeholder ratio. Geometry-derived dimensions are
+  modeled, not legal frontage or survey measurements. Irregular, corner and
+  through-lots are drawn as rectangles, and the building fit is a screen, not a
+  site plan: no setbacks, access or topography.
 - **Homes per building are assumptions** (`typologies.yaml: building.homes`),
   consistent with the configured unit sizes.
 - **Assessed land value is not a market price.** It is used only as a land-cost
@@ -65,8 +70,9 @@ _Auto-generated for config `ef5b13cf1ef5`._
 - **Rent needed to cover cost is a simple annualized model** (capital cost share
   plus operating cost). It is not a pro forma: no financing structure, tax
   credits, abatements, or market rents.
-- **Commute times are not modeled yet.** The PRT travel-time matrix is pending;
-  a stop or route alone cannot establish jobs reachable by transit.
+- **Transit access uses an older regional snapshot.** EPA SLD 3.0 provides a
+  2021 block-group relative-access measure and weighted jobs within 45 minutes;
+  it is not a current route-level travel-time model or household VMT estimate.
 - **City limits only.** Other Allegheny County municipalities have their own
   zoning codes.
 - **Next steps name an agency, not a person, and the links are unconfirmed.**

@@ -23,6 +23,30 @@ if TYPE_CHECKING:
 log = logging.getLogger("pipeline.context")
 RAW = ROOT / "data" / "raw"
 PROCESSED = ROOT / "data" / "processed"
+PARCEL_CONTEXT_FIELDS = (
+    "geometry_frontage_ft", "geometry_depth_ft", "geometry_dimensions_method",
+    "transit_access_index", "transit_jobs_accessible",
+)
+
+
+def _write_parcel_context(records: list[dict]) -> None:
+    """Write supplementary geometry/transit values separately from the parcel index."""
+    context = {}
+    for record in records:
+        values = {key: record.get(key) for key in PARCEL_CONTEXT_FIELDS
+                  if record.get(key) is not None}
+        if values:
+            context[record["id"]] = values
+    PROCESSED.mkdir(parents=True, exist_ok=True)
+    lines = (json.dumps({"id": parcel_id, **values}, separators=(",", ":"), sort_keys=True)
+             for parcel_id, values in sorted(context.items()))
+    (PROCESSED / "parcel_context.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _strip_parcel_context(records: list[dict]) -> None:
+    for record in records:
+        for key in PARCEL_CONTEXT_FIELDS:
+            record.pop(key, None)
 
 
 def _positive_number(value: str | None) -> int | None:
@@ -130,6 +154,110 @@ def _parcel_polygons(spec: dict, ids: list[str]) -> dict[str, dict]:
     return {pid: by_id[pid] for pid in ids if pid in by_id}
 
 
+def _sld_rows(spec: dict) -> list[dict]:
+    """Fetch the Allegheny County block-group slice of EPA SLD 3.0."""
+    import requests
+
+    cache = RAW / "epa_smart_location_allegheny.json"
+    if cache.exists():
+        return json.loads(cache.read_text(encoding="utf-8"))["rows"]
+    rows: list[dict] = []
+    offset = 0
+    while True:
+        filters = spec["county_filter"]
+        where = " AND ".join(f"{field}={int(value)}" for field, value in filters.items())
+        response = requests.get(f"{spec['service_url']}/query", params={
+            "where": where,
+            "outFields": ("OBJECTID,STATEFP,COUNTYFP,TRACTCE,BLKGRPCE,"
+                          f"{spec['jobs_field']},{spec['index_field']}"),
+            "returnGeometry": "false", "resultRecordCount": 1000,
+            "resultOffset": offset, "orderByFields": "OBJECTID", "f": "json",
+        }, timeout=90)
+        response.raise_for_status()
+        payload = response.json()
+        if "error" in payload:
+            raise ValueError(f"EPA SLD query failed: {payload['error']}")
+        features = payload.get("features", [])
+        for feature in features:
+            attrs = feature.get("attributes", {})
+            try:
+                geoid = (f"{int(attrs['STATEFP']):02d}{int(attrs['COUNTYFP']):03d}"
+                         f"{int(attrs['TRACTCE']):06d}{int(attrs['BLKGRPCE']):1d}")
+                jobs = float(attrs[spec["jobs_field"]])
+                index = float(attrs[spec["index_field"]])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if len(geoid) == 12 and jobs >= 0 and 0 <= index <= 1:
+                rows.append({"block_group_geoid": geoid, "jobs_accessible": jobs,
+                             "transit_access_index": index})
+        if len(features) < 1000:
+            break
+        offset += len(features)
+    if not rows:
+        raise ValueError("EPA SLD query returned no valid Allegheny County block groups")
+    RAW.mkdir(parents=True, exist_ok=True)
+    cache.write_text(json.dumps({"source": spec["source"], "vintage": "SLD 3.0 (2021)",
+                                 "rows": rows}, separators=(",", ":")), encoding="utf-8")
+    return rows
+
+
+def _transit_access(spec: dict, records: list[dict]) -> None:
+    """Join SLD's 2020 block-group accessibility fields to parcel records."""
+    by_geoid = {row["block_group_geoid"]: row for row in _sld_rows(spec)}
+    for record in records:
+        tract = str(record.get("tract") or "")
+        block_group = str(record.get("block_group") or "")
+        key = tract + block_group if len(tract) == 11 and len(block_group) == 1 else ""
+        match = by_geoid.get(key)
+        record["transit_access_index"] = match["transit_access_index"] if match else None
+        record["transit_jobs_accessible"] = match["jobs_accessible"] if match else None
+
+
+def _geometry_dimensions(records: list[dict], boundaries: dict[str, dict]) -> int:
+    """Store modeled parcel axes where deed dimensions are unavailable."""
+    from pyproj import Transformer
+    from shapely.geometry import shape
+    from shapely.ops import transform
+
+    project = Transformer.from_crs(4326, 2272, always_xy=True).transform
+    estimated = 0
+    for record in records:
+        if record.get("frontage_ft") and record.get("depth_ft"):
+            continue
+        feature = boundaries.get(record["id"])
+        if not feature or not feature.get("geometry"):
+            continue
+        try:
+            geom = shape(feature["geometry"])
+        except (TypeError, ValueError):
+            continue
+        if geom.is_empty or geom.geom_type == "MultiPolygon":
+            continue
+        local = transform(project, geom)
+        if not local.is_valid:
+            local = local.buffer(0)
+        if local.is_empty or local.area <= 0 or local.geom_type != "Polygon":
+            continue
+        rect = local.minimum_rotated_rectangle
+        coords = list(rect.exterior.coords)
+        lengths = [((coords[i + 1][0] - coords[i][0]) ** 2 +
+                    (coords[i + 1][1] - coords[i][1]) ** 2) ** 0.5
+                   for i in range(4)]
+        lengths = sorted(x for x in lengths if x > 0)
+        if len(lengths) != 4:
+            continue
+        frontage, depth = lengths[0], lengths[2]
+        if not (5 <= frontage <= 1500 and 5 <= depth <= 3000):
+            continue
+        if rect.area / local.area > 2.0:
+            continue
+        record["geometry_frontage_ft"] = round(frontage, 1)
+        record["geometry_depth_ft"] = round(depth, 1)
+        record["geometry_dimensions_method"] = "minimum rotated rectangle; EPSG:2272 feet"
+        estimated += 1
+    return estimated
+
+
 def _fema_polygons(spec: dict, records: list[dict]) -> gpd.GeoDataFrame:
     import geopandas as gpd
 
@@ -234,6 +362,25 @@ def enrich_records(cfg: Config, records: list[dict], report: dict) -> None:
         details["parcel_boundaries"] = {"status": "unavailable", "reason": str(exc)}
         log.warning("parcel polygons unavailable: %s", exc)
     counts["parcel_polygons_matched"] = len(boundaries)
+    counts["geometry_dimensions_estimated"] = _geometry_dimensions(records, boundaries)
+    transit = specs["transit_jobs"]
+    try:
+        _transit_access(transit, records)
+        details["transit_jobs"] = {
+            "source": transit["source"], "status": "loaded",
+            "vintage": "EPA Smart Location Database 3.0 (2021); 2020 GTFS and travel times; 2017 LEHD",
+            "join": "2020 block-group GEOID20 reconstructed from state, county, tract and group fields",
+            "measure": "D5DRI relative transit jobs accessibility index and D5BR distance-decay-weighted jobs",
+        }
+    except (requests.RequestException, OSError, ValueError, KeyError) as exc:
+        details["transit_jobs"] = {"source": transit["source"], "status": "unavailable",
+                                   "reason": str(exc)}
+        log.warning("EPA transit access unavailable: %s", exc)
+        for record in records:
+            record["transit_access_index"] = record["transit_jobs_accessible"] = None
+    counts["transit_access_matched"] = sum(
+        record.get("transit_access_index") is not None for record in records
+    )
 
     flood = specs["flood"]
     try:
@@ -293,6 +440,8 @@ def main() -> None:
     report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else {"counts": {}}
     records = list(payload["parcels"].values())
     enrich_records(cfg, records, report)
+    _write_parcel_context(records)
+    _strip_parcel_context(records)
     payload["config_hash"] = cfg.hash
     index_path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
     report["config_hash"] = cfg.hash

@@ -3,7 +3,9 @@ import { PLAN_ID, subsidyPerHome, type Option, type Ranking } from '../lib/plan'
 import type { Placement } from '../three/engine'
 import type { Analysis, Config } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
+import { useTouch } from '../lib/media'
 import { HelpTip } from './help'
+import { TuckButton } from './ui'
 
 type L = Record<string, string>
 
@@ -18,6 +20,8 @@ export function Hud(p: {
   wbAmi: number
   showPlan: boolean
   empty: boolean
+  open: boolean
+  onToggle: () => void
 }) {
   const { config, plan, ranking } = p
   const idx = plan ? ranking.ranked.findIndex((o) => o.id === PLAN_ID) : -1
@@ -26,29 +30,46 @@ export function Hud(p: {
   const carbon = plan ? Math.round(plan.carbon.value[Math.min(p.year, plan.carbon.value.length - 1)]) + ' t' : '—'
   const gap = plan ? usd(subsidyPerHome(config, plan.metrics['affordability.monthly_cost'], p.wbAmi)) : '—'
   const short = p.profileLabel.length > 16 ? p.profileLabel.slice(0, 15) + '…' : p.profileLabel
+  const touch = useTouch()
   return (
     <div className="hud" style={{ left: p.L.hudLeft, maxWidth: p.L.hudMax }}>
-      <div className="hud-row" data-tour="hud">
-        <Gauge tile="green" label="Homes" value={String(plan?.units ?? 0)} color="#2fd06b" />
-        <div className="gauge wide">
-          <div className="gauge-tile blue" />
-          <div>
-            <div className="eyebrow">Zoning · {p.analysis.parcel.zoning ?? '—'}</div>
-            <div className="gauge-text" style={{ color: zColor }}>
-              {plan ? plan.zoning.status_label : 'Nothing placed yet'}
+      {!p.open && (
+        <div className="hud-row" data-tour="hud">
+          <TuckButton open={false} onToggle={p.onToggle} label="plan stats" text="Plan stats" />
+        </div>
+      )}
+      {p.open && (
+        <>
+        <div className="hud-row" data-tour="hud">
+          <TuckButton open onToggle={p.onToggle} label="plan stats" />
+          <Gauge tile="green" label="Homes" value={String(plan?.units ?? 0)} color="#2fd06b" />
+          <div className="gauge wide">
+            <div className="gauge-tile blue" />
+            <div>
+              <div className="eyebrow">Zoning · {p.analysis.parcel.zoning ?? '—'}</div>
+              <div className="gauge-text" style={{ color: zColor }}>
+                {plan ? plan.zoning.status_label : 'Nothing placed yet'}
+              </div>
             </div>
           </div>
+          <Gauge tile="pink" label={`Rank · ${short}`} value={rank} labelColor="#ff4fa8" />
+          <Gauge tile="teal" label={`CO₂e / hh · yr ${p.year}`} value={carbon} />
+          <Gauge tile="amber" label={`Gap / home · ${p.wbAmi}% AMI`} value={gap} />
+          <span className="hud-help"><HelpTip id="hud" /></span>
         </div>
-        <Gauge tile="pink" label={`Rank · ${short}`} value={rank} labelColor="#ff4fa8" />
-        <Gauge tile="teal" label={`CO₂e / hh · yr ${p.year}`} value={carbon} />
-        <Gauge tile="amber" label={`Gap / home · ${p.wbAmi}% AMI`} value={gap} />
-        <span className="hud-help"><HelpTip id="hud" /></span>
-      </div>
-      {p.empty && p.showPlan && <div className="hud-note lime">Drag a building from the palette onto the outlined lot. R rotates · Del removes.</div>}
-      {!p.showPlan && <div className="hud-note info">Before: the lot as it is today. Switch to After to edit your plan.</div>}
-      <div className={`hud-note shape prov-${p.analysis.lot_shape.provenance}`}>
-        Lot {Math.round(p.analysis.lot_shape.frontage_ft)} × {Math.round(p.analysis.lot_shape.depth_ft)} ft — {p.analysis.lot_shape.note} Neighbors are illustrative.
-      </div>
+        {p.empty && p.showPlan && (
+          <div className="hud-note lime">
+            {touch
+              ? 'Tap a card to add a building, or drag one up onto the outlined lot. Tap a building to rotate or remove it.'
+              : 'Click a card to add a building, or drag one onto the outlined lot. R rotates · Del removes.'}
+          </div>
+        )}
+        {!p.showPlan && <div className="hud-note info">Before: the lot as it is today. Switch to After to edit your plan.</div>}
+        <div className={`hud-note shape prov-${p.analysis.lot_shape.provenance}`}>
+          Lot {Math.round(p.analysis.lot_shape.frontage_ft)} × {Math.round(p.analysis.lot_shape.depth_ft)} ft — {p.analysis.lot_shape.note} Neighbors are illustrative.
+        </div>
+        </>
+      )}
     </div>
   )
 }
@@ -75,10 +96,15 @@ export function Palette(p: {
   analysis: Analysis
   counts: Record<string, number>
   onDown: (id: string, e: RPointerEvent) => void
+  /** A tap or click on a card (no drag): add that building wherever it fits. */
+  onAdd: (id: string) => void
   onHeight?: (px: number) => void
+  open: boolean
+  onToggle: () => void
 }) {
   const { L, onHeight } = p
   const box = useRef<HTMLDivElement>(null)
+  const press = useRef<{ x: number; y: number } | null>(null)
   // Card text wraps, so the tray's height isn't fixed; report it so the inspector can sit above it.
   useEffect(() => {
     const el = box.current
@@ -94,15 +120,16 @@ export function Palette(p: {
   return (
     <div
       ref={box}
-      className="palette"
+      className={`palette${p.open ? '' : ' tucked'}`}
       data-tour="palette"
       style={{ left: L.palLeft, right: L.palRight, top: L.palTop, bottom: L.palBottom, flexDirection: L.palDir as 'row' | 'column', maxWidth: L.palMax, maxHeight: L.palMaxH }}
     >
       <div className="build-head">
         <span className="build-tag">BUILD</span>
         <HelpTip id="palette" />
+        <TuckButton open={p.open} onToggle={p.onToggle} label="the building palette" />
       </div>
-      {p.config.typologies.map((t) => {
+      {p.open && p.config.typologies.map((t) => {
         const s = p.analysis.scenarios.find((x) => x.typology_id === t.id)
         const fits = s?.form_fits ?? false
         const [w, d] = t.building.footprint_ft
@@ -111,9 +138,19 @@ export function Palette(p: {
           <div
             key={t.id}
             className="pal-card"
-            title="Drag onto the lot"
+            title="Click to add, or drag onto the lot"
             style={{ ['--typ' as string]: t.color }}
-            onPointerDown={(e) => p.onDown(t.id, e)}
+            onPointerDown={(e) => {
+              press.current = { x: e.clientX, y: e.clientY }
+              p.onDown(t.id, e)
+            }}
+            onPointerUp={(e) => {
+              const s = press.current
+              press.current = null
+              // Released where it was pressed: a tap, not a drag onto the lot.
+              if (s && Math.hypot(e.clientX - s.x, e.clientY - s.y) < TAP_PX) p.onAdd(t.id)
+            }}
+            onPointerCancel={() => (press.current = null)}
           >
             <div className="pal-swatch" style={{ background: t.color + '33' }}>
               <div
@@ -138,7 +175,11 @@ export function Palette(p: {
   )
 }
 
+// How far a press on a palette card may travel and still count as a tap.
+const TAP_PX = 10
+
 export function Inspector(p: { config: Config; L: L; placement: Placement | null; analysis: Analysis; onRotate: () => void; onDelete: () => void }) {
+  const touch = useTouch()
   if (!p.placement) return null
   const t = p.config.typologies.find((x) => x.id === p.placement!.typ)
   if (!t) return null
@@ -159,10 +200,10 @@ export function Inspector(p: { config: Config; L: L; placement: Placement | null
       </div>
       <div className="insp-actions">
         <button className="go-btn" onClick={p.onRotate}>
-          Rotate · R
+          {touch ? 'Rotate' : 'Rotate · R'}
         </button>
         <button className="stop-btn" onClick={p.onDelete}>
-          Delete · Del
+          {touch ? 'Delete' : 'Delete · Del'}
         </button>
       </div>
       <div className="dim small">Drag the building to move it. Red means it’s off the lot or overlapping.</div>
