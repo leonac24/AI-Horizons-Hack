@@ -89,7 +89,7 @@ export interface Config {
     tagline: string
     disclaimer: string
     placeholder_notice: string
-    api: { ask_question_max_chars: number; lot_search_query_max_chars: number }
+    api: { ask_question_max_chars: number; lot_search_query_max_chars: number; plan_max_buildings: number }
     smaa: {
       samples: number
       seed: number
@@ -233,6 +233,26 @@ export interface Explanation {
   source: string
   reason?: string
   sentences: { text: string; metric_ids: string[] }[]
+}
+
+export interface NextStep {
+  id: 'acquire' | 'zoning' | 'confirm' | 'site_check' | 'neighborhood'
+  title: string
+  why: string
+  facts: { id: string; text: string }[]
+  questions: string[]
+  contact: { label: string; url: string | null; email: string | null; phone: string | null; checked: boolean } | null
+  letter: string
+  blocking: boolean
+  note: string | null
+}
+
+export interface OutreachDraft {
+  source: string
+  reason?: string
+  subject: string
+  to: string | null
+  body: string
 }
 
 export interface LotAnswer {

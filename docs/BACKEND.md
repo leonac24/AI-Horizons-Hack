@@ -47,6 +47,8 @@ status codes, cacheability — not at ceremony.
 | `/api/explain` | POST | Grounded prose over already-computed metrics |
 | `/api/ask` | POST | Answer a question about one lot from its computed metrics |
 | `/api/parcels/ask` | POST | Turn a plain-English request into map filters |
+| `/api/next-steps/{id}` | GET | What to do next on one lot, and who to contact |
+| `/api/draft` | POST | Draft outreach for one next step; nothing is sent |
 
 **Status codes carry meaning.** `200` success · `304` your copy is current ·
 `400` you asked for something that does not exist in config · `404` no such
@@ -219,9 +221,10 @@ Adding permissive CORS to a public read-only API would not leak anything, but it
 would let any site drive our LLM endpoint on a visitor's IP. If a cross-origin
 consumer ever appears, add an allowlist from an env var — never `*`.
 
-**Rate limiting.** `/api/explain`, `/api/ask` and `/api/parcels/ask` are the
-endpoints that cost money per call, so they are the ones limited: fixed window,
-`api.explain_requests_per_minute` per client IP, one budget shared by all three. **Be honest about what this is.** It is in-process, so on a
+**Rate limiting.** `/api/explain`, `/api/ask`, `/api/parcels/ask` and
+`/api/draft` are the endpoints that cost money per call, so they are the ones
+limited: fixed window, `api.explain_requests_per_minute` per client IP, one
+budget shared by all four. **Be honest about what this is.** It is in-process, so on a
 serverless host the ceiling is per warm instance, and `X-Forwarded-For` is
 client-controlled except for the hop the platform appends. It is a cost
 guardrail, not an access control. A real limit needs shared state (Redis, Vercel
@@ -243,6 +246,11 @@ contain it by what the output may be rather than by trusting the prompt:
   the parcel index or config; code does the matching. Free-text
   `not_understood` phrases survive only if they appear verbatim in the query, so
   the model can echo the caller but never add text of its own.
+- `/api/draft` takes no caller text at all: only a parcel id and a step id from
+  a fixed set. The model sees the step's facts and questions; a draft is kept
+  only if every fact it states is cited, every number is already on the step,
+  and any email address or link is one we supplied. Otherwise the step's
+  template letter is returned. The server never sends anything.
 
 **Known gaps, stated rather than hidden:** no authentication (intentional, the
 data is public); no global rate limit; no request-size limit beyond the

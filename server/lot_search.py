@@ -13,13 +13,11 @@ import json
 import logging
 from collections import Counter
 
-from core.config import Config
+from core.config import FEMA_FLOOD_FIELD, FEMA_FLOOD_KEY, Config
 from server.llm import LLMUnavailable, Provider
 
-# The FEMA high-risk flood flag is a parcel field, not a config hazard; it gets
-# its own filter value alongside the config hazards (the map calls it `fh`).
-FLOOD = "fema_high_risk_flood"
-FLOOD_FIELD = "fema_sfha"
+# The FEMA flag gets its own filter value alongside the config hazards (the map calls it `fh`).
+FLOOD, FLOOD_FIELD = FEMA_FLOOD_KEY, FEMA_FLOOD_FIELD
 MAX_NOT_UNDERSTOOD = 5
 
 SYSTEM = """You turn a request for vacant lots in the City of Pittsburgh into map filters.
