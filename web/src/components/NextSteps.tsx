@@ -5,6 +5,7 @@ import { fmt } from '../lib/format'
 import type { Ranking } from '../lib/plan'
 import type { Analysis, Config, NextStep, OutreachDraft } from '../types'
 import { Dots } from './ai'
+import { HelpTip } from './help'
 
 /** What to do next on this lot: who to ask, what to ask, and a draft to send. */
 export function NextStepsTab({ config, analysis, ranking, profileLabel }: { config: Config; analysis: Analysis; ranking: Ranking; profileLabel: string }) {
@@ -35,7 +36,7 @@ export function NextStepsTab({ config, analysis, ranking, profileLabel }: { conf
   return (
     <div className="col">
       <div>
-        <div className="h-sec">What you can do next</div>
+        <div className="h-sec">What you can do next<HelpTip id="next_steps" /></div>
         <div className="dim small">
           Worked out from this lot’s ownership, zoning and site flags. Nothing is sent from here: drafts open in your own email for you to edit. {config.app.disclaimer}
         </div>

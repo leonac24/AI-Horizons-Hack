@@ -161,7 +161,8 @@ tutorial:
       - target: tabs
         title: Dig into the tradeoffs
         body: >-
-          Compare ranks the options. Whose priorities? changes the weights.
+          Compare ranks the options. Next steps lists what to do about this
+          lot. Whose priorities? changes the weights.
           Households, Carbon and Work backwards go deeper. What we don't know
           lists every gap in the data.
       - target: presets
@@ -282,6 +283,12 @@ help:
     body: >-
       Pick a target housing type, number of homes and income level. See which
       zoning rules it would fail and how much subsidy per home it would need.
+  next_steps:
+    title: Next steps
+    body: >-
+      Actions for this lot, worked out from its ownership, zoning and site
+      flags, and who to ask. AI can draft outreach that opens in your own
+      email to edit; nothing is sent from here.
   unknowns:
     title: What we don't know
     body: >-
