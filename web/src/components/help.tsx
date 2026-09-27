@@ -1,68 +1,17 @@
-import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTouch } from '../lib/media'
+import { placeNear, useAnchoredPopover } from '../lib/popover'
 import { HelpContext } from '../lib/tour'
 import type { TourStep } from '../types'
 
-const GAP = 10
-const MARGIN = 12
-
-/** Keep a box of size w×h next to `r`, inside the window. */
-function placeNear(r: DOMRect | null, w: number, h: number): { left: number; top: number } {
-  const vw = window.innerWidth
-  const vh = window.innerHeight
-  const clampX = (x: number) => Math.max(MARGIN, Math.min(vw - w - MARGIN, x))
-  const clampY = (y: number) => Math.max(MARGIN, Math.min(vh - h - MARGIN, y))
-  if (!r) return { left: clampX((vw - w) / 2), top: clampY((vh - h) / 2) }
-  if (vh - r.bottom >= h + GAP + MARGIN) return { left: clampX(r.left), top: r.bottom + GAP }
-  if (r.top >= h + GAP + MARGIN) return { left: clampX(r.left), top: r.top - h - GAP }
-  if (vw - r.right >= w + GAP + MARGIN) return { left: r.right + GAP, top: clampY(r.top) }
-  if (r.left >= w + GAP + MARGIN) return { left: r.left - w - GAP, top: clampY(r.top) }
-  return { left: clampX((vw - w) / 2), top: clampY(vh - h - MARGIN) }
-}
-
 /**
  * A small ? button. Clicking it opens a short explanation from `app.yaml: help`.
- * The popover is portalled to <body> so scrolling panels can't clip it.
  */
 export function HelpTip({ id }: { id: string }) {
   const tip = useContext(HelpContext)[id]
   const touch = useTouch()
-  const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
-  const btn = useRef<HTMLButtonElement>(null)
-  const pop = useRef<HTMLDivElement>(null)
-
-  const measure = useCallback(() => {
-    if (!btn.current || !pop.current) return
-    setPos(placeNear(btn.current.getBoundingClientRect(), pop.current.offsetWidth, pop.current.offsetHeight))
-  }, [])
-  useLayoutEffect(() => {
-    if (open) measure()
-  }, [open, measure])
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: PointerEvent) => {
-      const t = e.target as Node
-      if (!btn.current?.contains(t) && !pop.current?.contains(t)) setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false)
-        btn.current?.focus()
-      }
-    }
-    window.addEventListener('pointerdown', onDown, true)
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('resize', measure)
-    window.addEventListener('scroll', measure, true)
-    return () => {
-      window.removeEventListener('pointerdown', onDown, true)
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', measure, true)
-    }
-  }, [open, measure])
+  const { open, setOpen, toggle, btn, pop, style } = useAnchoredPopover()
 
   if (!tip) return null
   return (
@@ -73,17 +22,13 @@ export function HelpTip({ id }: { id: string }) {
         className={`help-tip ${open ? 'on' : ''}`}
         aria-label={`Help: ${tip.title}`}
         aria-expanded={open}
-        onClick={(e) => {
-          e.stopPropagation()
-          e.preventDefault()
-          setOpen((v) => !v)
-        }}
+        onClick={toggle}
       >
         ?
       </button>
       {open &&
         createPortal(
-          <div ref={pop} className="help-pop" role="dialog" aria-label={tip.title} style={pos ?? { left: -9999, top: -9999 }}>
+          <div ref={pop} className="help-pop" role="dialog" aria-label={tip.title} style={style}>
             <div className="help-pop-head">
               <strong>{tip.title}</strong>
               <button type="button" className="help-x" aria-label="Close help" onClick={() => setOpen(false)}>

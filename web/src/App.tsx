@@ -7,7 +7,7 @@ import { clearShare, readShare, shareUrl, type Shared } from './lib/share'
 import { CityPanel, type Filters } from './components/CityPanel'
 import { Intro } from './components/Intro'
 import { Tour } from './components/help'
-import { HelpContext, readSeen, writeSeen } from './lib/tour'
+import { ConfigContext, HelpContext, readSeen, writeSeen } from './lib/tour'
 import { useNarrow } from './lib/media'
 import { type PanelId, usePanels } from './lib/panels'
 import { Hud, Inspector, Palette } from './components/LotOverlay'
@@ -349,6 +349,7 @@ export default function App() {
   const planOpt = pool.find((o) => o.id === PLAN_ID)
 
   return (
+    <ConfigContext.Provider value={config}>
     <HelpContext.Provider value={config.app.help}>
     <div className={`shell${entered ? '' : ' pre-intro'}${narrow ? ' narrow' : ''}`}>
       <div ref={vp} className="viewport" style={{ right: lotL.vpRight, bottom: mode === 'lot' ? lotL.vpBottom : '0px' }} />
@@ -502,5 +503,6 @@ export default function App() {
       )}
     </div>
     </HelpContext.Provider>
+    </ConfigContext.Provider>
   )
 }

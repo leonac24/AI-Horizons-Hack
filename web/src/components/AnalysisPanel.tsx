@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { PLAN_ID, type Crossing, type Option, type Ranking, type SetbackEnvelope } from '../lib/plan'
 import type { Placement } from '../three/engine'
-import type { Analysis, Config, EvidenceLeads, Explanation, Unknowns, WorkBackwardsResult } from '../types'
+import type { Analysis, Config, EvidenceLeads, Explanation, Unknowns, WorkBackwardsResult, ZoningResult } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
 import { AskLot, Dots, TypedSentences } from './ai'
 import { HelpTip } from './help'
+import { InfoTip } from './info'
 import { NextStepsTab } from './NextSteps'
 import { MetricBox, ProvTag, SourceRefs, TuckButton } from './ui'
 
@@ -178,7 +179,12 @@ function CompareTab(p: Props) {
           <>
             <div className="zone-box" style={{ borderColor: ROLE_COLOR[zRole], borderStyle: z!.reviewed ? 'solid' : 'dashed' }}>
               <div className="zone-head">
-                <strong style={{ color: ROLE_COLOR[zRole] }}>{z!.status_label}</strong>
+                <strong style={{ color: ROLE_COLOR[zRole] }}>
+                  {z!.status_label}
+                  <InfoTip id="zoning.status" sourceIds={[config.zoning.code.source]} provenance={!z!.reviewed ? 'placeholder' : z!.human_reviewed ? 'observed' : 'modeled'}>
+                    <ZoningQuotes config={config} z={z!} byType={plan.zoningByType} />
+                  </InfoTip>
+                </strong>
                 <span className="eyebrow">Title Nine</span>
               </div>
               {!z!.reviewed && <div className="muted small">{z!.note ?? `No zoning rules for ${par.zoning} yet.`} No approval path is claimed.</div>}
@@ -328,7 +334,15 @@ function CompareTab(p: Props) {
         <div className="ctx-grid">
           <div className={`mbox prov-${analysis.lot_shape.provenance}`}>
             <div className="mbox-head">
-              <span className="mbox-label">Frontage × depth</span>
+              <span className="mbox-label">
+                Frontage × depth
+                <InfoTip
+                  id="lot.shape"
+                  sourceIds={analysis.lot_shape.sourceIds}
+                  dependsOn={analysis.lot_shape.provenance === 'placeholder' ? ['lot_depth_to_frontage_ratio'] : []}
+                  provenance={analysis.lot_shape.provenance}
+                />
+              </span>
               <ProvTag p={analysis.lot_shape.provenance} />
             </div>
             <strong>
@@ -339,7 +353,7 @@ function CompareTab(p: Props) {
           {analysis.site_context.map((m) => <MetricBox key={m.id} m={m} sources={config.sources.sources} />)}
           {analysis.site_facts.map((fact) => (
             <div key={fact.id} className={`mbox prov-${fact.provenance}`}>
-              <div className="mbox-head"><span className="mbox-label">{fact.label}</span><ProvTag p={fact.provenance} /></div>
+              <div className="mbox-head"><span className="mbox-label">{fact.label}<InfoTip id={fact.id} sourceIds={fact.sourceIds} provenance={fact.provenance} /></span><ProvTag p={fact.provenance} /></div>
               <strong>{fact.value}</strong>
               <div className="dim small">{fact.note}</div>
               <SourceRefs ids={fact.sourceIds} sources={config.sources.sources} provenance={fact.provenance} />
@@ -374,12 +388,16 @@ function Priorities(p: Props) {
 
 function Households({ config, pool }: Props) {
   const cols = pool.filter((o) => o.fits)
+  const cost = cols[0]?.households[0]?.cost_monthly
   const plan = cols.find((o) => o.isPlan)
   const ordered = plan ? [plan, ...cols.filter((o) => !o.isPlan)] : cols
   const V = { yes: ['●', 'Yes', '#2fd06b'], maybe: ['◐', 'Maybe', '#ffb800'], no: ['○', 'No', '#ff7a45'] } as const
   return (
     <div>
-      <div className="h-tab">Could this household afford it?<HelpTip id="households" /></div>
+      <div className="h-tab">
+        Could this household afford it?<HelpTip id="households" />
+        <InfoTip id="households.check" sourceIds={cost?.sourceIds} dependsOn={[...(cost?.dependsOn ?? []), 'household_size_factor']} provenance={cost?.provenance} />
+      </div>
       <p className="muted small">Illustrative households, not real people. “Yes” = affordable at 30% of income across the whole cost range; “Maybe” = only at the low end; “No” = not without subsidy.</p>
       <div className="table-wrap">
         <table className="dtable">
@@ -432,6 +450,7 @@ function Carbon({ pool, year, setYear, config }: Props) {
   const X = (y: number) => 40 + (y / Math.max(last, 1)) * 312
   const Y = (v: number) => 10 + (1 - v / vmax) * 164
   const prov = lines.some((l) => l.carbon.provenance === 'placeholder') ? 'placeholder' : (lines[0]?.carbon.provenance ?? 'placeholder')
+  const carbonInputs = lines[0]?.metrics[config.criteria.find((c) => c.metric_id.startsWith('carbon.'))?.metric_id ?? '']
   const crossovers: string[] = []
   const pure = lines.filter((l) => !l.isPlan)
   for (let a = 0; a < pure.length; a++)
@@ -446,11 +465,13 @@ function Carbon({ pool, year, setYear, config }: Props) {
       }
     }
   const y = Math.min(year, last)
-  void config
   return (
     <div>
       <div className="row-between">
-        <div className="h-tab">Carbon per household over time<HelpTip id="carbon_over_time" /></div>
+        <div className="h-tab">
+          Carbon per household over time<HelpTip id="carbon_over_time" />
+          <InfoTip id="carbon.series" sourceIds={carbonInputs?.sourceIds} dependsOn={[...(carbonInputs?.dependsOn ?? []), 'analysis_years']} provenance={prov} />
+        </div>
         <ProvTag p={prov} />
       </div>
       <p className="muted small">Building materials at year 0, then home energy (PA grid, decarbonizing) and travel each year. Tonnes CO₂e.</p>
@@ -579,7 +600,16 @@ function Backwards({ config, analysis, wb, setWb }: Props) {
           </div>
           <div className={`card-box prov-${res.subsidy_per_unit.provenance}`}>
             <div className="row-between">
-              <div className="h-card">Subsidy gap per home</div>
+              <div className="h-card">
+                Subsidy gap per home
+                <InfoTip
+                  id="backwards.subsidy_gap"
+                  provenance={res.subsidy_per_unit.provenance}
+                  sourceIds={scen?.households[0]?.cost_monthly.sourceIds}
+                  dependsOn={scen?.households[0]?.cost_monthly.dependsOn}
+                  typologyId={wb.typ}
+                />
+              </div>
               <ProvTag p={res.subsidy_per_unit.provenance} />
             </div>
             <div className="big-num">
@@ -712,5 +742,43 @@ function UnknownsTab({ config }: Pick<Props, 'config'>) {
         </div>
       ))}
     </div>
+  )
+}
+
+/** The Title Nine text behind a zoning answer: each rule's citation and verbatim quote. */
+function ZoningQuotes({ config, z, byType }: { config: Config; z: ZoningResult; byType?: Record<string, ZoningResult> }) {
+  const uses = byType ? Object.entries(byType) : []
+  const rows: { key: string; label: string; citation: string | null; quote: string | null }[] = [
+    ...(uses.length
+      ? uses.map(([tid, zt]) => ({ key: `use-${tid}`, label: `${config.typologies.find((t) => t.id === tid)?.short_label ?? tid} use: ${zt.status_label}`, citation: zt.use_citation, quote: zt.use_quote }))
+      : [{ key: 'use', label: `Use: ${z.status_label}`, citation: z.use_citation, quote: z.use_quote }]),
+    ...z.checks.map((c) => ({ key: c.rule_id, label: `${c.label} (${c.passed ? 'passes' : 'fails'})`, citation: c.citation, quote: c.quote })),
+    ...Object.values(z.setbacks).map((b) => ({ key: b.rule_id, label: `${b.label}: ${b.value_ft} ft`, citation: b.citation, quote: b.quote })),
+  ].filter((r) => r.citation || r.quote)
+  return (
+    <>
+      <div className="info-sec">What the code says{z.district ? ` · ${z.district}` : ''}</div>
+      <p className="small">
+        {!z.reviewed
+          ? 'No rule is in force for this district yet, so no approval path is claimed.'
+          : z.human_reviewed
+            ? 'Checked by a person against the code.'
+            : 'AI-extracted; each quote below was found word for word in the saved code text. Not checked by a planner.'}
+      </p>
+      {rows.map((r) => (
+        <div key={r.key} className="small info-source">
+          <strong>{r.label}</strong>
+          {r.citation && <span className="dim"> · {r.citation}</span>}
+          {r.quote && <p className="info-quote">“{r.quote}”</p>}
+        </div>
+      ))}
+      {config.zoning.code.url && (
+        <p className="small">
+          <a href={config.zoning.code.url} target="_blank" rel="noreferrer">
+            Read {config.zoning.code.name}
+          </a>
+        </p>
+      )}
+    </>
   )
 }

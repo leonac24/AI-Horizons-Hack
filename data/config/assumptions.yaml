@@ -10,6 +10,7 @@ assumptions:
 
   # --- Income -----------------------------------------------------------------
   ami_4person:
+    label: Area median family income (4 people)
     value: 110400
     low: 110400
     high: 110400
@@ -22,6 +23,7 @@ assumptions:
       Published income limits use HUD adjustments and are not simple multiples.
 
   household_size_factor:
+    label: HUD household-size adjustment
     # HUD income-limit adjustment relative to a 4-person household.
     value: 1.0
     low: 1.0
@@ -33,6 +35,7 @@ assumptions:
     by_size: { 1: 0.70, 2: 0.80, 3: 0.90, 4: 1.00, 5: 1.08, 6: 1.16, 7: 1.24, 8: 1.32 }
 
   housing_cost_share:
+    label: Share of income for housing
     value: 0.30
     low: 0.30
     high: 0.30
@@ -43,6 +46,7 @@ assumptions:
 
   # --- Development cost -------------------------------------------------------
   hard_cost_psf:
+    label: Construction cost per sq ft
     value: 200
     low: 156
     high: 250
@@ -66,6 +70,7 @@ assumptions:
       midrise: { value: 228, low: 194, high: 250 }      # Elevator 1 BR: 159,351 / 700 sf
 
   soft_cost_share:
+    label: Soft costs (design, fees, financing)
     value: 0.75
     low: 0.4
     high: 0.75
@@ -88,6 +93,7 @@ assumptions:
       midrise: { value: 0.6, low: 0.4, high: 0.6 }
 
   steep_slope_cost_share:
+    label: Steep-slope site allowance
     value: 0.12
     low: 0.05
     high: 0.30
@@ -97,6 +103,7 @@ assumptions:
     rationale: Extra foundation, retaining and grading cost on 25%+ slopes. Site-specific; needs geotechnical input.
 
   landslide_cost_share:
+    label: Landslide stabilization allowance
     value: 0.10
     low: 0.03
     high: 0.35
@@ -106,6 +113,7 @@ assumptions:
     rationale: Added stabilization cost in landslide-prone areas. Highly site-specific.
 
   undermined_cost_share:
+    label: Mine-subsidence allowance
     value: 0.05
     low: 0.0
     high: 0.20
@@ -116,6 +124,7 @@ assumptions:
 
   # --- Cost to occupants ------------------------------------------------------
   annual_capital_cost_share:
+    label: Yearly capital cost rate
     value: 0.075
     low: 0.06
     high: 0.09
@@ -125,6 +134,7 @@ assumptions:
     rationale: Debt service plus required return, expressed per year. Drives the rent needed to cover cost.
 
   operating_cost_per_unit_month:
+    label: Operating cost per home
     value: 450
     low: 350
     high: 600
@@ -135,6 +145,7 @@ assumptions:
 
   # --- Carbon -----------------------------------------------------------------
   embodied_kgco2e_psf:
+    label: Embodied carbon per sq ft
     value: 45
     low: 30
     high: 65
@@ -151,6 +162,7 @@ assumptions:
       midrise: { value: 55, low: 40, high: 80 }
 
   operational_kwh_psf_yr:
+    label: Home energy use per sq ft
     value: 9
     low: 6
     high: 13
@@ -167,6 +179,7 @@ assumptions:
       midrise: { value: 7, low: 5, high: 10 }
 
   grid_kgco2e_per_kwh:
+    label: Grid carbon intensity
     value: 0.416
     low: 0.294
     high: 0.434
@@ -180,6 +193,7 @@ assumptions:
       647.9 lb/MWh (0.294), for a household on a cleaner PA mix.
 
   grid_decarbonization_per_yr:
+    label: Yearly grid decarbonization
     value: 0.02
     low: 0.0
     high: 0.04
@@ -189,6 +203,7 @@ assumptions:
     rationale: Annual decline in grid carbon intensity over the analysis period.
 
   vmt_per_household_yr:
+    label: Miles driven per household
     value: 12000
     low: 8000
     high: 16000
@@ -202,6 +217,7 @@ assumptions:
       travel model is integrated.
 
   kgco2e_per_vmt:
+    label: Carbon per mile driven
     value: 0.393
     low: 0.393
     high: 0.393
@@ -215,6 +231,7 @@ assumptions:
       household VMT or a vehicle-specific estimate.
 
   lot_depth_to_frontage_ratio:
+    label: Lot depth-to-width ratio
     value: 3.0
     low: 2.0
     high: 4.5
@@ -229,6 +246,7 @@ assumptions:
       geometry-derived axes are modeled estimates, not legal frontage.
 
   site_area_per_building_footprint:
+    label: Lot area needed per footprint
     value: 1.2
     low: 1.0
     high: 1.6
@@ -247,6 +265,7 @@ assumptions:
       footprint; nothing is written per typology.
 
   analysis_years:
+    label: Carbon horizon
     value: 30
     low: 30
     high: 30
@@ -257,6 +276,7 @@ assumptions:
 
   # --- Context fallbacks (used only where a parcel/tract join is unavailable) -
   tract_median_household_income:
+    label: Nearby household income (stand-in)
     value: 60000
     low: 40000
     high: 85000
@@ -269,6 +289,7 @@ assumptions:
       for available records; this citywide stand-in is not an observed tract value.
 
   tract_renter_cost_burden_share:
+    label: Renters cost-burdened (stand-in)
     value: 0.45
     low: 0.35
     high: 0.55
@@ -281,6 +302,7 @@ assumptions:
       the numerator/denominator and an approximate uncertainty envelope.
 
   jobs_access_index:
+    label: Transit access to jobs
     value: 1.0
     low: 0.6
     high: 1.4
@@ -294,6 +316,7 @@ assumptions:
       city-average ratio.
 
   sewer_stress_index:
+    label: Combined-sewer stress
     value: 1.0
     low: 0.8
     high: 1.2
@@ -304,6 +327,7 @@ assumptions:
 
   # --- Scoring conventions ----------------------------------------------------
   zoning_status_score:
+    label: Score per zoning path
     value: 1.0
     low: 1.0
     high: 1.0
@@ -327,6 +351,7 @@ assumptions:
       not_permitted: 0.1
 
   infrastructure_hazard_weight:
+    label: Extra load per site hazard
     value: 1.0
     low: 1.0
     high: 1.0

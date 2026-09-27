@@ -1,5 +1,6 @@
 import type { Metric, Provenance, Source } from '../types'
 import { fmt, unitSuffix } from '../lib/format'
+import { InfoTip } from './info'
 
 /** The ▾ on a panel header: tucks the panel away to its header, or brings it back. */
 export function TuckButton({ open, onToggle, label, text }: { open: boolean; onToggle: () => void; label: string; text?: string }) {
@@ -28,13 +29,13 @@ export function SourceRefs({ ids, sources, provenance }: { ids: string[]; source
 }
 
 /** One metric with its range band inside a shared domain. */
-export function MetricBox({ m, label, domain, question, sources }: { m: Metric; label?: string; domain?: [number, number]; question?: string; sources?: Record<string, Source> }) {
+export function MetricBox({ m, label, domain, question, sources, typologyId }: { m: Metric; label?: string; domain?: [number, number]; question?: string; sources?: Record<string, Source>; typologyId?: string }) {
   const [a, b] = domain ?? [Math.min(0, m.low), Math.max(m.high, 1e-6)]
   const pct = (x: number) => Math.max(0, Math.min(100, ((x - a) / (b - a || 1)) * 100))
   return (
     <div className={`mbox prov-${m.provenance}`} title={question ?? m.note ?? undefined}>
       <div className="mbox-head">
-        <span className="mbox-label">{label ?? m.label}</span>
+        <span className="mbox-label">{label ?? m.label}<InfoTip id={m.id} metric={m} typologyId={typologyId} /></span>
         <ProvTag p={m.provenance} />
       </div>
       <div>
