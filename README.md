@@ -83,6 +83,7 @@ To rebuild the parcel index from WPRDC:
 uv sync --group pipeline
 uv run python -m pipeline.build_parcels   # ~2 min first run; caches in data/raw/
 uv run python -m pipeline.build_terrain   # 3D city heightmap -> web/public/data/terrain.*
+uv run python -m pipeline.build_basemap   # streets, neighborhood names, lot outlines -> web/public/data/basemap/
 uv run python -m pipeline.docs            # regenerate SOURCES.md + LIMITATIONS.md counts
 ```
 
