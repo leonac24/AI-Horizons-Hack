@@ -42,3 +42,11 @@ extraction_targets:
     max_height_ft: { label: Maximum height, unit: ft, check: height_at_most }
     max_stories: { label: Maximum stories, unit: stories, check: stories_at_most }
   other: [setbacks, parking, overlays, bonuses]
+
+# Pill colors for district codes in the city panel, matched by prefix, first
+# match wins. Presentation only.
+district_colors:
+  - { prefix: RM, color: "#13a8a8" }
+  - { prefix: R, color: "#1f9a4e" }
+  - { prefix: "", color: "#1f8bff" }
+

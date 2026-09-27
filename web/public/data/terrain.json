@@ -1,0 +1,16 @@
+{
+ "config_hash": "17226496a2ed",
+ "source": "aws_terrain_tiles",
+ "scale": 100,
+ "water": -32768,
+ "coarse": {
+  "extent": 2000,
+  "step": 12.5,
+  "n": 320
+ },
+ "fine": {
+  "extent": 680,
+  "step": 3.5,
+  "n": 389
+ }
+}

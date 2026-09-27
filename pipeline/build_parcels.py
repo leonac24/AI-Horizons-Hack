@@ -21,6 +21,7 @@ import pandas as pd
 
 from core.config import ROOT, Config, load_config
 from pipeline.adapters.ckan import CkanDatastore, CkanDownload
+from pipeline.enrich_context import enrich_records
 from pipeline.steps.suggest import pick_suggested
 
 log = logging.getLogger("pipeline")
@@ -120,6 +121,10 @@ def build(cfg: Config) -> dict:
         if r.get("block_group") is not None:
             r["block_group"] = str(int(r["block_group"]))
 
+    # Official tract estimates and mapped site context are optional enrichments.
+    # A missing supplemental source never removes an indexed lot.
+    enrich_records(cfg, records, report)
+
     report["counts"]["indexed"] = len(records)
     suggested = pick_suggested(records, city["suggested_lots"])
     report["counts"]["suggested"] = len(suggested)
@@ -161,6 +166,7 @@ def _points(records: list[dict], hazard_keys) -> dict:
                  "p": 1 if r["public"] else 0, "ad": r["address"]}
         for k in hazard_keys:
             props[k] = 1 if r.get(k) else 0
+        props["fh"] = None if r.get("fema_sfha") is None else int(r["fema_sfha"])
         feats.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [r["lon"], r["lat"]]},
                       "properties": props})
     return {"type": "FeatureCollection", "features": feats}

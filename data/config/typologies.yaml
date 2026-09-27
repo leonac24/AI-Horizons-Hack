@@ -25,7 +25,7 @@ typologies:
   - id: detached
     label: Detached house
     short_label: Detached
-    color: "#8c6d46"
+    color: "#ff9f1c"
     use_key: single_unit_detached
     unit_size_sf: 1400
     stories: 2
@@ -36,14 +36,14 @@ typologies:
       footprint_ft: [26, 36]
       homes: 1
       massing: gable_house
-      body: "#e6d8bd"
-      roof: "#8c6d46"
+      body: "#fff1d6"
+      roof: "#ff7a1a"
       max_in_a_row: 1
 
   - id: adu_pair
     label: House + backyard unit (ADU)
     short_label: House + ADU
-    color: "#b08850"
+    color: "#ffc300"
     use_key: single_unit_detached_with_adu
     unit_size_sf: 1050
     stories: 2
@@ -54,14 +54,14 @@ typologies:
       footprint_ft: [26, 64]
       homes: 2
       massing: house_with_rear_unit
-      body: "#efe2c6"
-      roof: "#b08850"
+      body: "#fff6c7"
+      roof: "#f5b700"
       max_in_a_row: 1
 
   - id: two_unit
     label: Two-unit (duplex)
     short_label: Duplex
-    color: "#a4553a"
+    color: "#ff5d8f"
     use_key: two_unit
     unit_size_sf: 1100
     stories: 2.5
@@ -72,14 +72,14 @@ typologies:
       footprint_ft: [24, 46]
       homes: 2
       massing: gable_house_two_doors
-      body: "#dcc3a4"
-      roof: "#a4553a"
+      body: "#ffe0e8"
+      roof: "#e8456f"
       max_in_a_row: 1
 
   - id: rowhouse
     label: Rowhouses / townhouses
     short_label: Rowhouse
-    color: "#7a3b2e"
+    color: "#ff5a4e"
     use_key: single_unit_attached
     unit_size_sf: 1300
     stories: 3
@@ -90,14 +90,14 @@ typologies:
       footprint_ft: [18, 38]
       homes: 1
       massing: flat_rowhouse
-      body: "#8e4a36"
-      roof: "#e8dcc6"
+      body: "#f06b5b"
+      roof: "#fff3e6"
       max_in_a_row: 6
 
   - id: small_multi
     label: Small apartment building (3–12)
     short_label: Small apartments
-    color: "#4f6d7a"
+    color: "#1f8bff"
     use_key: multi_unit
     unit_size_sf: 800
     stories: 3
@@ -109,14 +109,14 @@ typologies:
       footprint_ft: [44, 56]
       homes: 9
       massing: walkup
-      body: "#cfc6b6"
-      roof: "#4f6d7a"
+      body: "#dcecff"
+      roof: "#1f6fd1"
       max_in_a_row: 1
 
   - id: midrise
     label: Mid-rise apartments (13+)
     short_label: Mid-rise
-    color: "#2f4858"
+    color: "#9b7bff"
     use_key: multi_unit
     unit_size_sf: 750
     stories: 5
@@ -128,6 +128,6 @@ typologies:
       footprint_ft: [64, 84]
       homes: 32
       massing: podium_midrise
-      body: "#b9bdb9"
-      roof: "#2f4858"
+      body: "#ece8ff"
+      roof: "#5b43d6"
       max_in_a_row: 1

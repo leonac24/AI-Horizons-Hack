@@ -29,14 +29,19 @@ def sources_md(cfg) -> str:
     lines += ["", "## How the pipeline fetches them", "",
               ("- `ckan_datastore` / `ckan_download` sources are fetched by `uv run python -m pipeline.build_parcels` "
               "(after `uv sync --group pipeline`). Downloads are cached in `data/raw/` (gitignored)."),
-              ("- `manual` sources are not scripted yet; see the note on each. Until they are connected the values that "
-              "depend on them are marked **placeholder** in the app."), ""]
+              ("- `census_bulk` and `arcgis` sources are joined by `uv run python -m pipeline.enrich_context` "
+               "or during a full parcel rebuild. Official Census summary tables need no API key. "
+               "Large raw geometry downloads are gitignored; derived site facts are published."),
+              ("- `manual` means the pipeline does not download that source. Published HUD FY2026 MFI "
+               "was verified and transcribed into assumptions.yaml; other manual sources may still be unconnected."), ""]
     return "\n".join(lines)
 
 
 def limitations_auto(cfg) -> str:
     rules = load_rules(cfg)
     idx_path = ROOT / "data" / "processed" / "parcels.json"
+    report_path = ROOT / "data" / "processed" / "pipeline_report.json"
+    counts = json.loads(report_path.read_text(encoding="utf-8")).get("counts", {}) if report_path.exists() else {}
     parcels = json.loads(idx_path.read_text(encoding="utf-8"))["parcels"].values() if idx_path.exists() else []
     by_district = Counter(p.get("zoning") or "(no district)" for p in parcels)
     reviewed = {d for d, r in rules.items() if any(u.get("reviewed") for u in (r.get("uses") or {}).values())}
@@ -54,6 +59,12 @@ def limitations_auto(cfg) -> str:
         f"({len(reviewed)} of {len(by_district)} districts reviewed)."),
         f"- **Largest unreviewed districts:** {', '.join(top_unreviewed) or 'none'}.",
         f"- **Placeholder assumptions ({len(placeholders)}):** {', '.join(f'`{p}`' for p in placeholders) or 'none'}.",
+        (f"- **2024 ACS median income / renter burden:** {counts.get('acs_income_values', 0):,} / "
+         f"{counts.get('acs_renter_burden_values', 0):,} indexed lots have tract estimates."),
+        (f"- **FEMA point screen:** {counts.get('fema_classified', 0):,} classified; "
+         f"{counts.get('fema_sfha_flagged', 0):,} in a mapped Special Flood Hazard Area at the tested point."),
+        (f"- **2018 PWSA combined sewersheds:** {counts.get('combined_sewershed_matched', 0):,} "
+         "indexed lots have a point match."),
         f"- **Sources not yet connected ({len(unverified)}):** {', '.join(unverified) or 'none'}.",
         END,
     ])

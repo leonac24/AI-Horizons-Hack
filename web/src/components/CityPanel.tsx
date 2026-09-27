@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { ParcelFeature } from '../App'
+import { districtColor } from '../lib/format'
 import type { Config, ParcelSummary } from '../types'
 
 export interface Filters {
@@ -41,9 +42,11 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
   return (
     <>
       <aside className="city-panel">
-        <div className="cp-head">
+        <div className="cp-hero">
           <div className="h-title">Pick a lot</div>
-          <p className="muted">Every vacant lot in the City of Pittsburgh is on the map. Click one, search an address or parcel ID, or start from a suggested lot.</p>
+          <p>Every vacant lot in the City of Pittsburgh is on the map. Click one, search an address or parcel ID, or start from a suggested lot.</p>
+        </div>
+        <div className="cp-head">
           <input className="field" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search address or parcel ID" />
           <div className="cp-grid">
             <label>
@@ -73,13 +76,17 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
                 <span>Hide {h.label.toLowerCase()}</span>
               </label>
             ))}
-            <span className="dim small">Flood &amp; transit filters: not loaded yet</span>
+            <label>
+              <input type="checkbox" checked={!!filters.exclude.fh} onChange={(e) => setFilters({ ...filters, exclude: { ...filters.exclude, fh: e.target.checked } })} />
+              Hide lots whose tested point is in a FEMA high-risk flood zone
+            </label>
+            <span className="dim small">Unmatched flood locations stay visible; transit job access is not measured yet.</span>
           </div>
         </div>
         <div className="cp-legend">
-          <span><i style={{ background: '#b6f23e' }} />suggested / search hit</span>
-          <span><i style={{ background: '#ff6b4a' }} />publicly held</span>
-          <span><i style={{ background: '#5aa9d6' }} />other vacant</span>
+          <span><i style={{ background: '#2fd06b' }} />suggested / search hit</span>
+          <span><i style={{ background: '#ff4d6d' }} />publicly held</span>
+          <span><i style={{ background: '#1f8bff' }} />other vacant</span>
         </div>
         <div className="eyebrow cp-count">
           {cardsAreHits ? 'Search results' : 'Suggested starting points'} · {visibleCount.toLocaleString()} of {features.length.toLocaleString()} lots shown
@@ -90,13 +97,13 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
             return (
               <button key={c.id} className="lot-card" onClick={() => onOpen(c.id)}>
                 <span className="lc-top">
-                  <span className="strong">{c.neighborhood ?? '—'}</span>
-                  <span className="lc-zone">{c.zoning ?? '—'}</span>
+                  <span className="lc-name">{c.neighborhood ?? '—'}</span>
+                  <span className="lc-zone" style={{ background: districtColor(config, c.zoning) }}>{c.zoning ?? '—'}</span>
                 </span>
                 <span className="muted small">
                   {c.address || c.id} · {Math.round(c.lot_area_sf ?? 0).toLocaleString()} sf{c.public ? ' · public' : ''}
                 </span>
-                {haz.length > 0 && <span className="warn small">{haz.join(' · ')}</span>}
+                {haz.length > 0 && <span className="haz-pill">{haz.join(' · ')}</span>}
               </button>
             )
           })}
