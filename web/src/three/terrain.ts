@@ -19,10 +19,11 @@ interface Meta {
 
 /** Height of the flat water plane. */
 export const WATER_LEVEL = 0.3
-// Riverbed and lowest land sit well clear of the water plane: at city zoom the
-// depth buffer can't separate surfaces a fraction of a unit apart, and flat banks
-// near the pool z-fight with the water (rivers flicker as the camera moves).
-const WATER_H = WATER_LEVEL - 2.5
+// Riverbed and lowest land sit well clear of the water plane so the depth buffer
+// can always tell them apart (the engine also scales the camera's near plane with
+// zoom). A shallow riverbed showed through the water when zoomed out, and on
+// 16-bit depth buffers rivers flickered to land as the camera moved.
+const WATER_H = WATER_LEVEL - 6
 const LAND_MIN = WATER_LEVEL + 0.8
 
 function sampler(data: Int16Array, offset: number, extent: number, step: number, n: number, scale: number, water: number) {
