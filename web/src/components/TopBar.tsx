@@ -13,6 +13,7 @@ interface Props {
   onClear: () => void
   onReset: () => void
   onMemo: () => void
+  onShare: () => void
   disclaimer: string
 }
 
@@ -60,6 +61,9 @@ export function TopBar(p: Props) {
             </button>
             <button className="ghost-btn" onClick={p.onReset}>
               Reset view
+            </button>
+            <button className="ghost-btn" onClick={p.onShare} title="Copy a link to this lot, priorities and plan">
+              Share link
             </button>
             <button className="go-btn" onClick={p.onMemo}>
               Print memo
