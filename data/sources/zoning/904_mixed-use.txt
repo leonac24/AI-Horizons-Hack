@@ -1,0 +1,1407 @@
+Source: City of Pittsburgh Zoning Code, Chapter 904, Mixed Use Zoning Districts
+URL: https://ecode360.com/45474350
+Accessed: 2026-09-26
+Scope: Chapter 904 body returned by the indexed source; check the live code before use.
+
+ § 904.01 NDO, Neighborhood Office District. 
+[Ord. 25-2001, § 1M, eff. 11-30-2001; Ord. 45-2003, § 2, eff. 12-31-2003]
+
+A. 
+
+Purpose. The NDO, Neighborhood Office District is intended to:
+
+1. 
+
+Provide a development opportunity for small office uses in districts that are primarily residential in use, but are not otherwise attractive for additional residential investment;
+
+2. 
+
+Provide a development opportunity for small offices in close proximity to residential areas;
+
+3. 
+Provide viable uses for property on traffic arterials which are otherwise not desirable for residential development and which extend through neighborhoods; and
+
+4. 
+
+Provide suitable controls to address the impacts of non-residential development on residential neighborhoods.
+
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary uses shall be allowed in the NDO District in accordance with the Use Table of Section 911.02 .
+
+2. 
+Accessory Uses. Accessory uses shall be permitted in the NDO District in accordance with the Accessory Use regulations of Chapter 912 . In addition, accessory uses in the NDO District shall not exceed twenty-five (25) percent of the gross floor area of the primary use.
+
+C. 
+
+Site Development Standards.
+
+Sites in the NDO District shall be developed in accordance with the following site development standards, provided that:
+
+1. 
+The Residential Compatibility Standards of Chapter 916 shall impose additional height and setback standards on new High-Density and Very High-Density Residential and nonresidential development located near Residential and H Districts;
+
+2. 
+
+The Environmental Performance Standards of Chapter 915 shall impose additional restrictions on development; and
+
+3. 
+New development shall be allowed to use Contextual Setbacks and Contextual Heights in accordance with the provisions of Section 925.06 and Section 925.07 .
+
+Article VI and Chapter 925 contain a complete description of site development standards and a listing of exemptions to various standards.
+
+Site Development Standard
+
+NDO District
+
+Minimum Lot Size
+
+0
+
+Maximum Floor Area Ratio
+
+3:1
+
+Maximum Lot Coverage
+
+90%
+
+Minimum Front Setback
+
+none required
+
+Minimum Rear Setback
+when not adjacent to a way
+
+20 ft.
+
+when adjacent to a way
+
+10 ft.
+
+Minimum Exterior Sideyard Setback
+
+none required
+
+Minimum Interior Sideyard Setback
+
+none required
+
+Maximum Height
+
+45 ft. (not to exceed 3 stories)
+
+D. 
+
+Site Plan Review.
+
+1. 
+
+General. The following shall require Site Plan Review and approval in accordance with the Site Plan Review procedures of Section 922.04 :
+
+(a) 
+Any new construction, building addition or enlargement or exterior renovation of an existing structure on a lot that has an area of two thousand four hundred (2,400) square feet or more;
+
+(b) 
+
+Any non-residential use; or
+
+(c) 
+
+Any off street parking area that includes more than ten (10) parking spaces or more than two thousand five hundred (2,500) square feet of surface area.
+
+2. 
+Standards. Any project requiring Site Plan Review in the NDO district shall be subject to the Site Plan Review Criteria of Section 922.04.E.
+
+ § 904.02 LNC, Local Neighborhood Commercial District. 
+
+[Ord. 45-2003, § 3, eff. 12-31-2003]
+
+A. 
+
+Purpose. The LNC, Local Neighborhood Commercial District is intended to:
+
+1. 
+
+Maintain the small scale and rich diversity of neighborhood-serving commercial districts;
+
+2. 
+Promote and enhance the quality of life in adjacent residential areas; and
+
+3. 
+
+Reduce the adverse impacts that are sometimes associated with commercial uses in order to promote compatibility with residential development.
+
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary uses shall be allowed in the LNC District in accordance with the Use Table of Section 911.02 .
+
+2. 
+Accessory Uses. Accessory uses shall be permitted in the LNC District in accordance with the Accessory Use regulations of Chapter 912 . In addition, accessory uses in the LNC District shall not exceed twenty-five (25) percent of the gross floor area of the primary use.
+
+C. 
+
+Site Development Standards.
+
+Sites in the LNC District shall be developed in accordance with the following site development standards, provided that:
+
+1. 
+The Residential Compatibility Standards of Chapter 916 shall impose additional height and setback standards on new High-Density and Very High-Density Residential and nonresidential development located near Residential and H Districts;
+
+2. 
+
+The Environmental Performance Standards of Chapter 915 shall impose additional restrictions on site development; and
+
+3. 
+New development shall be allowed to use Contextual Setbacks and Contextual Building Heights in accordance with the provisions of Section 925.06 and Section 925.07 .
+
+Article VI and Chapter 925 contain a complete description of site development standards and a listing of exemptions to various standards.
+
+Site Development Standard
+
+LNC District
+
+Minimum Lot Size
+
+0
+
+Maximum Floor Area Ratio
+
+2:1
+
+Maximum Lot Coverage
+
+90%
+
+Minimum Front Setback
+
+none required
+
+Minimum Rear Setback
+when not adjacent to a way
+
+20 ft.
+
+when adjacent to a way
+
+none required
+
+Minimum Exterior Sideyard Setback
+
+none required
+
+Minimum Interior Sideyard Setback
+
+none required
+
+Maximum Height
+
+45 ft. (not to exceed 3 stories)
+
+D. 
+
+Site Plan Review.
+
+1. 
+
+General. The following shall require Site Plan Review and approval in accordance with the Site Plan Review procedures of Section 922.04 :
+
+(a) 
+Any new construction, building addition or enlargement or exterior renovation of an existing structure on a lot that has an area of two thousand four hundred (2,400) square feet or more;
+
+(b) 
+
+Any off street parking area that includes more than ten (10) parking spaces or more than two thousand five hundred (2,500) square feet of surface area; or
+
+2. 
+
+Standards. Any project requiring Site Plan Review in the LNC district shall be subject to the Site Plan Review Criteria of Section 922.04.E.
+ § 904.03 NDI, Neighborhood Industrial District. 
+
+[Ord. 45-2003, § 4, eff. 12-31-2003]
+
+A. 
+
+Purpose. The NDI, Neighborhood Industrial District is intended to:
+
+1. 
+
+Allow a broad range of industrial uses, subject to performance standards;
+
+2. 
+
+Accommodate other uses that are compatible with office, commercial and residential land uses; and
+
+3. 
+
+Encourage development patterns that include a mix of housing, employment and shopping opportunities.
+
+B. 
+
+Use Regulations.
+1. 
+
+Primary Uses. Primary uses shall be allowed in the NDI District in accordance with the Use Table of Section 911.02 .
+
+2. 
+
+Accessory Uses. Accessory uses shall be permitted in the NDI District in accordance with the Accessory Use regulations of Chapter 912 . In addition, accessory uses in the NDI District shall not exceed twenty-five (25) percent of the gross floor area of the primary use.
+
+C. 
+
+Site Development Standards.
+Sites in the NDI District shall be developed in accordance with the following site development standards, provided that:
+
+1. 
+
+The Residential Compatibility Standards of Chapter 916 shall impose additional height and setback standards on new High-Density and Very High-Density Residential and Nonresidential development located near Residential and H Districts;
+
+2. 
+
+The Environmental Performance Standards of Chapter 915 shall impose additional restrictions on development; and
+
+3. 
+New development shall be allowed to use Contextual Setbacks and Contextual Building Heights in accordance with the provisions of Section 925.06 and Section 925.07 .
+
+Article VI and Chapter 925 contain a complete description of site development standards and a listing of exemptions to various standards.
+
+Site Development Standard
+
+NDI District
+
+Minimum Lot Size
+
+0
+
+Maximum Floor Area Ratio
+
+2:1
+
+Maximum Lot Coverage
+
+90%
+
+Minimum Front Setback
+
+none required
+
+Minimum Rear Setback
+when not adjacent to a way
+
+20 ft.
+
+when adjacent to a way
+
+none required
+
+Minimum Exterior Sideyard Setback
+
+none required
+
+Minimum Interior Sideyard Setback
+
+none required
+
+Maximum Height
+
+45 ft. (not to exceed 3 stories)
+
+D. 
+
+Site Plan Review.
+
+1. 
+
+General. The following shall require Site Plan Review and approval in accordance with the Site Plan Review procedures of Section 922.04 ;
+
+(a) 
+Any new construction, building addition or enlargement or exterior renovation of an existing structure on a lot that has an area of two thousand four hundred (2,400) square feet or more;
+
+(b) 
+
+Any off street parking area that includes more than ten (10) parking spaces or more than two thousand five hundred (2,500) square feet of surface area; or
+
+2. 
+
+Standards. Any project requiring Site Plan Review in the NDI district shall be subject to the Site Plan Review Criteria of Section 922.04.E.
+ § 904.04 UNC, Urban Neighborhood Commercial District. 
+
+[Ord. 45-2003, § 5, eff. 12-31-2003]
+
+A. 
+
+Purpose. The UNC, Urban Neighborhood Commercial District is intended to:
+
+1. 
+
+Serve a broader market than the immediate neighborhood;
+
+2. 
+
+Allow a range of development while controlling impacts on the neighborhood adjacent to them;
+
+3. 
+
+Ensure that new development fit within existing development patterns; and
+
+4. 
+Reinforce qualities of the built environment, such as the continuity of storefronts and pedestrian-oriented streetscapes.
+
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary uses shall be allowed in the UNC District in accordance with the Use Table of Section 911.02 .
+
+2. 
+Accessory Uses. Accessory uses shall be permitted in the UNC District in accordance with the Accessory Use regulations of Chapter 912 . In addition, accessory uses in the UNC District shall not exceed twenty-five (25) percent of the gross floor area of the primary use.
+
+C. 
+
+Site Development Standards.
+
+Sites in the UNC District shall be developed in accordance with the following site development standards, provided that:
+
+1. 
+The Residential Compatibility Standards of Chapter 916 shall impose additional height and setback standards on new High-Density and Very High-Density Residential and nonresidential development located near Residential and H Districts;
+
+2. 
+
+The Environmental Performance Standards of Chapter 915 shall impose additional restrictions on development; and
+
+3. 
+New development shall be allowed to use Contextual Setbacks and Contextual Building Heights in accordance with the provisions of Section 925.06 and Section 925.07 .
+
+Article VI and Chapter 925 contain a complete description of site development standards and a listing of exemptions to various standards.
+
+Site Development Standard
+
+UNC District
+
+Minimum Lot Size
+
+0
+
+Maximum Floor Area Ratio
+
+when not located within 1,500 ft. of a Major transit facility
+
+3:1
+when located within 1,500 ft. of a Major Transit Facility
+
+4:1
+
+Maximum Lot Coverage
+
+Minimum Front Setback
+
+none required
+
+Minimum Rear Setback
+
+when not adjacent to a way
+
+20 ft.
+
+when adjacent to a way
+
+none required
+
+Minimum Exterior Sideyard Setback
+
+none required
+
+Minimum Interior Sideyard Setback
+
+none required
+
+Maximum Height
+
+when not located within 1,500 ft. of a Major transit facility
+
+45 ft. (not to exceed 3 stories)
+
+when located within 1,500 ft. of a Major Transit Facility
+60 ft. (not to exceed 4 stories)
+
+4. 
+
+Special Exception for Height in UNC District. Additional height above three (3) stories in the UNC district shall be allowed in accordance with Special Exception procedures of Section 922.07 with the following standards:
+
+(i) 
+
+The maximum height of the structure shall be eighty-five (85) feet, not to exceed six (6) stories;
+
+(ii) 
+
+The site shall not be within two hundred (200) feet of any property which is zoned Residential;
+
+(iii) 
+The site shall be sufficiently separated from property zoned Residential for the Board to determine that the additional height will not create a detrimental impact on such properties through consideration of the additional traffic impacts caused by the additional height and density, the impacts on views from such residential properties, and the impacts of the bulk of the buildings on such residential properties.
+
+D. 
+
+Site Plan Review.
+
+1. 
+General. The following shall require Site Plan Review and approval in accordance with the Site Plan Review procedures of Section 922.04 ;
+
+(a) 
+
+Any new construction, building addition or enlargement or exterior renovation of an existing structure on a lot that has an area of two thousand four hundred (2,400) square feet or more;
+
+(b) 
+
+Any off street parking area that includes more than ten (10) parking spaces or more than two thousand five hundred (2,500) square feet of surface area; or
+2. 
+
+Standards. Any project requiring Site Plan Review in the UNC district shall be subject to the Site Plan Review Criteria of Section 922.04.E.
+
+ § 904.05 HC, Highway Commercial District. 
+
+[Ord. 45-2003, § 6, eff. 12-31-2003]
+
+A. 
+
+Purpose. The HC, Highway Commercial District is intended to:
+
+1. 
+
+Accommodate auto-oriented commercial activities and uses for which automobile travel is generally required, such as automobile dealerships, fast-food restaurants and appliance stores;
+2. 
+
+Improve the design quality of auto-oriented development, making such areas more attractive components of the city;
+
+3. 
+
+Provide space for large-scale regional retail stores that require large lots, broadly defined market areas and high sales volumes, and that tend to be incompatible with locations adjoining smaller neighborhoods;
+
+4. 
+
+Provide space for commercial uses that would create conflicts with residential uses or other less intensive types of land uses; and
+
+5. 
+Maintain the efficiency of the City's existing and planned traffic network.
+
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary uses shall be allowed in the HC District in accordance with the Use Table of Section 911.02 .
+
+2. 
+Accessory Uses. Accessory uses shall be permitted in the HC District in accordance with the Accessory Use regulations of Chapter 912 . In addition, accessory uses in the HC District shall not exceed twenty-five (25) percent of the gross floor area of the primary use.
+
+C. 
+
+Site Development Standards.
+
+Sites in the HC District shall be developed in accordance with the following site development standards, provided that:
+
+1. 
+The Residential Compatibility Standards of Chapter 916 shall impose additional height and setback standards on new High-Density and Very High-Density Residential and nonresidential development located near Residential and H Districts;
+
+2. 
+
+The Environmental Performance Standards of Chapter 915 shall impose additional restrictions on development; and
+
+3. 
+New development shall be allowed to use Contextual Setbacks and Contextual Building Heights in accordance with the provisions of Section 925.06 and Section 925.07 .
+
+Article VI and Chapter 925 contains a complete description of site development standards and listing of exemptions to various standards.
+
+Site Development Standard
+
+HC District
+
+Minimum Lot Size
+
+0
+
+Maximum Floor Area Ratio
+
+when not located within 1,500 ft. of a Major transit facility
+
+2:1
+when located within 1,500 ft. of a Major Transit Facility
+
+3:1
+
+Maximum Lot Coverage
+
+Minimum Front Setback
+
+none required
+
+Minimum Rear Setback
+
+when not adjacent to a way
+
+20 ft.
+
+when adjacent to a way
+
+none required
+
+Minimum Exterior Sideyard Setback
+
+none required
+
+Minimum Interior Sideyard Setback
+
+none required
+
+Maximum Height
+
+75 feet (not to exceed 5 stories)
+
+D. 
+
+Site Plan Review.
+
+1. 
+General. Any new construction, building addition or enlargement or exterior renovation of an existing structure on a lot that has an area of eight thousand (8,000) square feet or more shall require Site Plan Review and approval in accordance with the Site Plan Review procedures of Section 922.04 .
+
+2. 
+
+Standards. Any project requiring Site Plan Review in the HC district shall be subject to the Site Plan Review Criteria of Section 922.04.E.
+
+ § 904.06 GI, General Industrial District. 
+[Ord. 45-2003, § 7, eff. 12-31-2003]
+
+A. 
+
+Purpose. The GI, General Industrial District is intended to:
+
+1. 
+
+Accommodate a full range of industrial, manufacturing, warehouse, and similar uses which are incompatible with lower intensity land uses;
+
+2. 
+
+Preserve land for manufacturing uses to maintain the diversity of the City's economic base;
+
+3. 
+
+Allow limited commercial development to support industrial uses without competing for land value; and
+
+4. 
+Encourage appropriate multi-unit residential development in the adaptive reuse of older industrial buildings.
+
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary uses shall be allowed in the GI District in accordance with the Use Table of Section 911.02 .
+
+2. 
+Accessory Uses. Accessory uses shall be permitted in the GI District in accordance with the Accessory Use regulations of Chapter 912 . In addition, accessory uses in the GI District shall not exceed twenty-five (25) percent of the gross floor area of the primary use.
+
+C. 
+
+Site Development Standards.
+
+Sites in the GI District shall be developed in accordance with the following site development standards, provided that:
+
+1. 
+The Residential Compatibility Standards of Chapter 916 shall impose additional height and setback standards on new High-Density and Very High-Density Residential and nonresidential development located near Residential and H Districts;
+
+2. 
+
+The Environmental Performance Standards of Chapter 915 shall impose additional restrictions on development; and
+
+3. 
+New development shall be allowed to use Contextual Setbacks and Contextual Building Heights in accordance with the provisions of Section 925.06 and Section 925.07 .
+
+Article VI and Chapter 925 contain a complete description of site development standards and a listing of exemptions to various standards.
+
+Site Development Standard
+
+GI District
+
+Minimum Lot Size
+
+0
+
+Maximum Floor Area Ratio
+
+3:1
+
+Maximum Lot Coverage
+
+Minimum Front Setback
+
+none required
+
+Minimum Rear Setback
+when not adjacent to a way
+
+20 ft.
+
+when adjacent to a way
+
+none required
+
+Minimum Exterior Sideyard Setback
+
+10 ft.
+
+Minimum Interior Sideyard Setback
+
+10 ft.
+
+Maximum Height
+
+75 ft. (not to exceed 5 stories)
+
+D. 
+
+Site Plan Review.
+
+1. 
+General. Any new construction, building addition or enlargement or exterior renovation of an existing structure on a lot that has an area of eight thousand (8,000) square feet or more shall require Site Plan Review and approval in accordance with the Site Plan Review procedures of Section 922.04 .
+
+2. 
+
+Standards. Any project requiring Site Plan Review in the GI district shall be subject to the Site Plan Review Criteria of Section 922.04.E.
+
+ § 904.07 UI, Urban Industrial District. 
+[New District by Ord. No. 19, 7-8-1999. Amend. No. U-9; Ord. 21-2002, §§ 1—3, eff. 6-18-2002; Ord. 45-2003, § 8, eff. 12-31-2003]
+
+A. 
+
+Purpose. The UI, Urban Industrial District, is intended to:
+
+1. 
+
+Allow mid-sized to large industries with lower external impacts on surrounding properties and districts;
+
+2. 
+Provide a flexible district that addresses the growing need for easily adaptable and flexible spaces, including office parks, incubator spaces, high technology and service sector industries;
+
+3. 
+
+Allow multi-use buildings that permit assembly, inventory, sales, and business functions within the same space;
+
+4. 
+
+Encourage adaptive reuse of manufacturing buildings and allow the development of high density multi-unit residential buildings.
+
+B. 
+
+Use Regulations.
+
+1. 
+Primary Uses. Primary uses shall be allowed in the UI District in accordance with the Use Table of Section 911.02 .
+
+2. 
+
+Accessory Uses. Accessory Uses shall be allowed in the UI District in accordance with the Accessory Use regulations of Chapter 912 . In addition, accessory uses in the UI District shall not exceed twenty-five (25) percent of the gross floor area of the primary use.
+
+C. 
+
+Site Development Standards.
+Sites in the UI District shall be developed in accordance with the following Site Development Standards, provided that:
+
+1. 
+
+The Residential Compatibility Standards of Chapter 916 shall impose additional height and setback standards on new High Density and Very-High Density Residential development and nonresidential development located near Residential and H Districts;
+
+2. 
+The Environmental Performance Standards of Chapter 915 shall impose additional restrictions on development; and
+
+3. 
+
+New development shall be allowed to use Contextual Setbacks and Contextual Building Heights in accordance with the provisions of Section 925.06 and Section 925.07 .
+
+Article VI and Chapter 925 contain a complete description of site development standards and a listing of exemptions to various standards.
+
+Site Development Standard
+
+UI District
+
+Minimum Lot Size
+0
+
+Maximum Floor Area Ratio
+
+when not located within 1,500 ft. of a Major Transit Facility
+
+3:1
+
+when located within 1,500 ft. of a Major Transit Facility
+
+4:1
+
+Maximum Lot Coverage
+
+Minimum Front Setback
+
+none required
+
+Minimum Rear Setback
+
+when not adjacent to a way
+
+20 ft.
+
+when adjacent to a way
+
+none required
+
+Minimum Exterior Sideyard Setback
+
+10 ft.
+
+Minimum Interior Sideyard Setback
+
+10 ft.
+
+Maximum Height
+
+60 ft. (not to exceed 4 stories)
+
+4. 
+Special Exception for Height in the UI District. Additional height above four (4) stories in the UI District shall be allowed in accordance with the Special Exception procedures of Section 922.07 with the following standards:
+
+(i) 
+
+The site shall not be within two hundred (200) feet of any property which is zoned Residential;
+
+(ii) 
+The site shall be sufficiently separated from property zoned Residential for the Board to determine that the additional height will not create detrimental impact on such properties through consideration of the additional traffic impacts caused by the additional height and density, the impacts on views from such residential properties, and the impacts of the bulk of the buildings on such residential properties.
+
+5. 
+Special Exception for FAR Adjustment in the UI District. Where at least seventy-five (75) percent of the building will be used for multi-unit residential purposes, the Maximum Floor Area Ratio ("FAR") may be increased, provided the applicant meets the Special Exception procedures of Section 922.07 and satisfies the following standards:
+
+(i) 
+
+The Maximum FAR shall not exceed 10:1.
+
+(ii) 
+
+The site shall not be within two hundred (200) feet of any property which is zoned residential.
+(iii) 
+
+The site shall be situated so that the upward adjustment of the Maximum FAR will not create detrimental impact on neighboring properties through consideration of the additional traffic impacts caused by the adjusted FAR, including consideration of height and density.
+
+D. 
+
+Site Plan Review.
+
+1. 
+
+General. The following shall require Site Plan Review and approval in accordance with the Site Plan Review procedures of Section 922.04 ;
+
+(a) 
+Any new construction, building addition or enlargement or exterior renovation of an existing structure on a lot that has an area of eight thousand (8,000) square feet or more; or
+
+(b) 
+
+Any off street parking area that includes more than ten (10) parking spaces or more than 2500 square feet of surface area.
+
+2. 
+
+Standards (UI District). Any project requiring Site Plan Review in the UI district shall be subject to the Site Plan Review Criteria of Section 922.04.E.
+ § 904.08 UC-MU Urban Center Mixed Use. 
+
+[Ord. No. 17-2022, § 2, eff. 6-30-2022; Ord. No. 1-2023, § 7, 3-1-2023]
+
+A. 
+Purpose. The intent of the UC-MU District is to allow for commercial uses while also providing diverse housing options, including affordable and workforce housing. To ensure each new development contributes to the public realm, publicly accessible open spaces are required, along with active ground floor uses and adequate sidewalk width.
+To transition from smaller scale residential adjacent to this district, green spaces and other buffers are required between lower scale residential and taller new buildings. Commercial uses in the UC-MU should include neighborhood serving retail and other businesses serving residents and other uses.
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary Uses shall be allowed in the UC-MU District in accordance with the Use Table of Section 911.02 .
+
+2. 
+
+Accessory Uses.
+
+Accessory Uses shall be allowed in the UC-MU District in accordance with the Accessory Use regulations of Chapter 912 .
+Surface parking shall be permitted as accessory to Multi-Unit Residential uses with at least fifty (50) dwelling units for no more than ten (10) spaces. Surface parking accessory to such Multi-Unit Residential uses shall be subject to the landscaping and screening standards of Chapter 918 , regardless of the applicability related to number of spaces set forth therein, and shall not be located in any Build-To Zone.
+
+C. 
+Site Development Standards. Site and Design Standards for the UC-MU shall be in accordance with Section 922.15 .
+
+1. 
+
+Height.
+
+a. 
+
+Base height without Performance Points is as illustrated in the Height Map, including limits in the mapped Height Reduction Zone. New development shall not to be permitted to use the Contextual Height Provisions of Section 925.07.D.
+
+b. 
+
+A minimum height of twenty-four (24) feet is required for Primary Structures.
+
+c. 
+The maximum height of a Primary Structure may exceed the base height, up to the maximum height illustrated in the Height Map, provided the following conditions are met:
+
+(1) 
+
+Height Bonus. To exceed the base height as illustrated in the height map, a development must qualify for a height bonus as described in Section 904.08.C.5 and Section 915.07 .
+
+(2) 
+Height Design Standards. To exceed the base height as permitted in the Height Map, buildings must meet the following design standards (See Figure 1):
+
+(a) 
+
+Where a building exceeds sixty-five (65) feet in height, step-backs are required as follows:
+
+(i) 
+
+A minimum front and street-side step-back of ten (10) feet is required for structures of sixty-five (65) feet in height or greater.
+
+(ii) 
+Structures in excess of eighty-five (85) feet in height shall meet one of the following standards beginning no higher than eighty-five (85) feet:
+
+(A) 
+
+Additional front and street-side step-backs of ten (10) feet are required, in addition to the ten (10) foot step-back required at sixty-five (65) feet.
+
+(B) 
+The portion of the structure that exceeds eighty-five (85) feet in height must be no more than eighty (80) percent of the building footprint. The required ten-foot step-back at sixty-five (65) feet shall be maintained.
+
+(iii) 
+
+Any required building step-back may begin at a lower height, including at ground level, but at a minimum must occur at the portion of a building exceeding sixty-five (65) feet or six (6) stories, whichever occurs first.
+
+(iv) 
+In the required stepbacks, above grade can be open air balconies and other architectural design features that project from the facade, provided they are not enclosed square footage. At ground level, open space shall be provided that meets Urban Open Space standards and may be used to meet Urban Open Space Requirements.
+
+(b) 
+When a development includes a new Primary Structure with a maximum height of more than twice the average height of an existing adjacent Primary Structure, a Green Buffer shall be provided. This provision applies to parcels abutting another parcel with the smaller structure, not across a Street or Way. The Green Buffer(s) shall be located as an interior sideyard(s) or rear yard along the lot line(s) abutting the lot(s) with the shorter structure(s).
+Additions to existing structures in the Green Buffer shall be permitted as a Special Exception, subject to the provisions of Section 922.07 .
+(c) 
+
+For structures that exceed sixty-five (65) feet in height, applicants must submit a shadow study demonstrating the effects of the proposed structure to the Zoning Administrator. Pre- and post-development shadows must be included in the shadow study. The study must depict, at a minimum, mid-morning and mid-afternoon shadows cast on the following dates: March 21, June 21, September 22, and December 21, corresponding to the first day of each season.
+Figure 1 Building Height and Upper-Story Step Backs for UC-E and UC-MU
+
+2. 
+
+Build-To Zone.
+
+a. 
+
+When abutting a street, a build-to zone is imposed between zero (0) and ten (10) feet inward from the property line (See Figure 2). A build-to zone is imposed on all street frontages, except where the applicant can document that the frontage requirements cannot be met due to Green Buffer or Urban Open Space requirements.
+
+b. 
+When abutting a Street, a minimum of sixty (60) percent of the building frontage or facade must be located in the Build-To Zone.
+
+Figure 2 Street Build-To Zone For UC-MU
+
+3. 
+Sidewalks. Along Boulevard of the Allies, continuous pedestrian sidewalks at least twelve (12) feet wide shall be provided, with a clear path exclusive of obstructions of at least six (6) feet. Street trees and other landscaping is required in this sidewalk to manage stormwater and provide an improved pedestrian experience. In all other locations in this district, continuous pedestrian sidewalks of at least ten (10) feet along a street, with a clear path exclusive of obstructions of at least five (5) feet.
+The continuous pedestrian sidewalk is inclusive of obstructions including street furniture, tree pits, and Green Infrastructure. If the sidewalk does not have the necessary width available in the public right-of-way as determined by the City, the additional width must be provided on the development parcel.
+Where the sidewalk is extended onto private property, this portion of the site may also be counted to Urban Open Space requirements, if that portion of the site otherwise meets the Urban Open Space standards. Buildings may encroach over the air space above any additional sidewalk width provided on a development parcel provided that the underside of the encroachment is a minimum of two (2) stories above grade.
+4. 
+
+Urban Open Space. Urban Open Space shall be provided at ground level on lots of twenty thousand (20,000) square feet or more in an amount at least equal to ten (10) percent of the lot area.
+
+5. 
+
+Performance Points.
+
+a. 
+New buildings and renovations in this district can utilize a subset of the bonus system of Section 915.07 . Points earned by satisfying the bonus goals can be utilized in this district to achieve the bonus height as identified in Section 904.08.C.1. Each point equates to fifteen (15) feet of additional building height.
+Points may be transferred from a development site to another, if approved by Planning Commission as part of a Master Development Plan, in accordance with procedures as developed by the Department of City Planning.
+b. 
+
+All projects pursuing bonus options in the UC-MU shall meet the following requirements:
+
+(1) 
+
+All projects seeking Performance Points must show satisfactory efforts made to meet City of Pittsburgh policies regarding minority and women business enterprises found in Section 177A.02 of the City Code.
+
+(2) 
+All projects seeking Performance Points must meet the standards for the lowest point of the relevant energy consumption point for the project type (i.e., new construction or existing buildings).
+
+c. 
+
+In the UC-MU, the following bonus points are available:
+
+(1) 
+
+Zero Energy or Zero Carbon Buildings Section 915.07.D.1.a-1.c; Points as listed.
+
+(2) 
+
+On-Site Energy Generation Section 915.07.D.3.a-3.c.; Points as listed.
+
+(3) 
+Affordable Housing: Section 915.07.D.4.a-4.d.; points modified as follows: 4.c is four (4) points; 4.d is six (6) points.
+
+(4) 
+
+Rainwater Section 915.07.D.5.a - 5.c; Points as listed.
+
+(5) 
+
+Building Reuse Section 915.07.D 6.c; Points as listed.
+
+(6) 
+
+On Site Public Art Section 915.07.D.9.a-9.c; Points as listed.
+
+(7) 
+
+Equitable Development: Section 915.07.D.12.a-12.c a: points modified as follows: 12.c is five (5) points.
+
+(8) 
+Fresh Food Access: Section 915.07.D.13.a Points as listed.
+
+6. 
+
+Sustainable Development Bonuses. Developments are not eligible for the provisions of Section 915.04 , Sustainable Development Bonus.
+
+D. 
+
+Review Procedures.
+
+1. 
+
+Site Plan Review.
+The following development actions are subject to Site Plan Review and approval per Section 922.04 , unless such actions meet the thresholds of Section 904.08.D.2, in which case they are subject to Project Development Plan review and approval:
+
+a. 
+
+All new construction of Primary Structures.
+
+b. 
+
+Any expansion or any exterior renovation to an existing Primary Structure.
+
+c. 
+
+All new construction of parking structures.
+Any existing single-family detached dwellings located within this District are exempt from Site Plan Review, unless otherwise specifically required by the Zoning Code.
+
+2. 
+
+Project Development Plan.
+
+The following development actions are subject to Project Development Plan review and approval by Planning Commission per Section 922.10 .
+
+a. 
+
+All new construction of fifteen thousand (15,000) square feet or more in gross floor area.
+
+b. 
+Any addition or expansion of fifteen thousand (15,000) square feet or more in gross floor area or building footprint.
+
+c. 
+
+Commercial structured parking of forty (40) or more spaces.
+
+d. 
+
+Demolition of any Primary Structure of fifteen thousand (15,000) square feet or greater or a total of five (5) or more Primary Structures under the same ownership or control.
+
+e. 
+New Parks and Recreation (Limited and General) uses of two thousand four hundred (2,400) square feet or greater, where Art Commission review and approval is not required.
+
+Project Development Plans that are filed for building demolitions not part of an application for new construction shall include a report, study, or statement of the property's future use that meets the review criteria of Section 922.10.E.2.
+
+ § 904.09 UC-E Urban Center Employment. 
+
+[Ord. No. 1-2023, § 8, 3-1-2023]
+
+A. 
+Purpose. The intent of the UC-E District is to support life sciences, healthcare, and other industrial sectors that benefit from locating together and provide employment for a variety of workers and educational levels. The priority is on employment over residential uses.
+As this district draws the most users and visitors, new development shall provide publicly accessible open space, active ground floor uses, adequate sidewalk width, and varied community services and amenities to create an active and inviting public realm experience. Multi-modal transportation is encouraged, especially transit, and where parking is provided it should be shared. Commercial uses in the UC-E include neighborhood serving retail and other businesses serving residents and other uses.
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary uses shall be allowed in the UC-E District in accordance with the Use Table of Section 911.02 .
+
+2. 
+
+Accessory Uses. Accessory uses shall be allowed in the UC-E District in accordance with the Accessory Use regulations of Chapter 912 .
+
+C. 
+
+Site Development Standards. Site and Design Standards for the UC-E shall be in accordance with Section 922.15 .
+
+1. 
+
+Height.
+
+a. 
+Base height without Performance Points is as illustrated in the Height Map, including limits in the mapped Height Reduction Zone. New development shall not to be permitted to use the Contextual Height Provisions of Section 925.07.D.
+
+b. 
+
+A minimum height of forty (40) feet is required for Primary Structures.
+
+c. 
+
+The maximum height of a Primary Structure may exceed the base height, up to the maximum height illustrated in the Height Map, provided the following conditions are met:
+
+(1) 
+Height Bonus. To exceed the base height feet as illustrated in the height map, a development must qualify for a height bonus as described in Section 904.09.C.4 and Section 915.07 .
+
+(2) 
+
+Height Design Standards. To exceed the base height as permitted in the Height Map, buildings must meet the following design standards (See Figure 1):
+
+(a) 
+
+Where a building exceeds sixty-five (65) feet in height, step-backs are required as follows:
+
+(i) 
+A minimum front and street-side step-back of ten (10) feet is required for structures of sixty-five (65) feet in height or greater.
+
+(ii) 
+
+Structures in excess of eighty-five (85) feet in height shall meet one of the following standards beginning no higher than eighty-five (85) feet:
+
+(A) 
+
+Additional front and street-side step-backs of ten (10) feet are required, in addition to the ten (10) foot step-back required at sixty-five (65) feet.
+
+(B) 
+The portion of the structure that exceeds eighty-five (85) feet in height must be no more than eighty (80) percent of the building footprint. The required ten-foot step-back at sixty-five (65) feet shall be maintained.
+
+(iii) 
+
+Any required building step-back may begin at a lower height, including at ground level, but at a minimum must occur at the portion of a building exceeding sixty-five (65) feet or six (6) stories, whichever occurs first.
+
+(iv) 
+In the required stepbacks above grade, projections may include open balconies and other architectural design features that project from the facade, provided they are not enclosed square footage. At ground level, open space shall be provided that meets Urban Open Space standards and may be used to meet Urban Open Space Requirements.
+
+(b) 
+For structures that exceed sixty-five (65) feet in height, applicants must submit a shadow study demonstrating the effects of the proposed structure to the Zoning Administrator. Pre- and post-development shadows must be included in the shadow study. The study must depict, at a minimum, mid-morning and mid-afternoon shadows cast on the following dates: March 21, June 21, September 22, and December 21, corresponding to the first day of each season.
+Figure 1 Building Height and Upper-Story Step Backs For UC-E and UC-MU
+
+2. 
+Sidewalks. Along Fifth Avenue and Forbes Avenue, continuous pedestrian sidewalks at least twenty (20) feet wide shall be provided, with clear path exclusive of obstructions of at least ten (10) feet. In all other locations in this district, continuous pedestrian sidewalks of at least ten (10) feet along a Street, with a clear path exclusive of obstructions of at least five (5) feet.
+The continuous pedestrian sidewalk is inclusive of obstructions including street furniture, tree pits, and Green Infrastructure. If the sidewalk does not have the necessary width available in the public right-of-way as determined by the City, the additional width must be provided on the development parcel.
+Where the sidewalk is extended onto private property, this portion of the site may be used to meet Urban Open Space requirements, if that portion of the site otherwise meets the Urban Open Space standards. Buildings may encroach over the air space above any additional sidewalk width provided on a development parcel provided that the underside of the encroachment is a minimum of two (2) stories above grade.
+3. 
+
+Urban Open Space. Urban Open Space shall be provided at ground level on lots of twenty thousand (20,000) square feet or more in an amount at least equal to ten (10) percent of the lot area.
+
+4. 
+
+Performance Points.
+
+a. 
+New buildings and renovations in this district can utilize a subset of the bonus system of Section 915.07 . Points earned by satisfying the bonus goals can be utilized in this district to achieve the bonus height as identified in Section 904.09.C.1. Each point equates to fifteen (15) feet of additional building height.
+Points may be transferred from a development site to another, if approved by Planning Commission as part of a Master Development Plan, in accordance with procedures as developed by the Department of City Planning.
+b. 
+
+All projects pursuing bonus options in the UC-E shall meet the following requirements:
+
+(1) 
+
+All projects seeking Performance Points must show satisfactory efforts made to meet City of Pittsburgh policies regarding minority and women business enterprises found in Section 177A.02 of the City Code.
+
+(2) 
+All projects seeking Performance Points must meet the standards for the lowest point of the relevant energy consumption point for the project type (i.e., new construction or existing buildings).
+
+c. 
+
+In the UC-E, the following bonus points are available:
+
+(1) 
+
+Zero Energy or Zero Carbon Buildings Section 915.07.D.1.a-1.c; Points as listed.
+
+(2) 
+
+On-Site Energy Generation Section 915.07.D.3.a-3.c.; Points as listed.
+
+(3) 
+Affordable housing: Section 915.07.D.4.a-4.d.; points modified as follows: Subsection 4.c is four (4) points; Subsection 4.d is six (6) points.
+
+(4) 
+
+Rainwater Section 915.07.D.5.a - 5.c; Points as listed.
+
+(5) 
+
+Building Reuse Section 915.07.D 6.c; Points as listed.
+
+(6) 
+
+On Site Public Art Section 915.07.D.9.a-9.c; Points as listed.
+
+(7) 
+
+Workforce development: Section 915.07.D.12.a-12.c points modified as follows: Subsection 12.c is five (5) points.
+
+5. 
+Sustainable Development Bonuses. Developments are not eligible for the provisions of Section 915.04 , Sustainable Development Bonus.
+
+D. 
+
+Review Procedures.
+
+1. 
+
+Site Plan Review.
+
+The following development actions are subject to Site Plan Review and approval per Section 922.04 , unless such actions meet the thresholds of Section 904.09.D.2, in which case they are subject to Project Development Plan review and approval:
+
+a. 
+
+All new construction of Primary Structures.
+b. 
+
+Any expansion or any exterior renovation to an existing Primary Structure.
+
+c. 
+
+All new construction of parking structures.
+
+Any existing single-family detached dwellings located within this District are exempt from Site Plan Review, unless otherwise specifically required by the Zoning Code.
+
+2. 
+
+Project Development Plan.
+
+The following development actions are subject to Project Development Plan review and approval by Planning Commission per Section 922.10 .
+
+a. 
+All new construction of fifteen thousand (15,000) square feet or more in gross floor area.
+
+b. 
+
+Any addition or expansion of fifteen thousand (15,000) square feet or more in gross floor area or building footprint.
+
+c. 
+
+Commercial structured parking of forty (40) or more spaces.
+
+d. 
+
+Demolition of any Primary Structure of fifteen thousand (15,000) square feet or greater or a total of five (5) or more Primary Structures under the same ownership or control.
+
+e. 
+New Parks and Recreation (Limited and General) uses of two thousand four hundred (2,400) square feet or greater, where Art Commission review and approval is not required.
+
+Project Development Plans that are filed for building demolitions not part of an application for new construction shall include a report, study, or statement of the property's future use that meets the review criteria of Section 922.10.E.2.
+
+ § 904.10 R-MU Residential Mixed Use. 
+
+[Ord. No. 1-23, § 9, 3-1-2023]
+
+A. 
+Purpose. The intent of this district is to provide healthy, attractive, and affordable rental housing in multifamily buildings. Encourage a mixture of restored historic homes and modern apartment buildings, with neighborhood serving retail.
+
+B. 
+
+Use Regulations.
+
+1. 
+
+Primary Uses. Primary uses shall be allowed in the R-MU District in accordance with the Use Table of Section 911.02 .
+
+2. 
+Accessory Uses. Accessory Uses shall be allowed in the R-MU District in accordance with the Accessory Use regulations of Chapter 912 .
+
+C. 
+
+Site Development Standards. Site and Design Standards for the R-MU shall be in accordance with Section 922.15 .
+
+1. 
+
+Height.
+
+a. 
+Base height without Performance Points is as illustrated in the Height Map, including limits in the mapped Height Reduction Zone. New development shall not to be permitted to use the Contextual Height Provisions of Section 925.07.D.
+
+b. 
+
+A minimum height of twenty-four (24) feet is required for Primary Structures.
+
+c. 
+
+The maximum height of a Primary Structure may exceed the base height up to the maximum height illustrated in the Height Map, provided the following conditions are met:
+(1) 
+
+Height Bonus. To exceed the base height as illustrated in the height map, a development must qualify for a height bonus as described in Section 904.10.C.6 and Section 915.07 .
+
+(2) 
+
+Height Design Standards. To exceed the height the base height as permitted in the Height Map, buildings must meet the following design standards (See Figure 3):
+
+(a) 
+
+Where a building exceeds forty-five (45) feet in height, step-backs are required as follows:
+
+(i) 
+A minimum front and street-side step-back of ten (10) feet is required for structures of forty-five (45) feet in height or greater.
+
+(ii) 
+
+Structures in excess of sixty-five (65) feet in height shall meet one of the following standards beginning no higher than sixty-five (65) feet:
+
+(A) 
+
+Additional front and street-side step-backs of ten (10) feet are required, in addition to the ten (10) foot step-back required at forty-five (45) feet.
+
+(B) 
+The portion of the structure that exceeds sixty-five (65) feet in height must be no more than eighty (80) percent of the building footprint. The required ten-foot step-back at forty-five (45) feet shall be maintained.
+
+(iii) 
+
+Any required building step-back may begin at a lower height, including at ground level, but at a minimum must occur at the portion of a building exceeding forty-five (45) feet or six (4) stories, whichever occurs first.
+
+(iv) 
+In the required stepbacks, above grade can be open air balconies and other architectural design features that project from the facade, provided they are not enclosed square footage. At ground level, open space shall be provided that meets Urban Open Space standards and may be used to meet Urban Open Space Requirements.
+
+(b) 
+When a development includes a new Primary Structure with a maximum height of more than twice the average height of an existing adjacent Primary Structure, a Green Buffer shall be provided. The Green Buffer(s) shall be located as an interior sideyard(s) or rear yard along the lot line(s) abutting the lot(s) with the shorter structure(s). Additions to existing structures in the Green Buffer shall be permitted as a Special Exception, subject to the provisions of Section 922.07 .
+
+(c) 
+For structures that exceed sixty-five (65) feet in height, applicants must submit a shadow study demonstrating the effects of the proposed structure to the Zoning Administrator. Pre- and post-development shadows must be included in the shadow study. The study must depict, at a minimum, mid-morning and mid-afternoon shadows cast on the following dates: March 21, June 21, September 22, and December 21, corresponding to the first day of each season.
+Figure 1 Building Height and Upper-Story Step Backs for R-MU
+
+2. 
+
+Rear Setback. A five (5) foot rear setback shall be required when not adjacent to a way, two (2) feet if adjacent to a way.
+
+3. 
+
+Build to Zone.
+
+(1) 
+
+When abutting a Street, a build-to zone is imposed between zero (0) and twenty (20) feet inward from the property line (See Figure 4).
+
+(2) 
+When abutting a Street, a minimum of sixty (60) percent of the building frontage or facade must be located in the Build-To Zone.
+
+(3) 
+
+Where a project has frontage on two (2) or more Streets, a build-to zone is imposed on all the Street frontages, except where the applicant can document that the frontage requirements cannot be met due to setback, Green Buffer, or Urban Open Space requirement.
+
+Figure 2 Street Build-To Zone for R-MU
+
+4. 
+Sidewalks. Continuous pedestrian sidewalks at least ten (10) feet wide shall be provided, with clear path exclusive of obstructions of at least five (5) feet. The continuous pedestrian sidewalk is inclusive of obstructions including street furniture, tree pits, and Green Infrastructure. If the sidewalk does not have the necessary width available in the public right-of-way as determined by the City, the additional width must be provided on the development parcel.
+Where the sidewalk is extended onto private property, this portion of the site may also be counted to Urban Open Space requirements, if that portion of the site otherwise meets the Urban Open Space standards. Buildings may encroach over the air space above any additional sidewalk width provided on a development parcel provided that the underside of the encroachment is a minimum of 2 (two) stories above grade.
+5. 
+
+Urban Open Space. Urban Open Space shall be provided at ground level on lots of twenty thousand (20,000) square feet or more in an amount at least equal to ten (10) percent of the lot area.
+
+6. 
+
+Performance Points.
+
+a. 
+New buildings and renovations in this district can utilize a subset of the bonus system of Section 915.07 . Points earned by satisfying the bonus goals can be utilized in this district to achieve the bonus height as identified in Section 904.10.C.1. Each point equates to fifteen (15) feet of additional building height.
+Points may be transferred from a development site to another, if approved by Planning Commission as part of a Master Development Plan, in accordance with procedures as developed by the Department of City Planning.
+b. 
+
+All projects pursuing bonus options in the R-MU shall meet the following requirements:
+
+(1) 
+
+All projects seeking Performance Points must show satisfactory efforts made to meet City of Pittsburgh policies regarding minority and women business enterprises found in Section 177A.02 of the City Code.
+
+(2) 
+All projects seeking Performance Points must meet the standards for the lowest point of the relevant energy consumption point for the project type (i.e., new construction or existing buildings).
+
+c. 
+
+In the R-MU, the following bonus points are available:
+
+(1) 
+
+Zero Energy or Zero Carbon Buildings Section 915.07.D.1.a-1.c; Points as listed.
+
+(2) 
+
+On-Site Energy Generation Section 915.07.D.3.a-3.c.; Points as listed.
+
+(3) 
+Affordable housing: Section 915.07.D.4.a-4.d.; points modified as follows: Subsection 4.c is four (4) points; Subsection 4.d is six (6) points.
+
+(4) 
+
+Rainwater Section 915.07.D.5.a - 5.c; Points as listed.
+
+(5) 
+
+Building Reuse Section 915.07.D 6.b-6.c; Points as listed.
+
+(6) 
+
+On Site Public Art Section 915.07.D.9.a-9.c; Points as listed.
+
+7. 
+
+Sustainable Development Bonuses. Developments are not eligible for the provisions of Section 915.04 , Sustainable Development Bonus.
+D. 
+
+Review Procedures.
+
+1. 
+
+Site Plan Review.
+
+The following development actions are subject to Site Plan Review and approval per Section 922.04 , unless such actions meet the thresholds of Section 904.10.D.2, in which case they are subject to Project Development Plan review and approval:
+
+a. 
+
+All new construction of Primary Structures.
+
+b. 
+
+Any expansion or any exterior renovation to an existing Primary Structure.
+
+c. 
+
+All new construction of parking structures.
+Any existing single-family detached dwellings located within this District are exempt from Site Plan Review, unless otherwise specifically required by the Zoning Code.
+
+2. 
+
+Project Development Plan.
+
+The following development actions are subject to Project Development Plan review and approval by Planning Commission per Section 922.10 .
+
+a. 
+
+All new construction of fifteen thousand (15,000) square feet or more in gross floor area.
+
+b. 
+Any addition or expansion of fifteen thousand (15,000) square feet or more in gross floor area or building footprint.
+
+c. 
+
+Commercial structured parking of forty (40) or more spaces.
+
+d. 
+
+Demolition of any Primary Structure of fifteen thousand (15,000) square feet or greater or a total of five (5) or more Primary Structures under the same ownership or control.
+
+e. 
+New Parks and Recreation (Limited and General) uses of two thousand four hundred (2,400) square feet or greater, where Art Commission review and approval is not required.
+
+Project Development Plans that are filed for building demolitions not part of an application for new construction shall include a report, study, or statement of the property's future use that meets the review criteria of Section 922.10.E.2.

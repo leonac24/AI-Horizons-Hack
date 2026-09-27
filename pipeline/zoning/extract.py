@@ -17,9 +17,9 @@ import json
 import logging
 import os
 import re
+import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -30,8 +30,16 @@ from server.llm import DEFAULT_MODEL, AnthropicProvider, LLMUnavailable
 log = logging.getLogger("zoning")
 
 
+# Roles the engine derives itself; text never states them directly.
+_DERIVED_ROLES = {"variance", "unreviewed"}
+
+
+def extractable_statuses(cfg: Config) -> list[str]:
+    return [k for k, s in cfg.zoning.statuses.items() if s.role not in _DERIVED_ROLES]
+
+
 class UseRule(BaseModel):
-    status: Literal["by_right", "special_exception", "conditional_use", "not_permitted"]
+    status: str
     code_section: str
     quote: str
     confidence: float = Field(ge=0, le=1)
@@ -59,9 +67,6 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
-STATUSES = ["by_right", "special_exception", "conditional_use", "not_permitted"]
-
-
 def _schema(cfg: Config) -> dict:
     """Structured-output schema. Keys are enums from zoning.yaml, so the model
     cannot invent a use or rule the app doesn't know about."""
@@ -75,17 +80,19 @@ def _schema(cfg: Config) -> dict:
                                            "required": list(props), "additionalProperties": False}}
 
     return {"type": "object",
-            "properties": {"uses": rows("use_key", list(t.use_keys), {"status": {"type": "string", "enum": STATUSES}}),
+            "properties": {"uses": rows("use_key", list(t.use_keys), {"status": {"type": "string", "enum": extractable_statuses(cfg)}}),
                            "dimensional": rows("rule_id", list(t.dimensional), {"value": {"type": "number"}})},
             "required": ["uses", "dimensional"], "additionalProperties": False}
 
 
 def extract_district(cfg: Config, provider: AnthropicProvider, district: str, text: str, model: str) -> DistrictRules:
     t = cfg.zoning.extraction_targets
+    statuses = extractable_statuses(cfg)
     prompt = json.dumps({
         "district": district,
         "use_keys": t.use_keys,
         "dimensional_rules": {k: f"{v.label} ({v.unit})" for k, v in t.dimensional.items()},
+        "statuses": {k: cfg.zoning.statuses[k].label for k in statuses},
         "code_text": text,
     })
     # Long legal text and accuracy matters: high effort, streamed, generous output room.
@@ -96,6 +103,10 @@ def extract_district(cfg: Config, provider: AnthropicProvider, district: str, te
         "dimensional": {r.pop("rule_id"): r for r in raw.get("dimensional", [])},
     })
     haystack = _norm(text)
+    for k in list(rules.uses):
+        if rules.uses[k].status not in statuses:
+            log.warning("%s %s: status %r not in zoning.yaml -> dropped", district, k, rules.uses[k].status)
+            del rules.uses[k]
     for group in (rules.uses, rules.dimensional):
         for k in list(group):
             q = group[k].quote
@@ -110,6 +121,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--districts", nargs="*", help="default: districts by vacant-parcel count")
     ap.add_argument("--limit", type=int, default=10)
+    ap.add_argument("--retries", type=int, default=4, help="retries per district on 429/503/529")
+    ap.add_argument("--backoff", type=int, default=15, help="first retry wait in seconds (doubles)")
     args = ap.parse_args()
 
     cfg = load_config()
@@ -131,13 +144,30 @@ def main() -> None:
     model = os.environ.get("ZONING_EXTRACT_MODEL", DEFAULT_MODEL)
 
     rules_path = ROOT / cfg.zoning.rules_file
-    doc = yaml.safe_load(rules_path.read_text(encoding="utf-8")) or {}
+    raw_rules = rules_path.read_text(encoding="utf-8")
+    header = "".join(ln for ln in raw_rules.splitlines(keepends=True)[:40] if ln.startswith("#"))
+    if header:
+        header += "\n"
+    doc = yaml.safe_load(raw_rules) or {}
     all_rules = doc.get("districts") or {}
     for d in districts:
-        try:
-            got = extract_district(cfg, provider, d, text, model)
-        except (LLMUnavailable, ValidationError) as e:
-            log.error("%s: extraction failed: %s", d, e)
+        got = None
+        for attempt in range(args.retries + 1):
+            try:
+                got = extract_district(cfg, provider, d, text, model)
+                break
+            except LLMUnavailable as e:
+                transient = any(code in str(e) for code in ("429", "503", "529"))
+                if not transient or attempt == args.retries:
+                    log.error("%s: extraction failed: %s", d, str(e)[:200])
+                    break
+                wait = args.backoff * (2 ** attempt)
+                log.warning("%s: provider busy or rate-limited, retrying in %ds", d, wait)
+                time.sleep(wait)
+            except ValidationError as e:
+                log.error("%s: extraction failed: %s", d, e)
+                break
+        if got is None:
             continue
         cur = all_rules.setdefault(d, {"uses": {}, "dimensional": {}})
         stamp = {"extracted_by": model, "retrieved": str(datetime.now(UTC).date()), "reviewed": False}
@@ -147,8 +177,10 @@ def main() -> None:
                     continue  # never overwrite a human-reviewed rule
                 cur.setdefault(group, {})[k] = {**r.model_dump(), **stamp}
         log.info("%s: %d use rules, %d dimensional rules", d, len(got.uses), len(got.dimensional))
-    doc["districts"] = all_rules
-    rules_path.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True), encoding="utf-8")
+        doc["districts"] = all_rules
+        # Save after every district so a later failure never loses earlier work,
+        # and keep the file's explanatory comment header (safe_dump drops comments).
+        rules_path.write_text(header + yaml.safe_dump(doc, sort_keys=False, allow_unicode=True), encoding="utf-8")
 
 
 if __name__ == "__main__":

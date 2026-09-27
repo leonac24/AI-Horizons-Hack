@@ -1,0 +1,32 @@
+§ 911.02 Use Table.
+
+[Ord. 19-1999, eff. 7-8-1999; ... Ord. No. 4-2026, eff. 2-27-2026; Ord. No. 18-2026, § 1, eff. 6-11-2026]
+
+Pittsburgh Urban Zoning Code Use Table
+Key: P = Permitted By Right; A = Administrator Exception; S = Special Exception; C = Conditional Use
+
+Base Zoning Districts. As Base Zoning District Regulations, all uses may be subject to additional regulations imposed by applicable Overlay Zoning Districts.
+
+[CAPTURE NOTE] Only the residential rows relevant to housing typologies are captured here. The table was flattened: each district cell is written as DISTRICT=VALUE with the cell text unchanged; "-" means the cell is blank (use not listed as allowed). Column groups: Residential: R1D R1A R2 R3 RM; Mixed Use: NDO LNC NDI UNC HC GI UI UC-MU UC-E R-MU; Special: P H EMI; DT (Downtown) subcolumns: DT-GT DT-(unnamed); RIV (Riverfront) subcolumns: RIV-RM RIV-MU RIV-NS RIV-GI RIV-IMU. Residential district codes on the zoning map combine a Use Subdistrict (R1D, R1A, R2, R3, RM) with a Development Subdistrict (VL, L, M, H, VH), e.g. R1D-H or RM-M; the use column applies to every density suffix.
+
+RESIDENTIAL USES
+
+USE: Single-Unit Detached Residential means the use of a zoning lot for one detached housing unit.
+DISTRICTS: R1D=P; R1A=P; R2=P; R3=P; RM=P; NDO=P; LNC=P; NDI=P; UNC=P; HC=-; GI=-; UI=-; UC-MU=-; UC-E=-; R-MU=P; P=P; H=A; EMI=P; DT-GT=-; DT-(unnamed)=-; RIV-RM=-; RIV-MU=-; RIV-NS=-; RIV-GI=-; RIV-IMU=-
+STANDARD: § 911.04A.69
+
+USE: Single-Unit Attached Residential means the use of a zoning lot for one dwelling unit that is attached to one or more dwelling units by a party wall or separate abutting wall and that is located on its own separate lot.
+DISTRICTS: R1D=P/S; R1A=P; R2=P; R3=P; RM=P; NDO=P; LNC=P; NDI=P; UNC=P; HC=-; GI=-; UI=-; UC-MU=P; UC-E=-; R-MU=P; P=-; H=S; EMI=-; DT-GT=-; DT-(unnamed)=-; RIV-RM=P; RIV-MU=P; RIV-NS=-; RIV-GI=-; RIV-IMU=-
+STANDARD: § 911.04A.69; § 911.04A.69A
+
+USE: Two-Unit Residential means the use of a zoning lot for two dwelling units that are contained within a single building.)
+DISTRICTS: R1D=-; R1A=-; R2=P; R3=P; RM=P; NDO=P; LNC=P; NDI=P; UNC=P; HC=-; GI=-; UI=-; UC-MU=P; UC-E=-; R-MU=P; P=-; H=-; EMI=-; DT-GT=P; DT-(unnamed)=-; RIV-RM=P; RIV-MU=P; RIV-NS=-; RIV-GI=-; RIV-IMU=P
+STANDARD: -
+
+USE: Three-Unit Residential means the use of a zoning lot for three dwelling units that are contained within a single building.
+DISTRICTS: R1D=-; R1A=-; R2=-; R3=P; RM=P; NDO=P; LNC=P; NDI=P; UNC=P; HC=-; GI=-; UI=-; UC-MU=P; UC-E=-; R-MU=P; P=-; H=-; EMI=-; DT-GT=P; DT-(unnamed)=-; RIV-RM=P; RIV-MU=P; RIV-NS=-; RIV-GI=-; RIV-IMU=P
+STANDARD: -
+
+USE: Multi-Unit Residential means the use of a zoning lot for four or more dwelling units that are contained within a single building.
+DISTRICTS: R1D=-; R1A=-; R2=-; R3=-; RM=P; NDO=P; LNC=P; NDI=P; UNC=P; HC=-; GI=-; UI=S; UC-MU=P; UC-E=A; R-MU=P; P=-; H=-; EMI=A; DT-GT=P; DT-(unnamed)=-; RIV-RM=P; RIV-MU=P; RIV-NS=P; RIV-GI=-; RIV-IMU=P
+STANDARD: § 911.04A.85

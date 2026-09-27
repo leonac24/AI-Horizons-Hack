@@ -2,6 +2,7 @@ import type {
   Analysis,
   Config,
   Explanation,
+  EvidenceLeads,
   ParcelSummary,
   PlanResult,
   Unknowns,
@@ -20,6 +21,8 @@ export const api = {
   search: (q: string) => get<ParcelSummary[]>(`/api/parcels/search?q=${encodeURIComponent(q)}`),
   analysis: (id: string) => get<Analysis>(`/api/analysis/${encodeURIComponent(id)}`),
   unknowns: () => get<Unknowns>('/api/unknowns'),
+  evidence: (topic = 'zoning', offset = 0, limit = 20) =>
+    get<EvidenceLeads>(`/api/evidence?topic=${encodeURIComponent(topic)}&offset=${offset}&limit=${limit}`),
   workBackwards: (id: string, typology: string, units: number, amiPct: number) =>
     get<WorkBackwardsResult>(
       `/api/work-backwards/${encodeURIComponent(id)}?typology=${encodeURIComponent(typology)}&units=${units}&target_ami_pct=${amiPct}`,

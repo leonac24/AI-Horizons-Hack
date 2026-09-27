@@ -32,6 +32,7 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 PARCELS_FILE = ROOT / "data" / "processed" / "parcels.json"
+LAYA_EVIDENCE_FILE = ROOT / "data" / "processed" / "laya_evidence.json"
 
 # Load the config once, right now, when Python first imports this file - not
 # inside each route function. It has to happen here because FastAPI reads the
@@ -142,6 +143,14 @@ def _parcel(parcel_id: str) -> dict:
     if p is None:
         raise HTTPException(404, "no vacant parcel with that id in the index")
     return p
+
+
+@lru_cache(maxsize=1)
+def _laya_evidence() -> dict | None:
+    """Read only the artifact created locally; deployment never loads Laya."""
+    if not LAYA_EVIDENCE_FILE.exists():
+        return None
+    return json.loads(LAYA_EVIDENCE_FILE.read_text(encoding="utf-8"))
 
 
 @lru_cache(maxsize=_API.analysis_cache_entries)
@@ -315,6 +324,19 @@ def unknowns() -> dict:
         "share_covered_by_reviewed_rules": round(covered / total, 4),
         "pipeline": json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None,
     }
+
+
+@api.get("/evidence", summary="Locally compiled document leads; not verified findings")
+def evidence(topic: str = Query("zoning", pattern="^(zoning|transit_jobs|carbon|housing_need|sewer|cost|site|other)$"),
+             offset: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100)) -> dict:
+    index = _laya_evidence()
+    if index is None:
+        return {"compiled": False, "documents": 0, "passages": 0, "total": 0, "items": []}
+    items = [p for p in index.get("passages", []) if p.get("topic") == topic]
+    items.sort(key=lambda p: (p.get("document", ""), p.get("page") or 0, p.get("part", 0)))
+    return {"compiled": True, "documents": len(index.get("documents", [])),
+            "passages": len(index.get("passages", [])), "total": len(items),
+            "items": items[offset:offset + limit]}
 
 
 app.include_router(api, prefix="/api")

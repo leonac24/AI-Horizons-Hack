@@ -111,6 +111,39 @@ uv run python -m pipeline.zoning.extract --districts R1D-H RM-M R2-L
 
 Afterwards, review `pipeline/zoning/rules_review.yaml` by hand.
 
+### Compile source documents with Laya locally
+
+Laya runs only on the developer's machine. The Vercel deployment reads the
+checked-in `data/processed/laya_evidence.json`; it does not install or invoke
+Laya. This step classifies document passages as **leads for review**. It does
+not extract numerical inputs or change zoning status, assumptions, or ranking.
+Existing parcel, ACS, flood, and sewer inputs keep their deterministic ETL;
+Laya is only for unstructured source documents.
+
+1. The checked-in `data/sources/zoning/*.txt` and
+   `data/sources/laya/<source_id>/` snapshots compile automatically.
+   Their section links and coverage are listed in
+   `data/sources/zoning/README.md`. Confirm changed code against the live
+   source, then update the snapshot and link. eCode360 blocks scripted downloads.
+2. Optionally save other text, Markdown, or PDF source documents in
+   `data/raw/laya/<source_id>/`, using an ID from `data/config/sources.yaml`.
+   Additional zoning text can go in `data/raw/zoning/`. Newly added raw files
+   are gitignored by default; the repository already tracks seven curated
+   zoning excerpts there. Keep only public documents in this corpus.
+3. Install a CPU-only PyTorch build, then install `requirements-laya.txt`
+   in a local virtual environment. Laya's first run downloads its checkpoint.
+4. From the repository root, run
+   `python -m pipeline.laya_compile`. Inspect the source links and labels in
+   `data/processed/laya_evidence.json`, then commit that file with the source
+   and code changes. Run `python -m pipeline.laya_compile --check` to verify
+   the committed artifact against its source files without loading Laya. The
+   site's “What we don’t know” tab reads the artifact.
+
+The artifact records document and passage hashes, model version, question
+version, source IDs, and short excerpts. Recompile when the source text,
+questions, or checkpoint changes. The versioned zoning snapshots are in Git;
+optional raw documents and model weights remain local.
+
 Tests and lint:
 
 ```bash
