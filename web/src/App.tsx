@@ -53,6 +53,7 @@ export default function App() {
   const [wb, setWb] = useState({ typ: '', units: 1, ami: 60 })
   const [memo, setMemo] = useState(false)
   const [layout, setLayout] = useState<Layout>('1a')
+  const [palH, setPalH] = useState(0)
   const vp = useRef<HTMLDivElement>(null)
   const engine = useRef<Engine | null>(null)
   const placementsRef = useRef<Placement[]>([])
@@ -239,7 +240,9 @@ export default function App() {
   const ranking = useMemo(() => (config ? rank(config, pool, weights) : null), [config, pool, weights])
 
   if (!config) return <div className="boot">{error ? `Could not load: ${error}` : 'Loading Lotline…'}</div>
-  const L = LAYOUTS[layout]
+  const base = LAYOUTS[layout]
+  // Bottom-tray layout: stack the inspector above the palette's measured height.
+  const L = base.palDir === 'row' && palH ? { ...base, inspBottom: `calc(${base.palBottom} + ${palH + 12}px)` } : base
   const toCity = () => {
     if (mode !== 'lot') return
     void engine.current?.goCity()
@@ -305,7 +308,7 @@ export default function App() {
             showPlan={showPlan}
             empty={!placements.length}
           />
-          <Palette config={config} L={L} analysis={analysis} counts={countsOf(placements)} onDown={(id, e) => engine.current?.beginDrag(id, e)} />
+          <Palette config={config} L={L} analysis={analysis} counts={countsOf(placements)} onDown={(id, e) => engine.current?.beginDrag(id, e)} onHeight={setPalH} />
           {sel && showPlan && (
             <Inspector
               config={config}
