@@ -21,6 +21,7 @@ priority_file: pipeline/zoning/review_priority.json
 #   unreviewed    — no reviewed rule exists yet; answer withheld
 statuses:
   by_right: { label: Permitted by right, role: permitted }
+  administrator_exception: { label: Administrator exception (Zoning Administrator), role: discretionary }
   special_exception: { label: Special exception (Zoning Board of Adjustment), role: discretionary }
   conditional_use: { label: Conditional use (City Council), role: discretionary }
   variance_needed: { label: "Use allowed, but a dimensional rule fails (variance)", role: variance }
@@ -41,7 +42,14 @@ extraction_targets:
     lot_area_per_unit_sf: { label: Lot area per unit, unit: sf/unit, check: lot_area_per_unit_at_least }
     max_height_ft: { label: Maximum height, unit: ft, check: height_at_most }
     max_stories: { label: Maximum stories, unit: stories, check: stories_at_most }
-  other: [setbacks, parking, overlays, bonuses]
+    # Setbacks are reported with the zoning result and checked against where
+    # buildings sit in the 3D lot view (the evidence engine only sees counts).
+    front_setback_ft: { label: Front setback, unit: ft, check: setback }
+    rear_setback_ft: { label: Rear setback, unit: ft, check: setback }
+    interior_side_setback_ft: { label: Interior side setback, unit: ft, check: setback }
+    interior_side_other_ft: { label: Interior side setback (other side), unit: ft, check: setback }
+    exterior_side_setback_ft: { label: Exterior (street) side setback, unit: ft, check: setback }
+  other: [parking, overlays, bonuses]
 
 # Pill colors for district codes in the city panel, matched by prefix, first
 # match wins. Presentation only.

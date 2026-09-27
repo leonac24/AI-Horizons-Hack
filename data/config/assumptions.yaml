@@ -256,6 +256,7 @@ assumptions:
       shown in METHODS.md so it can be argued with.
     by_key:
       by_right: 1.0
+      administrator_exception: 0.8
       special_exception: 0.6
       conditional_use: 0.45
       variance_needed: 0.3

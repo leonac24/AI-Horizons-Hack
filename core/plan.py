@@ -92,7 +92,9 @@ def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> Plan
                for mid in by_id[next(iter(homes))].metrics}
 
     # Zoning: each type's use rule, with dimensional rules checked at the plan's total homes.
-    zres = {tid: evaluate(cfg, rules, parcel.get("zoning"), typs[tid], lot, total) for tid in homes}
+    shape = a.lot_shape
+    frontage = shape.frontage_ft if shape.provenance == "observed" else None
+    zres = {tid: evaluate(cfg, rules, parcel.get("zoning"), typs[tid], lot, total, frontage) for tid in homes}
     role = {sid: s.role for sid, s in cfg.zoning.statuses.items()}
     worst = min(zres.values(), key=lambda z: ROLE_ORDER.index(role[z.status]))
     checks: dict[str, Check] = {}

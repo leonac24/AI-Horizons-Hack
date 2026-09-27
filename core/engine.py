@@ -228,6 +228,8 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     size_factor = cfg.assumption("household_size_factor").by_size or {}
 
     shape = lot_shape(cfg, parcel)
+    # Width-conditional zoning rules only resolve on an observed frontage.
+    observed_frontage = shape.frontage_ft if shape.provenance == "observed" else None
     scenarios: list[Scenario] = []
     for typ in cfg.typologies:
         if homes_override and typ.id not in homes_override:
@@ -240,7 +242,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
             notes.append(f"This building ({w:.0f}×{d:.0f} ft) doesn't fit a "
                          f"{shape.frontage_ft:.0f}×{shape.depth_ft:.0f} ft lot, or the lot is under "
                          f"{typ.min_lot_sf_for_form:,.0f} sf.")
-        zres = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units)
+        zres = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units, observed_frontage)
         if zres.max_units_by_rule is not None and zres.max_units_by_rule < units:
             notes.append(f"Zoning lot-area-per-unit allows {zres.max_units_by_rule} units here; showing {units} as planned.")
 
@@ -386,7 +388,9 @@ def work_backwards(cfg: Config, parcel: dict, typology_id: str, units: int, targ
         raise KeyError(f"unknown typology {typology_id!r}")
     rules = load_rules(cfg)
     lot = float(parcel.get("lot_area_sf") or 0)
-    z = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units)
+    shape = lot_shape(cfg, parcel)
+    z = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units,
+                 shape.frontage_ft if shape.provenance == "observed" else None)
     # Re-run the evidence engine with this typology pinned to the requested unit count.
     a = analyze(cfg, parcel, Samples(cfg), homes_override={typology_id: units})
     m = a.scenarios[0].metrics["affordability.monthly_cost"]
