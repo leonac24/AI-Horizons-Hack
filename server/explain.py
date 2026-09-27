@@ -15,23 +15,29 @@ from server.llm import LLMUnavailable, Provider
 SYSTEM = """You explain tradeoffs between housing options for one vacant lot in Pittsburgh.
 Rules:
 - Use ONLY the facts in the input JSON. Do not add outside facts.
+- Write at most {max_sentences} sentences.
 - Every sentence must list the metric ids it relies on in "metric_ids" (ids exactly as given).
+  A sentence that cites no metric is rejected, so do not open with lot context
+  (neighborhood, zoning, lot size) on its own; start with the tradeoffs.
 - Only use numbers that appear in the input (you may round them).
 - Describe tradeoffs and how the ranking depends on the weights. Never say what should be built.
 - If a metric's provenance is "placeholder", say the value is a placeholder.
 Return JSON: {"sentences": [{"text": "...", "metric_ids": ["..."]}]}"""
 
 # Enforced by the API; the grounding checks in validate() still run on top.
+# minItems 0/1 is the only array bound structured outputs accept, so the
+# sentence cap lives in the prompt and validate() truncates to it.
 SCHEMA = {
     "type": "object",
     "properties": {
         "sentences": {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "properties": {
                     "text": {"type": "string"},
-                    "metric_ids": {"type": "array", "items": {"type": "string"}},
+                    "metric_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}},
                 },
                 "required": ["text", "metric_ids"],
                 "additionalProperties": False,
@@ -146,7 +152,8 @@ def explain(cfg: Config, provider: Provider, a: Analysis, weights: dict[str, flo
     payload = build_input(cfg, a, weights, ranking)
     try:
         s = cfg.app.explanation
-        out = provider.complete_json(SYSTEM, json.dumps(payload), schema=SCHEMA, effort=s.effort,
+        system = SYSTEM.replace("{max_sentences}", str(s.max_sentences))
+        out = provider.complete_json(system, json.dumps(payload), schema=SCHEMA, effort=s.effort,
                                      timeout_s=s.timeout_s, max_tokens=s.max_tokens)
         sentences = validate(payload, out, s.max_sentences)
         if sentences:
