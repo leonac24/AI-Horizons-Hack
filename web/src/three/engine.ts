@@ -3,6 +3,8 @@
 // Framework-free; React talks to it through the returned API and callbacks.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { makeBridge } from './bridges'
+import { loadTerrain, type Terrain } from './terrain'
 import { box, house, makeBuilding, mat, mesh, type BuildingForm } from './typologyMeshes'
 
 export interface SceneConfig {
@@ -10,6 +12,7 @@ export interface SceneConfig {
   scale: [number, number]
   half_extent: number
   rivers: [number, number][][]
+  bridges: [string, number, number, string, number][] // name, lat, lon, form, length_m
 }
 
 export interface ParcelPoint {
@@ -52,6 +55,7 @@ export interface EngineOptions {
   scene: SceneConfig
   forms: Record<string, BuildingForm>
   parcels: ParcelPoint[]
+  dataBase: string // where terrain.json / terrain.bin are served
   snap?: number
   onSelectLot?: (id: string) => void
   onChange?: (list: Placement[]) => void
@@ -76,54 +80,34 @@ export interface Engine {
   dispose(): void
 }
 
-const BG = '#0f1419'
-const LIME = '#b6f23e'
-const VALID = '#9be07a'
+const BG = '#cfeaff' // haze
+const FADE = '#0d1b2a'
+const GREEN = '#2fd06b' // plan, selection, lot outline, pins
+const VALID = '#7dffb0'
 const INVALID = '#ff4a3a'
-const DOT_PUBLIC = '#ff6b4a'
-const DOT_OTHER = '#5aa9d6'
+const DOT_PUBLIC = '#ff4d6d'
+const DOT_OTHER = '#1f8bff'
+const WATER = '#3aa7ff'
+
+function skyTexture(): THREE.Texture {
+  const c = document.createElement('canvas')
+  c.width = 4
+  c.height = 256
+  const g = c.getContext('2d')!
+  const gr = g.createLinearGradient(0, 0, 0, 256)
+  gr.addColorStop(0, '#3f9bff')
+  gr.addColorStop(0.55, '#8cc8ff')
+  gr.addColorStop(1, '#dff1ff')
+  g.fillStyle = gr
+  g.fillRect(0, 0, 4, 256)
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  return t
+}
 
 function rng(seed: number): () => number {
   let s = seed >>> 0
   return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296
-}
-
-function ribbon(pts: [number, number][], width: number, y: number, half: number) {
-  const curve = new THREE.CatmullRomCurve3(pts.map(([x, z]) => new THREE.Vector3(x, 0, z)))
-  const n = 140
-  const pos: number[] = []
-  const idx: number[] = []
-  const cx = (v: number) => Math.max(-half, Math.min(half, v))
-  for (let i = 0; i <= n; i++) {
-    const t = i / n
-    const p = curve.getPoint(t)
-    const tg = curve.getTangent(t)
-    const l = Math.hypot(tg.x, tg.z) || 1
-    const nx = -tg.z / l
-    const nz = tg.x / l
-    const hw = width / 2
-    pos.push(cx(p.x + nx * hw), y, cx(p.z + nz * hw), cx(p.x - nx * hw), y, cx(p.z - nz * hw))
-    if (i < n) {
-      const a = i * 2
-      idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3)
-    }
-  }
-  const g = new THREE.BufferGeometry()
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
-  g.setIndex(idx)
-  g.computeVertexNormals()
-  return { geo: g, samples: curve.getPoints(200) }
-}
-
-function extendToEdge(pts: [number, number][]): [number, number][] {
-  const out = pts.slice()
-  const a = out[out.length - 2]
-  const b = out[out.length - 1]
-  const dx = b[0] - a[0]
-  const dz = b[1] - a[1]
-  const l = Math.hypot(dx, dz) || 1
-  out.push([b[0] + (dx / l) * 140, b[1] + (dz / l) * 140])
-  return out
 }
 
 function rectOutline(w: number, d: number, color: string, th = 0.9, y = 0.9): THREE.Group {
@@ -145,10 +129,10 @@ function rectOutline(w: number, d: number, color: string, th = 0.9, y = 0.9): TH
 function tree(r: () => number): THREE.Group {
   const g = new THREE.Group()
   const h = 14 + r() * 12
-  const tr = mesh(new THREE.CylinderGeometry(0.8, 1, 6, 5), '#6b4b33')
+  const tr = mesh(new THREE.CylinderGeometry(0.8, 1, 6, 5), '#8a5a3b')
   tr.position.y = 3
   g.add(tr)
-  const c = mesh(new THREE.IcosahedronGeometry(5 + r() * 3, 0), r() > 0.5 ? '#6d7b4f' : '#7f8c58')
+  const c = mesh(new THREE.IcosahedronGeometry(5 + r() * 3, 0), r() > 0.5 ? '#3fae4a' : '#5cc45a')
   c.position.y = h * 0.6 + 3
   c.scale.y = 1.25
   g.add(c)
@@ -159,7 +143,7 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
 function lightRig(scene: THREE.Scene, x: number, y: number, z: number, ext: number): void {
-  scene.add(new THREE.HemisphereLight('#fff4e0', '#3a3228', 1.15))
+  scene.add(new THREE.HemisphereLight('#fff4e0', '#7fa36a', 1.25))
   const d = new THREE.DirectionalLight('#ffe9c9', 2.3)
   d.position.set(x, y, z)
   d.castShadow = true
@@ -205,6 +189,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFShadowMap
   renderer.setClearColor(BG)
+  const SKY = skyTexture()
   Object.assign(renderer.domElement.style, {
     position: 'absolute', inset: '0', width: '100%', height: '100%', display: 'block', touchAction: 'none',
   })
@@ -214,7 +199,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   container.appendChild(labels)
   const fade = document.createElement('div')
   Object.assign(fade.style, {
-    position: 'absolute', inset: '0', background: BG, opacity: '0', pointerEvents: 'none', transition: 'opacity 260ms ease',
+    position: 'absolute', inset: '0', background: FADE, opacity: '0', pointerEvents: 'none', transition: 'opacity 260ms ease',
   })
   container.appendChild(fade)
 
@@ -226,75 +211,34 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
 
   // ---------- city ----------
   const city = new THREE.Scene()
-  city.background = new THREE.Color(BG)
-  city.fog = new THREE.Fog(BG, 1500, 3200)
+  city.background = SKY
+  city.fog = new THREE.Fog(BG, 1200, 3000)
   lightRig(city, -420, 720, 320, 700)
-  const edge = mat('#27313a')
-  const slab = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2, 28, HALF * 2), [edge, edge, mat('#cfd3c8'), edge, edge, edge])
-  slab.position.y = -14
-  slab.receiveShadow = true
-  city.add(slab)
-  const riverSamples: THREE.Vector3[] = []
-  for (const r of opts.scene.rivers) {
-    const rb = ribbon(extendToEdge(r.map(([lo, la]) => toXZ(lo, la))), 30, 0.4, HALF)
-    const m = new THREE.Mesh(rb.geo, new THREE.MeshStandardMaterial({ color: '#3d7ea6', roughness: 0.35, metalness: 0.1, side: THREE.DoubleSide }))
-    m.receiveShadow = true
-    city.add(m)
-    riverSamples.push(...rb.samples)
-  }
-  const riverDist = (x: number, z: number) => {
-    let m = 1e9
-    for (const p of riverSamples) m = Math.min(m, Math.hypot(p.x - x, p.z - z))
-    return m
-  }
-  // Decorative hills and blocks — a stylized city, not data.
   const R = rng(20260926)
-  const hills: [number, number, number][] = []
-  for (let i = 0; i < 70 && hills.length < 34; i++) {
-    const x = (R() * 2 - 1) * (HALF - 80)
-    const z = (R() * 2 - 1) * (HALF - 80)
-    const r = 34 + R() * 60
-    if (riverDist(x, z) < r + 24 || Math.hypot(x, z) < 110) continue
-    const h = mesh(new THREE.IcosahedronGeometry(r, 1), R() > 0.5 ? '#8a9663' : '#77844f')
-    h.scale.y = 0.3
-    h.position.set(x, -2, z)
-    city.add(h)
-    hills.push([x, z, r])
-  }
-  const cells: [number, number][] = []
-  for (let x = -HALF + 30; x <= HALF - 30; x += 22)
-    for (let z = -HALF + 30; z <= HALF - 30; z += 22) {
-      if (R() < 0.32 || riverDist(x, z) < 26) continue
-      if (hills.some(([hx, hz, hr]) => Math.hypot(hx - x, hz - z) < hr * 0.85)) continue
-      cells.push([x, z])
-    }
-  const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), mat('#ffffff'), cells.length)
-  blocks.castShadow = true
-  blocks.receiveShadow = true
-  const bcol = ['#efe6d3', '#e3d5bb', '#d8c3a5', '#c98f6f', '#b9b2a4', '#a4553a']
   const M4 = new THREE.Matrix4()
   const C = new THREE.Color()
   const Q = new THREE.Quaternion()
-  cells.forEach(([x, z], i) => {
-    const core = Math.hypot(x, z) < 80 // taller towers near the origin (Downtown)
-    const h = core ? 26 + R() * 70 : 3 + R() * 8
-    const s = core ? 15 : 10 + R() * 6
-    M4.compose(new THREE.Vector3(x + (R() - 0.5) * 4, 0, z + (R() - 0.5) * 4), Q, new THREE.Vector3(s, h, s))
-    blocks.setMatrixAt(i, M4)
-    blocks.setColorAt(i, C.set(bcol[Math.floor(R() * bcol.length)]))
-  })
-  city.add(blocks)
+  const inMap = (x: number, z: number) => Math.abs(x) <= HALF && Math.abs(z) <= HALF
 
-  // Real vacant parcels as instanced dots.
+  const loading = document.createElement('div')
+  loading.className = 'engine-pill'
+  loading.textContent = 'Loading terrain…'
+  container.appendChild(loading)
+
+  let terrain: Terrain | null = null
+  const heightAt = (x: number, z: number) => (terrain ? Math.max(0.3, terrain.heightAt(x, z)) : 0)
+
+  // Real vacant parcels as instanced dots (placed once the terrain is known).
   const parcels = opts.parcels
   const parcelXZ = parcels.map((p) => toXZ(p.lon, p.lat))
+  const parcelY = new Float32Array(parcels.length)
   const dots = new THREE.InstancedMesh(new THREE.CylinderGeometry(2.4, 2.4, 1, 8), new THREE.MeshBasicMaterial({ color: '#fff' }), Math.max(1, parcels.length))
   const dotVisible = new Uint8Array(parcels.length).fill(1)
   const writeDots = () => {
     parcels.forEach((_p, i) => {
       const [x, z] = parcelXZ[i]
       const s = dotVisible[i] ? 1 : 0
-      M4.compose(new THREE.Vector3(x, 0.8, z), Q, new THREE.Vector3(s, s, s))
+      M4.compose(new THREE.Vector3(x, parcelY[i] + 0.8, z), Q, new THREE.Vector3(s, s, s))
       dots.setMatrixAt(i, M4)
     })
     dots.instanceMatrix.needsUpdate = true
@@ -306,6 +250,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   // Pins (suggested lots and search hits) with DOM labels.
   interface Pin { g: THREE.Group; ring: THREE.Mesh; hit: THREE.Mesh; el: HTMLDivElement; lot: PinLot }
   const pins = new Map<string, Pin>()
+  let pinList: PinLot[] = []
   const pinGeo = {
     pad: new THREE.CylinderGeometry(10, 10, 3, 24),
     beam: new THREE.CylinderGeometry(1.2, 1.2, 70, 8),
@@ -313,15 +258,15 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     hit: new THREE.CylinderGeometry(20, 20, 80, 8),
   }
   const pinMats = {
-    pad: new THREE.MeshStandardMaterial({ color: LIME, emissive: LIME, emissiveIntensity: 0.35 }),
-    beam: new THREE.MeshBasicMaterial({ color: LIME, transparent: true, opacity: 0.55 }),
-    ring: new THREE.MeshBasicMaterial({ color: LIME }),
+    pad: new THREE.MeshStandardMaterial({ color: GREEN, emissive: GREEN, emissiveIntensity: 0.35 }),
+    beam: new THREE.MeshBasicMaterial({ color: GREEN, transparent: true, opacity: 0.55 }),
+    ring: new THREE.MeshBasicMaterial({ color: GREEN }),
     hit: new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
   }
   function addPin(lot: PinLot): void {
     const [x, z] = toXZ(lot.lon, lot.lat)
     const g = new THREE.Group()
-    g.position.set(x, 0, z)
+    g.position.set(x, heightAt(x, z), z)
     const pad = new THREE.Mesh(pinGeo.pad, pinMats.pad)
     pad.position.y = 1.5
     const beam = new THREE.Mesh(pinGeo.beam, pinMats.beam)
@@ -347,13 +292,186 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     labels.appendChild(el)
     pins.set(lot.id, { g, ring, hit, el, lot })
   }
-  function clearPins(): void {
+  function renderPins(): void {
     for (const p of pins.values()) {
       city.remove(p.g)
       p.el.remove()
     }
     pins.clear()
+    pinList.forEach(addPin)
   }
+
+  function buildCity(t: Terrain): void {
+    terrain = t
+    // Water plane at the normal pool; land sits above it.
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.28, metalness: 0.1 }))
+    water.position.y = 0.3
+    water.receiveShadow = true
+    city.add(water)
+    // Ground: vivid inside city limits, pale countryside outside.
+    const cIn = { flat: new THREE.Color('#a6dc7e'), slope: new THREE.Color('#3f9e48'), up: new THREE.Color('#7fcb62'), rock: new THREE.Color('#9a8f78') }
+    const cOut = { flat: new THREE.Color('#cdeebb'), slope: new THREE.Color('#a9d99a'), up: new THREE.Color('#bfe6ad'), rock: new THREE.Color('#c9dcb4') }
+    for (const grid of t.grids) {
+      const n = Math.round((grid.extent * 2) / grid.step)
+      const geo = new THREE.PlaneGeometry(grid.extent * 2, grid.extent * 2, n, n).rotateX(-Math.PI / 2)
+      const pos = geo.attributes.position
+      const cols = new Float32Array(pos.count * 3)
+      for (let k = 0; k < pos.count; k++) {
+        const x = pos.getX(k)
+        const z = pos.getZ(k)
+        const h = grid.h(x, z)
+        pos.setY(k, h)
+        const sl = t.slopeAt(x, z)
+        const P = inMap(x, z) ? cIn : cOut
+        const c = sl > 0.4 ? P.rock : sl > 0.2 ? P.slope : h < 1.4 ? P.flat : P.up
+        cols[k * 3] = c.r
+        cols[k * 3 + 1] = c.g
+        cols[k * 3 + 2] = c.b
+      }
+      geo.setAttribute('color', new THREE.BufferAttribute(cols, 3))
+      geo.computeVertexNormals()
+      const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, flatShading: true }))
+      m.receiveShadow = true
+      city.add(m)
+    }
+    // Hillside canopy on steep slopes, a few yard trees elsewhere.
+    const tpos: [number, number, boolean][] = []
+    for (let x = -HALF + 4; x < HALF; x += 9)
+      for (let z = -HALF + 4; z < HALF; z += 9) {
+        const xx = x + (R() - 0.5) * 7
+        const zz = z + (R() - 0.5) * 7
+        if (t.isWater(xx, zz)) continue
+        const sl = t.slopeAt(xx, zz)
+        if (sl > 0.16 ? R() < 0.38 : R() < 0.025) tpos.push([xx, zz, sl > 0.16])
+      }
+    const greens = ['#2f7d32', '#3b8f3a', '#46993d', '#56a646', '#6a9f3a']
+    const trees = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), mat('#ffffff'), Math.max(1, tpos.length))
+    trees.receiveShadow = true
+    tpos.forEach(([x, z, wood], i) => {
+      const r = wood ? 5 + R() * 3.5 : 3.2 + R() * 1.8
+      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(R() * 0.6, R() * Math.PI, R() * 0.6))
+      M4.compose(new THREE.Vector3(x, heightAt(x, z) + r * 0.55, z), q, new THREE.Vector3(r, r * (0.75 + R() * 0.25), r))
+      trees.setMatrixAt(i, M4)
+      trees.setColorAt(i, C.set(greens[Math.floor(R() * greens.length)]))
+    })
+    city.add(trees)
+    // Decorative city blocks — not buildings from data. Taller near the origin (Downtown).
+    const cells: [number, number][] = []
+    for (let x = -HALF + 20; x <= HALF - 20; x += 22)
+      for (let z = -HALF + 20; z <= HALF - 20; z += 22) {
+        if (R() < 0.3) continue
+        if (t.isWater(x, z) || t.isWater(x + 12, z) || t.isWater(x - 12, z) || t.isWater(x, z + 12) || t.isWater(x, z - 12)) continue
+        if (t.slopeAt(x, z) > 0.18) continue
+        cells.push([x, z])
+      }
+    const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), mat('#ffffff'), Math.max(1, cells.length))
+    blocks.castShadow = true
+    blocks.receiveShadow = true
+    const bcol = ['#ff5d5d', '#ff9f1c', '#ffd23f', '#3ccf6e', '#1f8bff', '#9b7bff', '#ff5da2', '#13c2c2', '#ffffff', '#ffe9b8']
+    cells.forEach(([x, z], i) => {
+      const dt = Math.hypot(x - 10, z + 5)
+      const core = Math.max(0, 1 - dt / 85)
+      const h = dt < 85 ? 18 + R() * 40 + core * core * (50 + R() * 70) : 3 + R() * 7
+      const s = dt < 85 ? 13 : 10 + R() * 6
+      const px = x + (R() - 0.5) * 4
+      const pz = z + (R() - 0.5) * 4
+      M4.compose(new THREE.Vector3(px, heightAt(px, pz) - 0.5, pz), Q, new THREE.Vector3(s, h, s))
+      blocks.setMatrixAt(i, M4)
+      blocks.setColorAt(i, C.set(bcol[Math.floor(R() * bcol.length)]))
+    })
+    city.add(blocks)
+    // City-limits fence: translucent wall with a white top line and green base line.
+    {
+      const pts: [number, number][] = []
+      const E = HALF + 4
+      const edge = (x0: number, z0: number, x1: number, z1: number) => {
+        const n = Math.ceil(Math.hypot(x1 - x0, z1 - z0) / 12)
+        for (let k = 0; k < n; k++) pts.push([x0 + ((x1 - x0) * k) / n, z0 + ((z1 - z0) * k) / n])
+      }
+      edge(-E, -E, E, -E)
+      edge(E, -E, E, E)
+      edge(E, E, -E, E)
+      edge(-E, E, -E, -E)
+      pts.push(pts[0])
+      const wall: number[] = []
+      const top: number[] = []
+      const base: number[] = []
+      const idx: number[] = []
+      const alpha = new Float32Array(pts.length * 2)
+      pts.forEach(([x, z], k) => {
+        const h = heightAt(x, z)
+        wall.push(x, h, z, x, h + 14, z)
+        top.push(x, h + 14, z)
+        base.push(x, h + 0.8, z)
+        alpha[k * 2] = 0.55
+        if (k < pts.length - 1) idx.push(k * 2, k * 2 + 1, k * 2 + 2, k * 2 + 1, k * 2 + 3, k * 2 + 2)
+      })
+      const wg = new THREE.BufferGeometry()
+      wg.setAttribute('position', new THREE.Float32BufferAttribute(wall, 3))
+      wg.setAttribute('alpha', new THREE.BufferAttribute(alpha, 1))
+      wg.setIndex(idx)
+      city.add(new THREE.Mesh(wg, new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, side: THREE.DoubleSide, uniforms: { c: { value: new THREE.Color('#ffffff') } },
+        vertexShader: 'attribute float alpha; varying float va; void main(){ va = alpha; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+        fragmentShader: 'uniform vec3 c; varying float va; void main(){ gl_FragColor = vec4(c, va); }',
+      })))
+      const tg = new THREE.BufferGeometry()
+      tg.setAttribute('position', new THREE.Float32BufferAttribute(top, 3))
+      city.add(new THREE.Line(tg, new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.9 })))
+      const bg = new THREE.BufferGeometry()
+      bg.setAttribute('position', new THREE.Float32BufferAttribute(base, 3))
+      city.add(new THREE.Line(bg, new THREE.LineBasicMaterial({ color: GREEN })))
+    }
+    // Bridges: snapped onto water and turned across the narrowest crossing.
+    for (const [, lat, lon, form, lengthM] of opts.scene.bridges) {
+      let [cx, cz] = toXZ(lon, lat)
+      if (!t.isWater(cx, cz)) {
+        let best: [number, number] | null = null
+        for (let r = 1.5; r <= 16 && !best; r += 1.5)
+          for (let a = 0; a < 360; a += 15) {
+            const x = cx + Math.cos((a * Math.PI) / 180) * r
+            const z = cz + Math.sin((a * Math.PI) / 180) * r
+            if (t.isWater(x, z)) {
+              best = [x, z]
+              break
+            }
+          }
+        if (!best) continue // no river nearby at this resolution; skip rather than float a bridge on land
+        ;[cx, cz] = best
+      }
+      let bestA = 0
+      let bestW = 1e9
+      for (let a = 0; a < 180; a += 3) {
+        const dx = Math.cos((a * Math.PI) / 180)
+        const dz = Math.sin((a * Math.PI) / 180)
+        let w = 0
+        for (const sgn of [1, -1]) {
+          let s = 0
+          while (s < 90 && t.isWater(cx + dx * sgn * s, cz + dz * sgn * s)) s += 0.7
+          w += s
+        }
+        if (w < bestW) {
+          bestW = w
+          bestA = a
+        }
+      }
+      const L = Math.max(bestW + 16, lengthM / 17)
+      const ang = (bestA * Math.PI) / 180
+      const dx = Math.cos(ang)
+      const dz = Math.sin(ang)
+      const e1 = heightAt(cx - (dx * L) / 2, cz - (dz * L) / 2)
+      const e2 = heightAt(cx + (dx * L) / 2, cz + (dz * L) / 2)
+      const b = makeBridge(form, L, Math.min(Math.max(Math.min(e1, e2) + 1, 5), 9))
+      b.position.set(cx, 0, cz)
+      b.rotation.y = -ang
+      city.add(b)
+    }
+    parcels.forEach((_p, i) => (parcelY[i] = heightAt(parcelXZ[i][0], parcelXZ[i][1])))
+    writeDots()
+    renderPins()
+    loading.remove()
+  }
+  void loadTerrain(opts.dataBase, opts.scene.rivers.map((r) => r.map(([lo, la]) => toXZ(lo, la))), HALF).then(buildCity)
 
   // ---------- lot ----------
   let lotScene: { scene: THREE.Scene; W: number; D: number } | null = null
@@ -367,56 +485,46 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
 
   function buildLot(lot: LotInput) {
     const s = new THREE.Scene()
-    s.background = new THREE.Color(BG)
+    s.background = SKY
+    s.fog = new THREE.Fog(BG, 520, 1250)
     const W = lot.frontage
     const D = lot.depth
     const S = Math.max(420, D + 280, W + 320)
     const r = rng(Math.round(W * 131 + D * 17))
     lightRig(s, -170, 320, 200, S / 2 + 40)
-    const sl = new THREE.Mesh(new THREE.BoxGeometry(S, 18, S), [edge, edge, mat('#c9cec2'), edge, edge, edge])
-    sl.position.y = -9
-    sl.receiveShadow = true
-    s.add(sl)
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(3600, 3600).rotateX(-Math.PI / 2), mat('#a8dc84'))
+    ground.receiveShadow = true
+    s.add(ground)
+    const EXT = 520
     const walkZ = D / 2 + 6
     const roadZ = D / 2 + 12 + 18
     const farWalk = D / 2 + 48 + 5
-    const road = box(S, 0.4, 36, '#3a3530')
-    road.position.set(0, 0.2, roadZ)
-    road.castShadow = false
-    s.add(road)
-    for (let x = -S / 2 + 10; x < S / 2; x += 22) {
-      const d = box(9, 0.1, 1, '#d8c27a')
-      d.castShadow = false
-      d.position.set(x, 0.45, roadZ)
-      s.add(d)
+    const flat = (m: THREE.Mesh, x: number, y: number, z: number) => {
+      m.castShadow = false
+      m.position.set(x, y, z)
+      s.add(m)
     }
-    for (const z of [walkZ, farWalk]) {
-      const w = box(S, 0.7, 10, '#ddd3bf')
-      w.castShadow = false
-      w.position.set(0, 0.35, z)
-      s.add(w)
-    }
-    const pad = box(W, 0.6, D, '#a9b47e')
-    pad.castShadow = false
-    pad.position.y = 0.3
-    s.add(pad)
+    flat(box(EXT * 4, 0.4, 36, '#5b6672'), 0, 0.2, roadZ)
+    for (let x = -EXT * 2; x < EXT * 2; x += 22) flat(box(9, 0.1, 1, '#ffffff'), x, 0.45, roadZ)
+    for (const z of [walkZ, farWalk]) flat(box(EXT * 4, 0.7, 10, '#eef3f8'), 0, 0.35, z)
+    flat(box(W, 0.6, D, '#eef8df'), 0, 0.3, 0)
     const gp: number[] = []
     for (let x = -W / 2 + 10; x < W / 2; x += 10) gp.push(x, 0.65, -D / 2, x, 0.65, D / 2)
     for (let z = -D / 2 + 10; z < D / 2; z += 10) gp.push(-W / 2, 0.65, z, W / 2, 0.65, z)
     const gg = new THREE.BufferGeometry()
     gg.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3))
-    s.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({ color: '#7d8a5c', transparent: true, opacity: 0.7 })))
-    s.add(rectOutline(W, D, LIME, 0.8, 0.75))
+    s.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({ color: '#b5dc92', transparent: true, opacity: 0.7 })))
+    s.add(rectOutline(W, D, GREEN, 0.8, 0.75))
     // Illustrative neighbors — procedural, not the real block.
-    const bodies = ['#e6d8bd', '#dcc3a4', '#c98f6f', '#efe2c6', '#b9b2a4', '#d8c3a5']
-    const roofs = ['#6b4b33', '#3b2a24', '#7a3b2e', '#4f4a44']
+    const bodies = ['#fff1d6', '#ffd9cc', '#d6ecff', '#e2f7d0', '#ffffff', '#fff0a8']
+    const roofs = ['#e2574c', '#3f7cc9', '#f08a24', '#5a6b7d']
     const row = (from: number, dir: number, zFront: number, facing: number) => {
       let x = from
-      while (Math.abs(x) < S / 2 - 16) {
+      while (Math.abs(x) < EXT) {
         const w = 18 + Math.floor(r() * 8)
         const d = 34 + Math.floor(r() * 10)
         const g = new THREE.Group()
-        house(g, { w, d, floors: r() > 0.4 ? 2 : 3, body: bodies[Math.floor(r() * bodies.length)], roof: roofs[Math.floor(r() * roofs.length)], flat: r() > 0.6 })
+        house(g, { windows: Math.abs(x) < 240, w, d, floors: r() > 0.4 ? 2 : 3, body: bodies[Math.floor(r() * bodies.length)], roof: roofs[Math.floor(r() * roofs.length)], flat: r() > 0.6 })
         const cx = x + dir * (w / 2)
         g.position.set(cx, 0, zFront - (facing * d) / 2)
         if (facing < 0) g.rotation.y = Math.PI
@@ -431,20 +539,33 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     }
     row(-W / 2 - 6, -1, D / 2 - 8, 1)
     row(W / 2 + 6, 1, D / 2 - 8, 1)
-    row(-S / 2 + 20, 1, farWalk + 8, -1)
-    for (let x = -S / 2 + 20; x < S / 2 - 10; x += 26 + r() * 20) {
+    row(-EXT, 1, farWalk + 8, -1)
+    const backZ = -D / 2 - 112
+    row(-EXT, 1, backZ, -1)
+    flat(box(EXT * 4, 0.4, 30, '#5b6672'), 0, 0.2, backZ - 20)
+    flat(box(EXT * 4, 0.7, 8, '#eef3f8'), 0, 0.35, backZ - 2)
+    row(-EXT, 1, backZ - 42, 1)
+    for (let x = -EXT; x < EXT; x += 26 + r() * 20) {
       if (Math.abs(x) < W / 2 + 6) continue
       const t = tree(r)
       t.position.set(x, 0, walkZ + 3.5)
       s.add(t)
     }
-    for (let i = 0; i < 18; i++) {
+    for (let k = 0; k < 16; k++) {
       const t = tree(r)
-      t.position.set((r() * 2 - 1) * (S / 2 - 20), 0, -D / 2 - 30 - r() * Math.max(10, S / 2 - D / 2 - 40))
+      t.position.set((r() * 2 - 1) * (W / 2 + 60), 0, -D / 2 - 14 - r() * 40)
+      s.add(t)
+    }
+    for (let k = 0; k < 70; k++) {
+      const t = tree(r)
+      const a = r() * Math.PI * 2
+      const d = 300 + r() * 500
+      t.position.set(Math.cos(a) * d, 0, -D / 2 - 200 - Math.abs(Math.sin(a)) * d * 0.8)
+      t.scale.setScalar(1.3)
       s.add(t)
     }
     if (lot.hill) {
-      const h = mesh(new THREE.IcosahedronGeometry(S * 0.42, 1), '#77844f')
+      const h = mesh(new THREE.IcosahedronGeometry(S * 0.42, 1), '#4fae4a')
       h.scale.y = 0.42
       h.position.set(0, -6, -S / 2 - 20)
       s.add(h)
@@ -506,7 +627,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       if (c instanceof THREE.Mesh) c.userData.uid = p.uid
     })
     root.add(model)
-    const sel = rectOutline(f.w + 3, f.d + 3, LIME, 1.1, 1)
+    const sel = rectOutline(f.w + 3, f.d + 3, GREEN, 1.1, 1)
     sel.visible = false
     root.add(sel)
     const warn = rectOutline(f.w + 6, f.d + 6, INVALID, 1.4, 0.95)
@@ -595,7 +716,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
     for (let i = 0; i < parcels.length; i++) {
       if (!dotVisible[i]) continue
       const [x, z] = parcelXZ[i]
-      v3.set(x, 0.8, z).project(camera)
+      v3.set(x, parcelY[i] + 0.8, z).project(camera)
       if (v3.z > 1) continue
       const sx = r.left + (v3.x * 0.5 + 0.5) * r.width
       const sy = r.top + (-v3.y * 0.5 + 0.5) * r.height
@@ -787,6 +908,10 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
         t.res()
       }
     }
+    if (mode === 'city' && !tween) {
+      controls.target.x = Math.max(-HALF, Math.min(HALF, controls.target.x))
+      controls.target.z = Math.max(-HALF, Math.min(HALF, controls.target.z))
+    }
     controls.update()
     if (mode === 'city') {
       const w = container.clientWidth
@@ -795,7 +920,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
         p.ring.rotation.z = now / 900
         const s = id === selLot ? 1.25 + Math.sin(now / 250) * 0.1 : 1
         p.ring.scale.set(s, s, s)
-        v3.set(p.g.position.x, 78, p.g.position.z).project(camera)
+        v3.set(p.g.position.x, p.g.position.y + 78, p.g.position.z).project(camera)
         const on = v3.z < 1
         p.el.style.display = on ? 'block' : 'none'
         if (on) p.el.style.transform = `translate(${(v3.x * 0.5 + 0.5) * w}px, ${(-v3.y * 0.5 + 0.5) * h}px) translate(-50%,-100%)`
@@ -817,7 +942,8 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       selLot = lot.id
       if (mode === 'city') {
         const [x, z] = toXZ(lot.lon, lot.lat)
-        await flyTo([x + 70, 150, z + 170], [x, 0, z], 750)
+        const y = heightAt(x, z)
+        await flyTo([x + 70, y + 150, z + 170], [x, y, z], 750)
       }
       fade.style.opacity = '1'
       await wait(270)
@@ -877,8 +1003,8 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       writeDots()
     },
     setPins(list) {
-      clearPins()
-      list.forEach(addPin)
+      pinList = list
+      renderPins()
     },
     beginDrag(typ, e) {
       if (mode !== 'lot' || !showPlan) return

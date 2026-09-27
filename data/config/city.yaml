@@ -9,6 +9,53 @@ scene:
   origin: [-79.9959, 40.4406]
   scale: [5000, 6500]
   half_extent: 620
+  # Terrain for the 3D city, baked by `uv run python -m pipeline.build_terrain`
+  # into web/public/data/terrain.{json,bin}. Elevation in meters from the source
+  # is turned into scene height: water where elevation < pool + water_margin_m,
+  # otherwise h = (e − pool)/m_per_unit · vertical_exaggeration · (1 + (e − pool)/steepen_m) / damping.
+  # A stylized view (heights exaggerated for legibility), not a survey.
+  # Decorative river bridges for the stylized city. [name, lat, lon, form, length_m].
+  # Coordinates as given in the 3D design handoff, which cites Wikipedia's
+  # "List of bridges of Pittsburgh"; not independently verified and never used
+  # in any metric. `form` picks a model in web/src/three/bridges.ts.
+  bridges:
+    - [Fort Pitt, 40.4388, -80.0111, tied_arch_double, 370]
+    - [Smithfield Street, 40.4351, -80.002, lenticular, 360]
+    - [Panhandle, 40.43306, -79.99806, truss, 300]
+    - [Liberty, 40.4328, -79.9968, cantilever, 720]
+    - [South Tenth Street, 40.4325, -79.98917, suspension, 390]
+    - [Birmingham, 40.433361, -79.973499, tied_arch, 500]
+    - [Hot Metal, 40.428268, -79.960776, truss, 358]
+    - [Glenwood, 40.3976, -79.9355, cantilever, 690]
+    - [Glenwood B&O, 40.3984, -79.9314, truss, 731]
+    - [Fort Duquesne, 40.4443, -80.0093, tied_arch_double, 430]
+    - [Roberto Clemente, 40.4456, -80.0033, suspension, 323]
+    - [Andy Warhol, 40.44611, -80.00139, suspension, 323]
+    - [Rachel Carson, 40.4467, -79.9998, suspension, 340]
+    - [Fort Wayne Railroad, 40.4482, -79.9962, truss, 330]
+    - [Veterans, 40.4499, -79.9934, girder, 600]
+    - [David McCullough (16th St), 40.4517, -79.9909, twin_arch, 608]
+    - [31st Street, 40.463, -79.9758, tied_arch, 817]
+    - [33rd Street Railroad, 40.4657, -79.9736, truss, 500]
+    - [40th Street, 40.4728, -79.9686, deck_arch, 720]
+    - [62nd Street, 40.4912, -79.9381, truss, 750]
+    - [Highland Park, 40.4891, -79.912, truss, 700]
+    - [Brilliant Branch Railroad, 40.4866, -79.9053, truss, 450]
+    - [West End, 40.44631, -80.02699, tied_arch, 400]
+    - [McKees Rocks, 40.47722, -80.04833, tied_arch, 600]
+    - [Ohio Connecting Railroad, 40.46278, -80.04306, truss, 600]
+  terrain:
+    source: aws_terrain_tiles
+    inner: { zoom: 12, half_lon: 0.15, half_lat: 0.115 }
+    outer: { zoom: 10, half_lon: 0.42, half_lat: 0.33 }
+    river_pool_m: 217
+    water_margin_m: 1.6
+    m_per_unit: 17
+    vertical_exaggeration: 4.5
+    steepen_m: 170
+    damping: 3
+    coarse: { extent: 2000, step: 12.5 }
+    fine: { margin: 60, step: 3.5 }
   rivers:
     - [[-80.0125, 40.442], [-79.99, 40.45], [-79.97, 40.462], [-79.945, 40.475], [-79.92, 40.482], [-79.88, 40.492]]
     - [[-80.0125, 40.442], [-79.99, 40.434], [-79.965, 40.425], [-79.95, 40.414], [-79.935, 40.4], [-79.915, 40.395], [-79.885, 40.405]]

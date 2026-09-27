@@ -23,8 +23,9 @@ assessment records) and compare six kinds of housing that could go there:
 
 ## What it does
 
-- **Pick a lot.** A stylized 3D model of Pittsburgh with every vacant parcel
-  at its real location. Search by address or parcel ID, filter by lot size,
+- **Pick a lot.** A stylized 3D model of Pittsburgh on real terrain (rivers,
+  bluffs and hollows from public elevation data) with every vacant parcel at
+  its real location. Search by address or parcel ID, filter by lot size,
   zoning, public ownership or site hazard, or start from suggested lots spread
   across the city. Click a lot to fly into it.
 - **Build on it.** Drag housing types from the palette onto the lot. The pad
@@ -81,6 +82,7 @@ To rebuild the parcel index from WPRDC:
 ```bash
 uv sync --group pipeline
 uv run python -m pipeline.build_parcels   # ~2 min first run; caches in data/raw/
+uv run python -m pipeline.build_terrain   # 3D city heightmap -> web/public/data/terrain.*
 uv run python -m pipeline.docs            # regenerate SOURCES.md + LIMITATIONS.md counts
 ```
 
@@ -124,7 +126,8 @@ static files and serves `api/index.py` (FastAPI) as a Python function. Add
 - **Pipeline:** Python 3.14 (uv), pandas, GeoPandas, shapely, pyogrio, requests.
 - **Engine and API:** numpy, pydantic, PyYAML, FastAPI, google-genai.
 - **Web:** Vite, React 19, TypeScript (strict), three.js for the 3D city and
-  lot views, with Barlow and Chakra Petch fonts from Google Fonts.
+  lot views, with Fredoka and Nunito fonts from Google Fonts. Pipeline adds
+  Pillow to decode elevation tiles for the terrain bake.
 
 All Pittsburgh-specific facts live in `data/config/`. The code iterates over
 whatever that folder declares.

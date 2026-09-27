@@ -141,6 +141,7 @@ export default function App() {
       scene: config.city.scene,
       forms: buildingForms(config),
       parcels,
+      dataBase: '/data',
       snap: 2,
       onSelectLot: (id) => openLotRef.current(id),
       onChange: (list) => commit(list),

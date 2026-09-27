@@ -31,8 +31,8 @@ export function TopBar(p: Props) {
     <>
       <header className="topbar">
         <div className="brand">
-          <div className="brand-mark" />
-          <div className="brand-name">LOTLINE</div>
+          <div className="brand-mark">L</div>
+          <div className="brand-name">Lotline</div>
           <div className="brand-tag">SIM</div>
         </div>
         <nav className="crumbs">
@@ -70,7 +70,7 @@ export function TopBar(p: Props) {
             <button className="ghost-btn" onClick={p.onReset}>
               Reset view
             </button>
-            <button className="solid-btn" onClick={p.onMemo}>
+            <button className="go-btn" onClick={p.onMemo}>
               Print memo
             </button>
           </div>

@@ -6,7 +6,7 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `e059290e476f`._
+_Auto-generated for config `17226496a2ed`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
 - **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 54 districts reviewed).
@@ -41,9 +41,13 @@ _Auto-generated for config `e059290e476f`._
 - **"Vacant" means the county's vacant land-use classes.** Lots with a condemned
   or abandoned structure are not included. Some coded-vacant lots are side yards,
   parking, or slivers that can't be built on.
-- **The 3D city is stylized.** Rivers are hand-traced; the blocks, hills and
-  the neighbors around each lot are decorative. Parcel positions (centroids)
-  and lot dimensions are real.
+- **The 3D city is stylized.** Terrain comes from public elevation tiles (AWS
+  Terrain Tiles, derived from USGS 3DEP/SRTM) with heights exaggerated for
+  legibility, and rivers are wherever that terrain sits at the normal pool
+  level. City blocks, trees, bridge models and the neighbors around each lot
+  are decorative; bridge positions come from the design handoff and were not
+  independently verified. Parcel positions (centroids) and lot dimensions are
+  real. None of this scenery feeds any metric.
 - **Lot shape is a rectangle.** Frontage × depth comes from the deed legal
   description when it agrees with the assessed area (71% of vacant parcels);
   otherwise it is a placeholder from lot area. Irregular, corner and

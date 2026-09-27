@@ -299,12 +299,18 @@ class ZoningCode(_Model):
     raw_text_dir: str
 
 
+class DistrictColor(_Model):
+    prefix: str
+    color: str
+
+
 class ZoningConfig(_Model):
     code: ZoningCode
     rules_file: str
     priority_file: str
     statuses: dict[str, ZoningStatus]
     extraction_targets: ExtractionTargets
+    district_colors: list[DistrictColor] = []
 
     @model_validator(mode="after")
     def _roles_resolvable(self) -> ZoningConfig:
