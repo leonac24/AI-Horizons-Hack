@@ -1,5 +1,5 @@
 {
-  "config_hash": "7119c2477d9b",
+  "config_hash": "ccee62af18d1",
   "sources": {
     "wprdc_assessments": {
       "provenance": "observed",
@@ -44,7 +44,9 @@
     "fema_sfha_flagged": 359,
     "combined_sewershed_matched": 19444,
     "indexed": 22183,
-    "suggested": 12
+    "suggested": 12,
+    "geometry_dimensions_estimated": 5965,
+    "transit_access_matched": 15553
   },
   "context": {
     "acs": {
@@ -68,6 +70,13 @@
     "join_methods": {
       "point inside county parcel polygon": 22028,
       "published parcel centroid (boundary unavailable)": 155
+    },
+    "transit_jobs": {
+      "source": "epa_smart_location",
+      "status": "loaded",
+      "vintage": "EPA Smart Location Database 3.0 (2021); 2020 GTFS and travel times; 2017 LEHD",
+      "join": "2020 block-group GEOID20 reconstructed from state, county, tract and group fields",
+      "measure": "D5DRI relative transit jobs accessibility index and D5BR distance-decay-weighted jobs"
     }
   }
 }

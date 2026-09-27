@@ -71,8 +71,15 @@ export function buildPool(config: Config, analysis: Analysis, plan: PlanResult |
     }
   })
   if (!plan || plan.units === 0) return pure
+  const composition = Object.entries(plan.by_typology)
+    .map(([id, count]) => {
+      const typology = config.typologies.find((t) => t.id === id)
+      return typology ? `${typology.label}${count > 1 ? ` × ${count}` : ''}` : null
+    })
+    .filter((label): label is string => label !== null)
+    .join(', ')
   const own: Option = {
-    id: PLAN_ID, label: 'Your plan', short: 'Your plan', color: '#2fd06b', units: plan.units, metrics: plan.metrics,
+    id: PLAN_ID, label: composition ? `Your plan · ${composition}` : 'Your plan', short: 'Your plan', color: '#2fd06b', units: plan.units, metrics: plan.metrics,
     zoning: plan.zoning, households: plan.households, carbon: plan.carbon, eligible: plan.eligible,
     reason: plan.ineligible_reason, fits: true, isPlan: true, zoningByType: plan.zoning_by_typology, notes: plan.notes,
   }

@@ -306,6 +306,7 @@ function CompareTab(p: Props) {
             <strong>
               {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft
             </strong>
+            <div className="dim small">{analysis.lot_shape.note}</div>
           </div>
           {analysis.site_context.map((m) => <MetricBox key={m.id} m={m} sources={config.sources.sources} />)}
           {analysis.site_facts.map((fact) => (

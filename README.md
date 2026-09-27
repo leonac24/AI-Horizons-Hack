@@ -94,11 +94,13 @@ citation.
 
 **Placeholder or missing (labelled in the app):**
 
-- 15 assumptions, including construction and operating cost, embodied and
-  operational carbon, grid decarbonization, vehicle miles, job access and sewer
-  stress. The app hatches every value that depends on one.
-- Commute times are not modeled. PRT GTFS, HUD CHAS, the EPA Smart Location
-  Database and ResStock are not connected yet.
+- 14 assumptions or fallbacks remain, including construction and operating
+  cost, embodied and operational carbon, grid decarbonization, household VMT
+  and sewer stress. Transit access is joined for 15,553 parcels, with a
+  fallback for unmatched block groups. The app hatches placeholder-dependent
+  values.
+- EPA Smart Location transit access is a 2021 snapshot, not current route-level
+  commute time. Current PRT GTFS, HUD CHAS and ResStock remain unconnected.
 - Zoning overlays (Riverfront, IPOD, historic) and 34 smaller base districts
   have no rules. Those lots show "Needs planner review".
 
@@ -166,6 +168,8 @@ All are public. Full registry, licenses and verification dates:
 | HUD FY2026 Income Limits (Pittsburgh HMFA) | HUD User |
 | HUD 2024 Total Development Cost limits | HUD |
 | 2024 ACS 5-Year Detailed Tables (B19013, B25070) | U.S. Census Bureau summary files |
+| EPA Smart Location Database 3.0 transit access | U.S. EPA (ArcGIS REST) |
+| EPA passenger-vehicle emissions factor | U.S. EPA |
 | EPA eGRID2023 | U.S. EPA |
 | Terrain Tiles (for the 3D city only; never in a metric) | AWS Open Data |
 
@@ -271,32 +275,20 @@ Rules are in force once their quotes verify. To have a person confirm them,
 tick facts in `pipeline/zoning/REVIEW.md` and run
 `uv run python -m pipeline.zoning.build_rules --apply`.
 
-### Compile source documents with Laya (local only)
+### Local Laya and LLM pipeline
 
-Laya runs only on the developer's machine. The Vercel deployment reads the
-checked-in `data/processed/laya_evidence.json`; it does not install or invoke
-Laya. This step classifies document passages as **leads for review**. It does
-not extract numerical inputs or change zoning status, assumptions, or ranking.
+All Laya tooling, requirements, curated Laya documents, optional local inputs,
+and compiled artifacts live under `dev/laya/`. The app reads the checked-in
+`dev/laya/compiled/laya_evidence.json` index but never installs or invokes Laya.
+See [dev/laya/README.md](dev/laya/README.md) for passage classification and
+structured candidate extraction. Numeric candidates are source-linked and
+unapplied; structured sources such as ACS, parcel geometry, and EPA SLD are
+integrated through deterministic adapters. Laya classification does not create
+or apply zoning rules.
 
-1. The checked-in `data/sources/zoning/*.txt` and
-   `data/sources/laya/<source_id>/` snapshots compile automatically. Their
-   section links and coverage are listed in `data/sources/zoning/README.md`.
-2. Optionally save other public text, Markdown, or PDF source documents in
-   `data/raw/laya/<source_id>/`, using an ID from `data/config/sources.yaml`.
-   Newly added raw files are gitignored by default.
-3. From the repository root:
-
-   ```bash
-   python3 -m venv .venv-laya
-   .venv-laya/bin/python -m pip install 'torch==2.14.0+cpu' --index-url https://download.pytorch.org/whl/cpu
-   .venv-laya/bin/python -m pip install -r requirements-laya.txt
-   .venv-laya/bin/python -m pipeline.laya_compile
-   .venv-laya/bin/python -m pipeline.laya_compile --check
-   ```
-
-   Laya's first run downloads its checkpoint. Inspect the source links and
-   labels in `data/processed/laya_evidence.json`, then commit it with the
-   source and code changes. The "What we don't know" tab reads it.
+Quote-verified AI-extracted zoning rules are currently in force while labeled
+as not checked by a planner. Use the dedicated Title Nine pipeline and
+`require_human_review` setting to control that behavior.
 
 ## Docs
 
@@ -314,10 +306,10 @@ not extract numerical inputs or change zoning status, assumptions, or ranking.
    (LNC, UI, NDI and the Riverfront districts first).
 2. Replace the remaining cost and carbon placeholders with verified local
    evidence; evaluate CHAS for income-tier detail.
-3. Build a measured PRT travel-time matrix with a walking network and job
-   destinations, or obtain the University of Minnesota's block-level 2024
-   transit-access data. Combined-sewershed boundaries are loaded, but sewer
-   stress still needs capacity or overflow observations.
+3. EPA Smart Location Database transit access is joined at block-group level
+   (2021 vintage); refresh it with a newer PRT travel-time matrix if current
+   route-level access is needed. Combined-sewershed boundaries are loaded, but
+   sewer stress still needs capacity or overflow observations.
 4. Make scenarios editable (tenure, affordability mix, parking) and add the
    advocates + referee explanation mode.
 

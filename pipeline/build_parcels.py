@@ -22,7 +22,7 @@ import pandas as pd
 from core.config import ROOT, Config, load_config
 from core.engine import lot_shape, pure_buildings
 from pipeline.adapters.ckan import CkanDatastore, CkanDownload
-from pipeline.enrich_context import enrich_records
+from pipeline.enrich_context import _strip_parcel_context, _write_parcel_context, enrich_records
 from pipeline.steps.suggest import pick_suggested
 
 log = logging.getLogger("pipeline")
@@ -136,6 +136,8 @@ def build(cfg: Config) -> dict:
 
     PROCESSED.mkdir(parents=True, exist_ok=True)
     WEB_DATA.mkdir(parents=True, exist_ok=True)
+    _write_parcel_context(records)
+    _strip_parcel_context(records)
     (PROCESSED / "parcels.json").write_text(
         json.dumps({"config_hash": cfg.hash, "suggested": suggested, "parcels": {r["id"]: r for r in records}}),
         encoding="utf-8")

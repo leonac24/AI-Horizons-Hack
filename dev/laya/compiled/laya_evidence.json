@@ -72,7 +72,7 @@
     },
     {
       "source_id": "pgh_zoning_page",
-      "path": "data/sources/laya/pgh_zoning_page/zoning-guidance.txt",
+      "path": "dev/laya/sources/pgh_zoning_page/zoning-guidance.txt",
       "source_url": "https://www.pittsburghpa.gov/Business-Development/City-Planning/Zoning",
       "sha256": "20d55779bc08e0b58063f32cd30bd6e398e62cd7b11f68542b2a79409dc3cfbd",
       "passage_count": 2
@@ -805,7 +805,7 @@
       "source_id": "pgh_zoning_page",
       "source_name": "Pittsburgh City Planning Zoning Page",
       "source_url": "https://www.pittsburghpa.gov/Business-Development/City-Planning/Zoning",
-      "document": "data/sources/laya/pgh_zoning_page/zoning-guidance.txt",
+      "document": "dev/laya/sources/pgh_zoning_page/zoning-guidance.txt",
       "page": null,
       "part": 1,
       "input_sha256": "0c28e2f42261ed6490add8bcf455e1c228c47c912ef2cab8cd6d6c54dfb2c12c",
@@ -817,7 +817,7 @@
       "source_id": "pgh_zoning_page",
       "source_name": "Pittsburgh City Planning Zoning Page",
       "source_url": "https://www.pittsburghpa.gov/Business-Development/City-Planning/Zoning",
-      "document": "data/sources/laya/pgh_zoning_page/zoning-guidance.txt",
+      "document": "dev/laya/sources/pgh_zoning_page/zoning-guidance.txt",
       "page": null,
       "part": 2,
       "input_sha256": "d0a6f8f637738c1c82c80e247afc952b891b4d56f7a05a73439538050b2d1bb2",

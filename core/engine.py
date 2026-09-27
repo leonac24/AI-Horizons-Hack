@@ -96,6 +96,16 @@ def lot_shape(cfg: Config, parcel: dict) -> LotShape:
         return LotShape(frontage_ft=float(front), depth_ft=float(depth), provenance="observed",
                         sourceIds=[cfg.assessment_source],
                         note="From the deed legal description; agrees with the assessed lot area.")
+    estimated_front, estimated_depth = parcel.get("geometry_frontage_ft"), parcel.get("geometry_depth_ft")
+    if estimated_front and estimated_depth:
+        context = cfg.city.model_dump().get("context") or {}
+        source = (context.get("parcel_boundaries") or {}).get("source")
+        return LotShape(
+            frontage_ft=float(estimated_front), depth_ft=float(estimated_depth),
+            provenance="modeled", sourceIds=[source] if source else [],
+            note=("Approximate axes from the county parcel polygon's minimum rotated rectangle. "
+                  "Not legal frontage or a survey."),
+        )
     ratio = cfg.assumption("lot_depth_to_frontage_ratio")
     front = math.sqrt(area / ratio.value) if area > 0 else 0.0
     return LotShape(frontage_ft=round(front, 1), depth_ft=round(area / front, 1) if front else 0.0,
@@ -169,7 +179,18 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                        "excluding not-computed. Range is an approximate component-MOE envelope, "
                        "not a Census-published ratio MOE.")
     t_access = Trace()
-    access = S.a("jobs_access_index", used=t_access)
+    transit_access = parcel.get("transit_access_index")
+    transit_source = (context_sources.get("transit_jobs") or {}).get("source")
+    if transit_access is None:
+        access = S.a("jobs_access_index", used=t_access)
+        access_note = "EPA transit-access value unavailable for this block group; fallback assumption shown."
+        access_provenance = "placeholder"
+    else:
+        access = S.const(float(transit_access))
+        t_access.add("observed", transit_source)
+        access_note = ("EPA SLD D5DRI: block-group transit-job access relative to the highest "
+                       "block group in its CBSA; 2021-vintage data.")
+        access_provenance = "observed"
     t_sewer = Trace()
     sewer = S.a("sewer_stress_index", used=t_sewer)
     obs = Trace({"observed"}, {cfg.assessment_source})
@@ -186,7 +207,9 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
         to_metric("site.renter_cost_burden", "Tract renters paying 30%+ of income", burden * 100,
                   "%", t_burden, note=burden_note,
                   provenance="modeled" if burden_est is not None else "placeholder"),
-        to_metric("site.jobs_access", "Transit access to jobs (city avg = 1)", access, "index", t_access),
+        to_metric("site.jobs_access", "Transit access to jobs (regional relative index)",
+                  access, "index (0–1)", t_access, note=access_note,
+                  provenance=access_provenance),
         to_metric("site.sewer_stress", "Combined-sewer stress (city avg = 1)", sewer, "index", t_sewer),
     ]
     for flag, spec in hazards_cfg.items():
@@ -222,6 +245,17 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
                        "This does not measure sewer capacity or overflow pressure.") if sheds else
                        "Outside or unmatched in the 2018 layer; sewer type and capacity are unknown."),
     ]
+    transit_jobs = parcel.get("transit_jobs_accessible")
+    if transit_jobs is not None:
+        site_facts.append(SiteFact(
+            id="site.transit_jobs_accessible",
+            label="Jobs accessible within a 45-minute transit commute",
+            value=f"{transit_jobs:,.0f} (distance-decay weighted)",
+            provenance="observed",
+            sourceIds=[transit_source] if transit_source else [],
+            note=("EPA SLD D5BR; 2021-vintage estimate using 2020 GTFS/transit times and "
+                  "2017 LEHD jobs. It is not a current schedule or household commute prediction."),
+        ))
 
     # --- Shared affordability inputs --------------------------------------------
     t_inc = Trace()
@@ -308,8 +342,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
         kwh = S.a("operational_kwh_psf_yr", typ.id, t_c) * typ.unit_size_sf
         grid = S.a("grid_kgco2e_per_kwh", used=t_c)
         decarb = S.a("grid_decarbonization_per_yr", used=t_c)
-        vmt = S.a("vmt_per_household_yr", used=t_c) / np.maximum(access, 0.1)
-        t_c = t_c.merge(t_access)
+        vmt = S.a("vmt_per_household_yr", used=t_c)
         kgpm = S.a("kgco2e_per_vmt", used=t_c)
         yr = np.arange(1, years + 1)[:, None]
         annual = (kwh * grid * (1 - decarb) ** (yr - 1) + vmt * kgpm) / 1000  # t/yr, shape (years, n+1)

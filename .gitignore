@@ -7,13 +7,18 @@
 __pycache__/
 *.pyc
 .venv/
-.venv-laya/
 .pytest_cache/
 .ruff_cache/
 
 # data: raw downloads are fetched by the pipeline (see docs/SOURCES.md)
 data/raw/*
 !data/raw/.gitkeep
+
+# Optional local Laya/LLM source documents and model intermediates
+dev/laya/raw/*
+!dev/laya/raw/.gitkeep
+dev/laya/.venv/
+dev/laya/cache/
 
 # web
 web/node_modules/

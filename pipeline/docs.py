@@ -82,6 +82,10 @@ def limitations_auto(cfg) -> str:
          f"{counts.get('fema_sfha_flagged', 0):,} in a mapped Special Flood Hazard Area at the tested point."),
         (f"- **2018 PWSA combined sewersheds:** {counts.get('combined_sewershed_matched', 0):,} "
          "indexed lots have a point match."),
+        (f"- **EPA SLD transit access:** {counts.get('transit_access_matched', 0):,} indexed lots have "
+         "a 2021 block-group match (D5DRI relative access; D5BR weighted jobs within 45 minutes)."),
+        (f"- **County geometry dimensions:** {counts.get('geometry_dimensions_estimated', 0):,} lots "
+         "have modeled parcel axes where legal dimensions were absent; these are not survey dimensions."),
         f"- **Sources not yet connected ({len(unverified)}):** {', '.join(unverified) or 'none'}.",
         END,
     ])

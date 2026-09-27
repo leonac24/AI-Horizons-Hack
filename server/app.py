@@ -37,7 +37,8 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 PARCELS_FILE = ROOT / "data" / "processed" / "parcels.json"
-LAYA_EVIDENCE_FILE = ROOT / "data" / "processed" / "laya_evidence.json"
+PARCEL_CONTEXT_FILE = ROOT / "data" / "processed" / "parcel_context.jsonl"
+LAYA_EVIDENCE_FILE = ROOT / "dev" / "laya" / "compiled" / "laya_evidence.json"
 
 # Load the config once, right now, when Python first imports this file - not
 # inside each route function. It has to happen here because FastAPI reads the
@@ -140,7 +141,15 @@ def _index() -> dict:
     if not PARCELS_FILE.exists():
         log.warning("no parcel index at %s — serving an empty index", PARCELS_FILE)
         return {"parcels": {}, "suggested": []}
-    return json.loads(PARCELS_FILE.read_text(encoding="utf-8"))
+    payload = json.loads(PARCELS_FILE.read_text(encoding="utf-8"))
+    if PARCEL_CONTEXT_FILE.exists():
+        for line in PARCEL_CONTEXT_FILE.read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            parcel_id = row.pop("id")
+            parcel = payload["parcels"].get(parcel_id)
+            if parcel is not None:
+                parcel.update(row)
+    return payload
 
 
 def _parcel(parcel_id: str) -> dict:

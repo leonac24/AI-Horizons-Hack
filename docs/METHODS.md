@@ -121,7 +121,7 @@ type, it belongs back in this table.
 
     year 0:  embodied = embodied_kgco2e_psf × unit_size_sf / 1000                         (t)
     year y:  energy   = operational_kwh_psf_yr × unit_size_sf × grid_kgco2e_per_kwh × (1 − decarb)^(y−1)
-             travel   = vmt_per_household_yr / jobs_access_index × kgco2e_per_vmt
+             travel   = vmt_per_household_yr × kgco2e_per_vmt
     cumulative(y) = embodied + Σ (energy + travel) / 1000
 
 A **crossover year** is the first year one option's cumulative line crosses
