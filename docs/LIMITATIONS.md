@@ -6,17 +6,19 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `7119c2477d9b`._
+_Auto-generated for config `2ebd81917e02`._
 
-- **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
-- **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 41 districts reviewed).
-- **Largest unreviewed base districts:** R1D (6,434), R2 (3,389), H (3,230), R1A (2,724), RM (2,535), P (1,207), LNC (949), UI (460), NDI (185), RIV-MU (148), UPR-B (98), RIV-IMU (97).
+- **Vacant parcels indexed:** 22,303 (City of Pittsburgh only).
+- **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 42 districts reviewed).
+- **Largest unreviewed base districts:** R1D (6,434), R2 (3,389), H (3,230), R1A (2,724), RM (2,535), P (1,207), LNC (949), UI (460), NDI (185), UPR-B (178), RIV-MU (148), RIV-IMU (97).
 - **Uses settled city-wide (1):** `single_unit_detached_with_adu`. These are decided by a reviewed rule that applies in every district, so they are excluded from the ranking everywhere, with a citation.
-- **Placeholder assumptions (18):** `hard_cost_psf`, `soft_cost_share`, `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_kgco2e_per_kwh`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
-- **2024 ACS median income / renter burden:** 22,113 / 22,132 indexed lots have tract estimates.
-- **FEMA point screen:** 22,183 classified; 359 in a mapped Special Flood Hazard Area at the tested point.
-- **2018 PWSA combined sewersheds:** 19,444 indexed lots have a point match.
-- **Sources not yet connected (7):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, EPA eGRID, EPA Smart Location Database, ResStock.
+- **Placeholder assumptions (27):** `hard_cost_psf`, `soft_cost_share`, `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_kgco2e_per_kwh`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`, `millage_city`, `millage_school`, `millage_county`, `homestead_exclusion_city`, `homestead_exclusion_school`, `homestead_exclusion_county`, `abatement_years`, `abatement_exempt_assessed_cap_usd`, `assessed_building_value_per_home`.
+- **2024 ACS median income / renter burden:** 22,233 / 22,252 indexed lots have tract estimates.
+- **FEMA point screen:** 22,303 classified; 360 in a mapped Special Flood Hazard Area at the tested point.
+- **2018 PWSA combined sewersheds:** 19,563 indexed lots have a point match.
+- **Sources not yet connected (11):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, EPA eGRID, EPA Smart Location Database, ResStock, City of Pittsburgh real estate tax rate and homestead exclusion, Pittsburgh Public Schools real estate tax rate and homestead exclusion, Allegheny County real estate tax rate and homestead exclusion, City of Pittsburgh residential tax abatement programs (Pittsburgh Code of Ordinances).
+- **Tax terms not yet reviewed (1):** Residential new-construction tax abatement (City of Pittsburgh). Millage and homestead figures stay placeholders until sourced (listed above).
+- **Assessment comps (buildings since 2005, at least 30 per neighborhood):** detached: 11 neighborhoods; rowhouse: 8 neighborhoods; adu_pair: 0 neighborhoods; two_unit: 0 neighborhoods.
 <!-- AUTO:END -->
 
 ## What it gets wrong, or can't know
@@ -73,7 +75,12 @@ _Auto-generated for config `7119c2477d9b`._
 - **Assessed values are base-year comps of existing buildings.** A new building
   is assessed at its base-year-equivalent value; recent comps (since
   `tax.yaml: comps.built_since_year`) stand in for it. Assessment appeals, which
-  materially move real bills in Allegheny County, are not modeled.
+  materially move real bills in Allegheny County, are not modeled. The county
+  file records a year built for almost no apartment parcel (19 of 1,306 in the
+  5–19 unit class, none in the 40+ class), so multi-unit types have no recent
+  comps and use the labeled placeholder per-home value instead; comparing
+  century-old apartment assessments against post-2005 houses would bias revenue
+  against density, so we do not.
 - **Multi-unit comps rest on a unit band.** The county's use classes say 5–19,
   20–39 or 40+ units, not a count. The 40+ band has no upper edge; its cap is a
   documented choice in `tax.yaml` and the weakest number in the tax module.

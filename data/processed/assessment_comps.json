@@ -1,0 +1,159 @@
+{
+ "config_hash": "2ebd81917e02",
+ "built_since_year": 2005,
+ "min_comps": 30,
+ "by_typology": {
+  "detached": {
+   "citywide": {
+    "value": 220600,
+    "low": 116000,
+    "high": 346200,
+    "n": 1113
+   },
+   "neighborhoods": {
+    "Central Lawrenceville": {
+     "value": 359300,
+     "low": 287700,
+     "high": 420200,
+     "n": 31
+    },
+    "Central Northside": {
+     "value": 262500,
+     "low": 178400,
+     "high": 386000,
+     "n": 36
+    },
+    "Duquesne Heights": {
+     "value": 340800,
+     "low": 264150,
+     "high": 394350,
+     "n": 111
+    },
+    "East Liberty": {
+     "value": 234250,
+     "low": 160950,
+     "high": 318450,
+     "n": 36
+    },
+    "Garfield": {
+     "value": 28550,
+     "low": 16900,
+     "high": 103875,
+     "n": 82
+    },
+    "Homewood South": {
+     "value": 84600,
+     "low": 67800,
+     "high": 105400,
+     "n": 69
+    },
+    "Middle Hill": {
+     "value": 109000,
+     "low": 99500,
+     "high": 135300,
+     "n": 33
+    },
+    "New Homestead": {
+     "value": 264100,
+     "low": 239550,
+     "high": 299675,
+     "n": 62
+    },
+    "Squirrel Hill South": {
+     "value": 371250,
+     "low": 315100,
+     "high": 432900,
+     "n": 186
+    },
+    "Upper Lawrenceville": {
+     "value": 301700,
+     "low": 180375,
+     "high": 382400,
+     "n": 32
+    },
+    "Westwood": {
+     "value": 137700,
+     "low": 119925,
+     "high": 228000,
+     "n": 38
+    }
+   }
+  },
+  "rowhouse": {
+   "citywide": {
+    "value": 258050,
+    "low": 163650,
+    "high": 355500,
+    "n": 622
+   },
+   "neighborhoods": {
+    "Brookline": {
+     "value": 146300,
+     "low": 145100,
+     "high": 147400,
+     "n": 37
+    },
+    "Central Lawrenceville": {
+     "value": 298400,
+     "low": 242900,
+     "high": 395100,
+     "n": 37
+    },
+    "Central Northside": {
+     "value": 211700,
+     "low": 141950,
+     "high": 278500,
+     "n": 79
+    },
+    "Lower Lawrenceville": {
+     "value": 355500,
+     "low": 307500,
+     "high": 438200,
+     "n": 41
+    },
+    "Shadyside": {
+     "value": 342600,
+     "low": 290050,
+     "high": 412900,
+     "n": 59
+    },
+    "South Side Flats": {
+     "value": 286200,
+     "low": 204700,
+     "high": 334650,
+     "n": 79
+    },
+    "Squirrel Hill South": {
+     "value": 295100,
+     "low": 256200,
+     "high": 379400,
+     "n": 59
+    },
+    "Strip District": {
+     "value": 477100,
+     "low": 397650,
+     "high": 539900,
+     "n": 47
+    }
+   }
+  },
+  "adu_pair": {
+   "citywide": {
+    "value": 102950,
+    "low": 80100,
+    "high": 109175,
+    "n": 59
+   },
+   "neighborhoods": {}
+  },
+  "two_unit": {
+   "citywide": {
+    "value": 102950,
+    "low": 80100,
+    "high": 109175,
+    "n": 59
+   },
+   "neighborhoods": {}
+  }
+ }
+}

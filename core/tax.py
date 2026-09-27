@@ -82,7 +82,9 @@ def per_home_assessed(cfg: Config, S: Samples, typ: Typology, neighborhood: str 
                             "observed", note)
     t = Trace()
     draws = S.a("assessed_building_value_per_home", typ.id, t)
-    return AssessedHome(draws, t, "placeholder", "No assessment comps built yet; placeholder per-home value.")
+    note = ("No assessment comps built yet; placeholder per-home value." if not comps else
+            "No recent buildings of this housing type in the assessment comps; placeholder per-home value.")
+    return AssessedHome(draws, t, "placeholder", note)
 
 
 @dataclass

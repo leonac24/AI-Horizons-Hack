@@ -69,8 +69,13 @@ def test_comps_fallback_order_neighborhood_citywide_placeholder(cfg):
     city = per_home_assessed(cfg, S, typ, "Elsewhere", table)
     assert city.provenance == "observed" and "citywide" in (city.note or "")
     none = per_home_assessed(cfg, S, typ, "Here", {})
-    assert none.provenance == "placeholder"
+    assert none.provenance == "placeholder" and "built yet" in (none.note or "")
     assert none.draws[0] == cfg.assumption("assessed_building_value_per_home").for_typology(typ.id).value
+    # A comps file that simply has no recent buildings of this type (the county
+    # records no year built for apartment parcels) must say so, not "not built".
+    other = {"by_typology": {k: v for k, v in table["by_typology"].items() if k != typ.id}}
+    absent = per_home_assessed(cfg, S, typ, "Here", other)
+    assert absent.provenance == "placeholder" and "No recent buildings" in (absent.note or "")
 
 
 # --- scenario tax, revenue series, site context ----------------------------------

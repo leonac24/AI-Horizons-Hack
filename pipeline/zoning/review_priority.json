@@ -56,16 +56,16 @@
   "vacant_parcels": 185
  },
  {
+  "district": "UPR-B",
+  "vacant_parcels": 178
+ },
+ {
   "district": "RIV-MU",
   "vacant_parcels": 148
  },
  {
   "district": "R1D-VL",
   "vacant_parcels": 99
- },
- {
-  "district": "UPR-B",
-  "vacant_parcels": 98
  },
  {
   "district": "RIV-IMU",
@@ -104,6 +104,10 @@
   "vacant_parcels": 42
  },
  {
+  "district": "EMI",
+  "vacant_parcels": 41
+ },
+ {
   "district": "AP",
   "vacant_parcels": 41
  },
@@ -114,6 +118,10 @@
  {
   "district": "GPRB",
   "vacant_parcels": 32
+ },
+ {
+  "district": "UPR-A",
+  "vacant_parcels": 31
  },
  {
   "district": "UC-MU",
@@ -128,12 +136,8 @@
   "vacant_parcels": 29
  },
  {
-  "district": "EMI",
-  "vacant_parcels": 28
- },
- {
-  "district": "UPR-A",
-  "vacant_parcels": 22
+  "district": "GT-C",
+  "vacant_parcels": 23
  },
  {
   "district": "SP-8",
@@ -164,10 +168,6 @@
   "vacant_parcels": 10
  },
  {
-  "district": "GT-C",
-  "vacant_parcels": 9
- },
- {
   "district": "GPRA",
   "vacant_parcels": 8
  },
@@ -178,6 +178,10 @@
  {
   "district": "SP-9",
   "vacant_parcels": 6
+ },
+ {
+  "district": "GT-A",
+  "vacant_parcels": 4
  },
  {
   "district": "GT-B",

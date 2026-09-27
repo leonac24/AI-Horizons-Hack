@@ -28,6 +28,10 @@ Generated from `data/config/sources.yaml` by `uv run python -m pipeline.docs`. D
 | `epa_smart_location` | [EPA Smart Location Database](https://www.epa.gov/smartgrowth/smart-location-mapping) | U.S. EPA | not yet retrieved | public domain | not yet |  |
 | `nrel_resstock` | [ResStock](https://resstock.nrel.gov/) | U.S. DOE / NREL | not yet retrieved | public | not yet |  |
 | `aws_terrain_tiles` | [Terrain Tiles (Terrarium PNG)](https://registry.opendata.aws/terrain-tiles/) | Mapzen / Amazon Web Services Open Data (derived from USGS 3DEP, SRTM and others) | tiles last modified 2017 | see registry page; attribution to the underlying sources required | 2026-09-26 | Used only to shape the stylized 3D city. Baked into web/public/data/terrain.bin by pipeline/build_terrain.py; never used in any metric. |
+| `pgh_city_millage` | City of Pittsburgh real estate tax rate and homestead exclusion | City of Pittsburgh, Department of Finance | not yet retrieved | public record | not yet | Set annually in the City budget ordinance. Fill assumptions.yaml millage_city and homestead_exclusion_city for the current year, record the URL and retrieval date here. |
+| `pps_millage` | Pittsburgh Public Schools real estate tax rate and homestead exclusion | School District of Pittsburgh | not yet retrieved | public record | not yet | Fill assumptions.yaml millage_school and homestead_exclusion_school from the District's adopted budget. |
+| `allegheny_millage` | Allegheny County real estate tax rate and homestead exclusion | Allegheny County Treasurer | not yet retrieved | public record | not yet | Fill assumptions.yaml millage_county and homestead_exclusion_county from the County's adopted budget. |
+| `pgh_tax_abatement` | City of Pittsburgh residential tax abatement programs (Pittsburgh Code of Ordinances) | City of Pittsburgh (hosted by General Code / eCode360) | not yet retrieved | public law | not yet | eCode360 blocks scripted requests. Read the abatement chapters in a browser, fill tax.yaml abatements (code_section, quote) and the abatement_* assumptions, then set reviewed true. |
 
 ## How the pipeline fetches them
 

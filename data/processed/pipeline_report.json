@@ -1,5 +1,5 @@
 {
-  "config_hash": "7119c2477d9b",
+  "config_hash": "2ebd81917e02",
   "sources": {
     "wprdc_assessments": {
       "provenance": "observed",
@@ -31,19 +31,19 @@
     }
   },
   "counts": {
-    "vacant_in_city": 22233,
-    "lot_dims_from_legal_description": 15718,
-    "missing_location": 50,
-    "flag_steep_slope": 5743,
+    "vacant_in_city": 22354,
+    "lot_dims_from_legal_description": 15822,
+    "missing_location": 51,
+    "flag_steep_slope": 5740,
     "flag_landslide": 5155,
     "flag_undermined": 5946,
-    "acs_income_values": 22113,
-    "acs_renter_burden_values": 22132,
-    "parcel_polygons_matched": 22028,
-    "fema_classified": 22183,
-    "fema_sfha_flagged": 359,
-    "combined_sewershed_matched": 19444,
-    "indexed": 22183,
+    "acs_income_values": 22233,
+    "acs_renter_burden_values": 22252,
+    "parcel_polygons_matched": 22147,
+    "fema_classified": 22303,
+    "fema_sfha_flagged": 360,
+    "combined_sewershed_matched": 19563,
+    "indexed": 22303,
     "suggested": 12
   },
   "context": {
@@ -64,10 +64,10 @@
       "polygons": 182,
       "join": "parcel interior point; centroid fallback"
     },
-    "generated_at_utc": "2026-09-27T01:58:49.421455+00:00",
+    "generated_at_utc": "2026-09-27T06:25:03.020918+00:00",
     "join_methods": {
-      "point inside county parcel polygon": 22028,
-      "published parcel centroid (boundary unavailable)": 155
+      "point inside county parcel polygon": 22147,
+      "published parcel centroid (boundary unavailable)": 156
     }
   }
 }
