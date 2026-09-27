@@ -102,6 +102,9 @@ const PIN = MARKER_COLORS.pin
 const DOT_PUBLIC = MARKER_COLORS.public
 const DOT_OTHER = MARKER_COLORS.other
 const WATER = '#3aa7ff'
+// Camera near plane as a share of orbit distance, and its ceiling.
+const NEAR_PER_DISTANCE = 0.03
+const NEAR_MAX = 60
 
 function skyTexture(): THREE.Texture {
   const c = document.createElement('canvas')
@@ -240,7 +243,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   container.appendChild(loading)
 
   let terrain: Terrain | null = null
-  const heightAt = (x: number, z: number) => (terrain ? Math.max(0.3, terrain.heightAt(x, z)) : 0)
+  const heightAt = (x: number, z: number) => (terrain ? Math.max(WATER_LEVEL, terrain.heightAt(x, z)) : 0)
 
   // Real vacant parcels as instanced dots (placed once the terrain is known).
   const parcels = opts.parcels
@@ -331,11 +334,13 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
   function buildCity(t: Terrain, base: Awaited<ReturnType<typeof loadBasemap>>): void {
     terrain = t
     const bm = opts.scene.basemap
-    // Water plane at the normal pool; land sits above it. Depth offset pushes the
-    // water back so the shoreline never z-fights with the banks.
+    // Water plane at the normal pool; land sits above it and the riverbed well
+    // below. No polygon offset: at low depth precision it pushed the water behind
+    // the riverbed, which then showed through. Clear height gaps plus the
+    // distance-scaled near plane (see frame) keep the surfaces apart instead.
     const water = new THREE.Mesh(
       new THREE.PlaneGeometry(6000, 6000).rotateX(-Math.PI / 2),
-      new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.28, metalness: 0.1, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 4 }),
+      new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.28, metalness: 0.1 }),
     )
     water.position.y = WATER_LEVEL
     water.receiveShadow = true
@@ -1023,6 +1028,15 @@ export function createEngine(container: HTMLElement, opts: EngineOptions): Engin
       controls.target.z = Math.max(-HALF, Math.min(HALF, controls.target.z))
     }
     controls.update()
+    // Depth precision scales with the near plane, so a fixed near of 1 wasted it
+    // when zoomed out and rivers dropped out (worst on 16-bit depth buffers). Keep
+    // it a small fraction of the orbit distance; the polar-angle limit keeps the
+    // camera above what it orbits, so nothing sits that close to the lens.
+    const near = THREE.MathUtils.clamp(camera.position.distanceTo(controls.target) * NEAR_PER_DISTANCE, 1, NEAR_MAX)
+    if (Math.abs(near - camera.near) > camera.near * 0.02) {
+      camera.near = near
+      camera.updateProjectionMatrix()
+    }
     if (mode === 'city') {
       const w = container.clientWidth
       const h = container.clientHeight
