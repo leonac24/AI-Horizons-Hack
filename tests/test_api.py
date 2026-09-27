@@ -102,6 +102,23 @@ def test_routes_answer_with_and_without_the_api_prefix():
     assert client.get("/health").status_code == 200
 
 
+def test_compiled_evidence_is_served_as_leads_without_zoning_verdict(monkeypatch):
+    import server.app as app_module
+
+    monkeypatch.setattr(app_module, "_laya_evidence", lambda: {
+        "documents": [{"source_id": "pgh_zoning_page"}],
+        "passages": [{
+            "id": "example", "topic": "zoning",
+            "source_id": "pgh_zoning_page", "excerpt": "Review may be required",
+        }],
+    })
+    payload = app_module.evidence(topic="zoning", offset=0, limit=20)
+    assert payload["compiled"] is True
+    assert payload["total"] == 1
+    assert payload["items"][0]["source_id"] == "pgh_zoning_page"
+    assert "reviewed" not in payload["items"][0]
+
+
 def test_route_limits_are_taken_from_config_not_retyped():
     """The limits the API enforces must BE the config values, not copies of them.
 

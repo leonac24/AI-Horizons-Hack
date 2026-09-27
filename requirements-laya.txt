@@ -1,0 +1,3 @@
+# Local document compilation only. Never install this on Vercel.
+laya==0.3.20
+PyYAML>=6.0,<7

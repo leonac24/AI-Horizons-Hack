@@ -229,6 +229,24 @@ export interface Unknowns {
   pipeline?: { counts?: Record<string, number>; context?: Record<string, unknown> } | null
 }
 
+export interface EvidenceLeads {
+  compiled: boolean
+  documents: number
+  passages: number
+  total: number
+  items: {
+    id: string
+    source_id: string
+    source_name: string
+    source_url: string | null
+    document: string
+    page: number | null
+    part: number
+    excerpt: string
+    topic: string
+  }[]
+}
+
 export interface WorkBackwardsResult {
   typology_id: string
   units: number

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { PLAN_ID, type Crossing, type Option, type Ranking, type SetbackEnvelope } from '../lib/plan'
 import type { Placement } from '../three/engine'
-import type { Analysis, Config, Explanation, Unknowns, WorkBackwardsResult } from '../types'
+import type { Analysis, Config, EvidenceLeads, Explanation, Unknowns, WorkBackwardsResult } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
 import { MetricBox, ProvTag, SourceRefs } from './ui'
 
@@ -527,9 +527,22 @@ function Backwards({ config, analysis, wb, setWb }: Props) {
 
 function UnknownsTab() {
   const [u, setU] = useState<Unknowns | null>(null)
+  const [evidence, setEvidence] = useState<EvidenceLeads | null>(null)
+  const [evidenceError, setEvidenceError] = useState(false)
+  const [topic, setTopic] = useState('zoning')
+  const [evidencePage, setEvidencePage] = useState(0)
   useEffect(() => {
     api.unknowns().then(setU)
   }, [])
+  useEffect(() => {
+    let cancelled = false
+    api.evidence(topic, evidencePage * 20).then((result) => {
+      if (!cancelled) setEvidence((previous) => evidencePage === 0 ? result : {
+        ...result, items: [...(previous?.items ?? []), ...result.items],
+      })
+    }).catch(() => { if (!cancelled) setEvidenceError(true) })
+    return () => { cancelled = true }
+  }, [topic, evidencePage])
   if (!u) return <div className="muted">Loading…</div>
   return (
     <div className="unknowns">
@@ -551,6 +564,42 @@ function UnknownsTab() {
           ))}
         </div>
       </details>
+      <div className="h-card">Locally classified source passages</div>
+      <p className="muted small">
+        {evidence?.compiled
+          ? `${evidence.passages} passages from ${evidence.documents} documents were classified locally with Laya before deployment. Only supplied files were indexed. These are leads to inspect, not a complete code review, reviewed zoning rules, or verified measurements.`
+          : evidenceError ? 'The compiled source index could not be loaded.'
+            : evidence ? 'No local Laya evidence index has been committed yet.'
+              : 'Loading locally compiled sources…'}
+      </p>
+      {evidence?.compiled && <label className="small">
+        Source topic{' '}
+        <select value={topic} onChange={(event) => {
+          setEvidence(null)
+          setEvidenceError(false)
+          setEvidencePage(0)
+          setTopic(event.target.value)
+        }}>
+          <option value="zoning">Zoning</option>
+          <option value="cost">Costs</option>
+          <option value="carbon">Carbon</option>
+          <option value="transit_jobs">Transit access to jobs</option>
+          <option value="housing_need">Housing need</option>
+          <option value="sewer">Sewer</option>
+          <option value="site">Site conditions</option>
+        </select>
+      </label>}
+      {evidence?.items.map((item) => (
+        <div key={item.id} className="small unk-row">
+          <strong>{item.source_name} · {item.document.split('/').pop()?.replace(/\.[^.]+$/, '').replaceAll('-', ' ')}{item.page ? `, page ${item.page}` : `, passage ${item.part}`}</strong>
+          {item.source_url && <span> · <a href={item.source_url} target="_blank" rel="noreferrer">source</a></span>}
+          <div className="muted">“{item.excerpt}”</div>
+        </div>
+      ))}
+      {evidence?.compiled && evidence.items.length < evidence.total &&
+        <button type="button" onClick={() => { setEvidenceError(false); setEvidencePage((page) => page + 1) }}>
+          Show more source passages ({evidence.items.length} of {evidence.total})
+        </button>}
       <div className="h-card">Coverage of connected data</div>
       <p className="muted small">Counts describe indexed vacant lots, not every property in Pittsburgh.</p>
       {([
