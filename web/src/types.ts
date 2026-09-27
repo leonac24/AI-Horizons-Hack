@@ -1,3 +1,5 @@
+import type { BasemapConfig } from './three/basemap'
+
 // Shapes served by the FastAPI server. Config mirrors data/config/*.yaml.
 
 export type Provenance = 'observed' | 'modeled' | 'assumption' | 'placeholder'
@@ -97,6 +99,7 @@ export interface Config {
       half_extent: number
       rivers: [number, number][][]
       bridges: [string, number, number, string, number][]
+      basemap?: BasemapConfig
     }
     hazards: Record<string, { source: string; label: string; lot_scene?: string }>
     zoning_links: string[]
@@ -137,6 +140,14 @@ export interface ZoningCheck {
   quote: string | null
 }
 
+export interface Setback {
+  rule_id: string
+  label: string
+  value_ft: number
+  citation: string | null
+  quote: string | null
+}
+
 export interface ZoningResult {
   district: string | null
   status: string
@@ -146,6 +157,7 @@ export interface ZoningResult {
   use_quote: string | null
   checks: ZoningCheck[]
   max_units_by_rule: number | null
+  setbacks: Record<string, Setback>
   note: string | null
   disqualified: boolean
   disqualified_reason: string | null

@@ -37,13 +37,18 @@ export function buildingForms(config: Config): Record<string, BuildingForm> {
 }
 
 /** The pure option's buildings in a row along the front of the lot (street is +z). */
-export function purePlacements(config: Config, typId: string, buildings: number, shape: LotShape): Placement[] {
+export function purePlacements(config: Config, typId: string, buildings: number, shape: LotShape,
+  env: SetbackEnvelope | null = null): Placement[] {
   const t = config.typologies.find((x) => x.id === typId)
   if (!t) return []
   const [w, d] = t.building.footprint_ft
   const D = shape.depth_ft
-  const z = D / 2 - 6 - d / 2 > -D / 2 + d / 2 ? D / 2 - 6 - d / 2 : D / 2 - d / 2
-  const x0 = -(buildings * w) / 2 + w / 2
+  // With reviewed setbacks, sit on the front setback line and centre in the buildable width;
+  // otherwise keep the old 6 ft stand-in front yard (falling back to the lot edge on shallow lots).
+  const front = env ? env.front : 6
+  const z = env || D / 2 - front - d / 2 > -D / 2 + d / 2 ? D / 2 - front - d / 2 : D / 2 - d / 2
+  const cx = env ? (env.left - env.right) / 2 : 0
+  const x0 = cx - (buildings * w) / 2 + w / 2
   return Array.from({ length: buildings }, (_, i) => ({ uid: `o_${typId}_${i}`, typ: typId, x: x0 + i * w, z, rot: 0 }))
 }
 
@@ -54,12 +59,13 @@ export function countsOf(list: Placement[]): Record<string, number> {
 }
 
 export function buildPool(config: Config, analysis: Analysis, plan: PlanResult | null): Option[] {
+  const env = envelopeOf(analysis)
   const pure: Option[] = analysis.scenarios.map((s) => {
     const t = config.typologies.find((x) => x.id === s.typology_id)!
     return {
       id: t.id, label: t.label, short: t.short_label, color: t.color, units: s.units, metrics: s.metrics,
       zoning: s.zoning, households: s.households, carbon: s.carbon, eligible: s.eligible, reason: s.ineligible_reason,
-      fits: s.form_fits, isPlan: false, placements: purePlacements(config, t.id, s.buildings, analysis.lot_shape),
+      fits: s.form_fits, isPlan: false, placements: purePlacements(config, t.id, s.buildings, analysis.lot_shape, env),
       notes: s.notes,
     }
   })
@@ -110,4 +116,56 @@ export function subsidyPerHome(config: Config, monthly: Metric, amiPct: number):
   const a = config.assumptions
   const affordable = (a.ami_4person.value * amiPct) / 100 * a.housing_cost_share.value / 12
   return Math.max(0, monthly.value - affordable) * 12 / a.annual_capital_cost_share.value
+}
+
+// --- Setbacks -------------------------------------------------------------------
+// Reviewed setbacks come back with every scenario's zoning result (they are a
+// property of the district). Rule ids are zoning.yaml `dimensional` keys.
+export interface SetbackEnvelope {
+  front: number
+  rear: number
+  left: number
+  right: number
+  citation: string | null
+}
+
+export function envelopeOf(analysis: Analysis): SetbackEnvelope | null {
+  const sb = analysis.scenarios.find((s) => Object.keys(s.zoning.setbacks ?? {}).length)?.zoning.setbacks
+  if (!sb) return null
+  const v = (k: string) => sb[k]?.value_ft
+  const left = v('interior_side_setback_ft') ?? 0
+  return {
+    front: v('front_setback_ft') ?? 0,
+    rear: v('rear_setback_ft') ?? 0,
+    left,
+    right: v('interior_side_other_ft') ?? left,
+    citation: Object.values(sb)[0]?.citation ?? null,
+  }
+}
+
+export interface Crossing {
+  uid: string
+  typ: string
+  sides: string[]
+}
+
+/** Buildings whose footprint extends into a setback. Screening geometry only. */
+export function setbackCrossings(config: Config, list: Placement[], shape: LotShape, env: SetbackEnvelope | null): Crossing[] {
+  if (!env) return []
+  const W = shape.frontage_ft
+  const D = shape.depth_ft
+  const out: Crossing[] = []
+  for (const p of list) {
+    const t = config.typologies.find((x) => x.id === p.typ)
+    if (!t) continue
+    const [w, d] = t.building.footprint_ft
+    const [fw, fd] = p.rot % 2 ? [d, w] : [w, d]
+    const sides: string[] = []
+    if (p.z + fd / 2 > D / 2 - env.front + 0.01) sides.push('front')
+    if (p.z - fd / 2 < -D / 2 + env.rear - 0.01) sides.push('rear')
+    if (p.x - fw / 2 < -W / 2 + env.left - 0.01) sides.push('side')
+    else if (p.x + fw / 2 > W / 2 - env.right + 0.01) sides.push('side')
+    if (sides.length) out.push({ uid: p.uid, typ: p.typ, sides })
+  }
+  return out
 }

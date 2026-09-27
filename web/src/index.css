@@ -96,10 +96,6 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 .seg button { border: none; padding: 6px 10px; cursor: pointer; font-size: 12.5px; font-weight: 700; background: transparent; color: var(--ink-2); }
 .seg .on-lime { background: var(--lime); color: var(--bg); }
 .seg .on-info { background: var(--info); color: var(--bg); }
-.layout-switch { display: flex; align-items: center; gap: 4px; padding-left: 12px; border-left: 2px solid var(--border); flex-shrink: 0; }
-.layout-switch .eyebrow { margin-right: 4px; }
-.layout-switch button { border: 1px solid var(--border); background: transparent; color: var(--ink-2); padding: 5px 8px; border-radius: 8px; cursor: pointer; font: 600 11px var(--display); }
-.layout-switch button.on { background: var(--lime); border-color: var(--lime); color: var(--bg); }
 .strip {
   position: absolute; top: 52px; left: 0; right: 0; height: 22px; background: var(--strip); color: #ffd66b; font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; z-index: 5; border-bottom: 1px solid var(--card-hover); white-space: nowrap; overflow: hidden;
@@ -118,6 +114,13 @@ input[type='range'].lime-range, input[type='checkbox'] { accent-color: var(--lim
 }
 .pin-label:hover { border-color: var(--lime); z-index: 2; }
 .pin-name { font-weight: 700; }
+
+/* Neighborhood names in the 3D city (created by the engine; hidden when they would overlap) */
+.hood-label {
+  position: absolute; left: 0; top: 0; pointer-events: none; white-space: nowrap; color: #13263a;
+  font: 700 12px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px rgba(255, 255, 255, 0.9);
+}
 .pin-detail { display: none; color: var(--ink-2); font: 500 11px/1.3 var(--display); }
 .pin-label:hover .pin-detail { display: block; }
 

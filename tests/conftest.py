@@ -20,9 +20,9 @@ def config_copy(tmp_path: Path):
 
     def edit(fname: str, fn):
         p = dst / fname
-        data = yaml.safe_load(p.read_text())
+        data = yaml.safe_load(p.read_text(encoding="utf-8"))
         fn(data)
-        p.write_text(yaml.safe_dump(data, sort_keys=False))
+        p.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
 
     return dst, edit
 

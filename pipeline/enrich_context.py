@@ -38,7 +38,7 @@ def _acs_table(url: str, county_geoid: str, name: str) -> dict[str, dict]:
 
     cache = RAW / f"{name}_{county_geoid}_{sha256(url.encode()).hexdigest()[:12]}.json"
     if cache.exists():
-        return json.loads(cache.read_text())
+        return json.loads(cache.read_text(encoding="utf-8"))
     rows: dict[str, dict] = {}
     with requests.get(url, stream=True, timeout=180) as response:
         response.raise_for_status()
@@ -56,7 +56,7 @@ def _acs_table(url: str, county_geoid: str, name: str) -> dict[str, dict]:
     if not rows:
         raise ValueError(f"no tract rows for {county_geoid} in {url}")
     RAW.mkdir(parents=True, exist_ok=True)
-    cache.write_text(json.dumps(rows, separators=(",", ":")))
+    cache.write_text(json.dumps(rows, separators=(",", ":")), encoding="utf-8")
     return rows
 
 
@@ -107,7 +107,7 @@ def _arcgis_geojson(url: str, params: dict) -> dict:
 
 def _parcel_polygons(spec: dict, ids: list[str]) -> dict[str, dict]:
     cache = RAW / "context_parcel_polygons.geojson"
-    features = json.loads(cache.read_text()).get("features", []) if cache.exists() else []
+    features = json.loads(cache.read_text(encoding="utf-8")).get("features", []) if cache.exists() else []
     by_id = {f["properties"]["PIN"]: f for f in features if f.get("properties", {}).get("PIN")}
     missing = [pid for pid in ids if pid not in by_id]
     if missing:
@@ -126,7 +126,7 @@ def _parcel_polygons(spec: dict, ids: list[str]) -> dict[str, dict]:
                 log.info("county parcel polygons: %d/%d requested", offset + len(batch), len(missing))
         RAW.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps({"type": "FeatureCollection", "features": list(by_id.values())},
-                                    separators=(",", ":")))
+                                    separators=(",", ":")), encoding="utf-8")
     return {pid: by_id[pid] for pid in ids if pid in by_id}
 
 
@@ -161,7 +161,7 @@ def _fema_polygons(spec: dict, records: list[dict]) -> gpd.GeoDataFrame:
             raise ValueError(f"FEMA returned {len(features)} of {len(ids)} polygons")
         RAW.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps({"type": "FeatureCollection", "features": features},
-                                    separators=(",", ":")))
+                                    separators=(",", ":")), encoding="utf-8")
     layer = gpd.read_file(cache).to_crs(4326)
     log.info("FEMA cache loaded: %d polygons", len(layer))
     return layer[layer.geometry.notna()].copy()
@@ -288,22 +288,22 @@ def enrich_records(cfg: Config, records: list[dict], report: dict) -> None:
 def main() -> None:
     cfg = load_config()
     index_path = PROCESSED / "parcels.json"
-    payload = json.loads(index_path.read_text())
+    payload = json.loads(index_path.read_text(encoding="utf-8"))
     report_path = PROCESSED / "pipeline_report.json"
-    report = json.loads(report_path.read_text()) if report_path.exists() else {"counts": {}}
+    report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else {"counts": {}}
     records = list(payload["parcels"].values())
     enrich_records(cfg, records, report)
     payload["config_hash"] = cfg.hash
-    index_path.write_text(json.dumps(payload, separators=(",", ":")))
+    index_path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
     report["config_hash"] = cfg.hash
-    report_path.write_text(json.dumps(report, indent=2))
+    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     points_path = ROOT / "web" / "public" / "data" / "parcels.geojson"
-    points = json.loads(points_path.read_text())
+    points = json.loads(points_path.read_text(encoding="utf-8"))
     for feat in points["features"]:
         r = payload["parcels"].get(feat["properties"]["id"])
         if r:
             feat["properties"]["fh"] = None if r["fema_sfha"] is None else int(r["fema_sfha"])
-    points_path.write_text(json.dumps(points, separators=(",", ":")))
+    points_path.write_text(json.dumps(points, separators=(",", ":")), encoding="utf-8")
     log.info("context coverage: %s", json.dumps(report["counts"]))
 
 

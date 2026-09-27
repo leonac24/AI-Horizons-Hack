@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { PLAN_ID, type Option, type Ranking } from '../lib/plan'
+import { PLAN_ID, type Crossing, type Option, type Ranking, type SetbackEnvelope } from '../lib/plan'
 import type { Placement } from '../three/engine'
 import type { Analysis, Config, Explanation, Unknowns, WorkBackwardsResult } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
@@ -32,6 +32,8 @@ interface Props {
   wb: { typ: string; units: number; ami: number }
   setWb: (w: { typ: string; units: number; ami: number }) => void
   onPlace: (list: Placement[]) => void
+  envelope: SetbackEnvelope | null
+  crossings: Crossing[]
 }
 
 export function AnalysisPanel(p: Props) {
@@ -131,6 +133,15 @@ function CompareTab(p: Props) {
                   {zt.use_citation && <span className="dim"> ({zt.use_citation})</span>}
                 </div>
               ))}
+              {p.envelope && (
+                <div className="small" style={{ color: p.crossings.length ? '#ff7a45' : '#c9dcf0' }}>
+                  {p.crossings.length ? '✗' : '✓'} Setbacks: front {p.envelope.front} ft, rear {p.envelope.rear} ft, sides{' '}
+                  {p.envelope.left === p.envelope.right ? `${p.envelope.left} ft` : `${p.envelope.left} / ${p.envelope.right} ft`}
+                  {p.crossings.length > 0 &&
+                    ` — ${p.crossings.length} building${p.crossings.length > 1 ? 's cross' : ' crosses'} the ${[...new Set(p.crossings.flatMap((c) => c.sides))].join(' and ')} setback`}
+                  {p.envelope.citation && <span className="dim"> ({p.envelope.citation})</span>}
+                </div>
+              )}
               {z!.checks.map((c) => (
                 <div key={c.rule_id} className="small" style={{ color: c.passed ? '#c5d0d8' : '#ff7a5c' }}>
                   {c.passed ? '✓' : '✗'} {c.label}: needs {c.required.toLocaleString()} {c.unit}, has {c.actual.toLocaleString()}

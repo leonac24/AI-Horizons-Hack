@@ -1,4 +1,4 @@
-import type { PointerEvent as RPointerEvent } from 'react'
+import { useEffect, useRef, type PointerEvent as RPointerEvent } from 'react'
 import { PLAN_ID, subsidyPerHome, type Option, type Ranking } from '../lib/plan'
 import type { Placement } from '../three/engine'
 import type { Analysis, Config } from '../types'
@@ -67,14 +67,31 @@ function Gauge({ tile, label, value, color, labelColor }: { tile: string; label:
   )
 }
 
-export function Palette(p: { config: Config; L: L; analysis: Analysis; counts: Record<string, number>; onDown: (id: string, e: RPointerEvent) => void }) {
-  const { L } = p
+export function Palette(p: {
+  config: Config
+  L: L
+  analysis: Analysis
+  counts: Record<string, number>
+  onDown: (id: string, e: RPointerEvent) => void
+  onHeight?: (px: number) => void
+}) {
+  const { L, onHeight } = p
+  const box = useRef<HTMLDivElement>(null)
+  // Card text wraps, so the tray's height isn't fixed; report it so the inspector can sit above it.
+  useEffect(() => {
+    const el = box.current
+    if (!el || !onHeight) return
+    const ro = new ResizeObserver(() => onHeight(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [onHeight])
   const W = Math.round(p.analysis.lot_shape.frontage_ft)
   const D = Math.round(p.analysis.lot_shape.depth_ft)
   const maxW = Math.max(...p.config.typologies.map((t) => t.building.footprint_ft[0]))
   const maxS = Math.max(...p.config.typologies.map((t) => t.stories))
   return (
     <div
+      ref={box}
       className="palette"
       style={{ left: L.palLeft, right: L.palRight, top: L.palTop, bottom: L.palBottom, flexDirection: L.palDir as 'row' | 'column', maxWidth: L.palMax, maxHeight: L.palMaxH }}
     >

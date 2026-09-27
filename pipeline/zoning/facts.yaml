@@ -1,0 +1,595 @@
+# Zoning facts extracted from Title Nine snapshots in data/sources/zoning/.
+# One fact = one statement in the code; build_rules.py expands facts onto every
+# mapped district they apply to. A PERSON reviews each fact in REVIEW.md;
+# apply_review.py copies the ticks here. Only reviewed facts reach the app.
+retrieved: '2026-09-26'
+extracted_by: claude-code (read on eCode360 via browser; see data/sources/zoning/README.md)
+status_letters:
+  P: by_right
+  A: administrator_exception
+  S: special_exception
+  C: conditional_use
+  '-': not_permitted
+families:
+- R1D
+- R1A
+- R2
+- R3
+- RM
+special_districts:
+- P
+- H
+use_facts:
+- id: use.single_detached
+  use_key: single_unit_detached
+  section: '911.02'
+  file: 911-02_use-table-residential.txt
+  quotes:
+  - Single-Unit Detached Residential means the use of a zoning lot for one detached housing unit.
+  cells:
+    R1D: P
+    R1A: P
+    R2: P
+    R3: P
+    RM: P
+    P: P
+    H: A
+  confidence: 0.9
+  reviewer_note: The P (Parks) column reads "P" (by right) for a detached house. Surprising for a parks district; confirm
+    against the live table.
+  reviewed: false
+- id: use.single_attached
+  use_key: single_unit_attached
+  section: '911.02'
+  file: 911-02_use-table-residential.txt
+  quotes:
+  - Single-Unit Attached Residential means the use of a zoning lot for one dwelling unit that is attached to one or more dwelling
+    units
+  cells:
+    R1D: P/S
+    R1A: P
+    R2: P
+    R3: P
+    RM: P
+    P: '-'
+    H: S
+  confidence: 0.9
+  reviewer_note: R1D reads "P/S"; see use.single_attached.r1d_width for how that splits.
+  reviewed: false
+- id: use.single_attached.r1d_width
+  use_key: single_unit_attached
+  section: 911.04.A.69A
+  file: 911-04-A-69_single-unit.txt
+  quotes:
+  - For lots with Lot Widths of 35 feet or smaller, Single-Unit Attached Uses shall be permitted by right.
+  - For lots with Lot Widths larger than 35 feet, Single-Unit Attached Uses shall be permitted by the Special Exception Provisions
+  frontage_rule:
+    family: R1D
+    at_most_ft: 35
+    status: by_right
+    otherwise: special_exception
+  confidence: 0.9
+  reviewer_note: Applied using lot frontage from the deed legal description (observed for ~71% of lots). Where frontage is
+    a placeholder, the lot shows Needs planner review for this use.
+  reviewed: false
+- id: use.two_unit
+  use_key: two_unit
+  section: '911.02'
+  file: 911-02_use-table-residential.txt
+  quotes:
+  - Two-Unit Residential means the use of a zoning lot for two dwelling units that are contained within a single building.
+  cells:
+    R1D: '-'
+    R1A: '-'
+    R2: P
+    R3: P
+    RM: P
+    P: '-'
+    H: '-'
+  confidence: 0.9
+  reviewed: false
+- id: use.multi_unit
+  use_key: multi_unit
+  section: '911.02'
+  file: 911-02_use-table-residential.txt
+  quotes:
+  - Multi-Unit Residential means the use of a zoning lot for four or more dwelling units that are contained within a single
+    building.
+  cells:
+    R1D: '-'
+    R1A: '-'
+    R2: '-'
+    R3: '-'
+    RM: P
+    P: '-'
+    H: '-'
+  confidence: 0.9
+  reviewer_note: Our "small apartment" (9 homes) and "mid-rise" (32 homes) both map to Multi-Unit (4+).
+  reviewed: false
+- id: use.adu
+  use_key: single_unit_detached_with_adu
+  section: '912.08'
+  file: 912-08_ADU-overlay.txt
+  quotes:
+  - It is the intent of this Section to permit the construction and operation of Accessory Dwelling Units
+  - where Accessory Dwelling Units are permitted subjec
+  cells:
+    R1D: '-'
+    R1A: '-'
+    R2: '-'
+    R3: '-'
+    RM: '-'
+    P: '-'
+    H: '-'
+  confidence: 0.6
+  reviewer_note: ADUs are allowed only inside a mapped ADU Overlay District, which Lotline does not have. Recorded as not
+    permitted in the base districts. Tick only if you accept "not permitted unless in the overlay" as the default; otherwise
+    leave unticked and ADU stays Needs planner review.
+  reviewed: false
+dimensional_facts:
+- id: dim.VL.min_lot
+  section: 903.03.A
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    - RM
+    density: VL
+  values:
+    min_lot_area_sf: 6000
+  quotes:
+  - Site Development StandardVery-Low Density SubdistrictMinimum Lot Size6,000 s.f.
+  confidence: 0.95
+  reviewed: false
+- id: dim.VL.setbacks.low_rise
+  section: 903.03.A
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: VL
+  values:
+    front_setback_ft: 30
+    rear_setback_ft: 30
+    exterior_side_setback_ft: 30
+    interior_side_setback_ft: 5
+    interior_side_other_ft: 10
+  quotes:
+  - Minimum Front Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  - Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  - R1D, R2 & R3 Subdistricts5 ft, on one side; 10 ft. on the other side
+  confidence: 0.9
+  reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
+    (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
+  reviewed: false
+- id: dim.VL.setbacks.rm
+  section: 903.03.A
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: VL
+  values:
+    front_setback_ft: 30
+    rear_setback_ft: 30
+    exterior_side_setback_ft: 30
+    interior_side_setback_ft: 30
+  quotes:
+  - RM Subdistrict30 ft.Minimum Rear Setback
+  confidence: 0.85
+  reviewer_note: 'RM values in Very-Low Density: front 30, rear 30, exterior side 30, interior side 30 ft. Quote shows the
+    first; check the rest in the table.'
+  reviewed: false
+- id: dim.VL.height.low_rise
+  section: 903.03.A
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: VL
+  values:
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.VL.height.rm
+  section: 903.03.A
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: VL
+  values:
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - RM Subdistrict40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.L.min_lot
+  section: 903.03.B
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    - RM
+    density: L
+  values:
+    min_lot_area_sf: 3000
+  quotes:
+  - Site Development StandardLow Density SubdistrictMinimum Lot Size3,000 s.f.
+  confidence: 0.95
+  reviewed: false
+- id: dim.L.setbacks.low_rise
+  section: 903.03.B
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: L
+  values:
+    front_setback_ft: 30
+    rear_setback_ft: 30
+    exterior_side_setback_ft: 30
+    interior_side_setback_ft: 5
+  quotes:
+  - Minimum Front Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  - Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  confidence: 0.9
+  reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
+    (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
+  reviewed: false
+- id: dim.L.setbacks.rm
+  section: 903.03.B
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: L
+  values:
+    front_setback_ft: 25
+    rear_setback_ft: 25
+    exterior_side_setback_ft: 30
+    interior_side_setback_ft: 25
+  quotes:
+  - RM Subdistrict25 ft.Minimum Rear Setback
+  confidence: 0.85
+  reviewer_note: 'RM values in Low Density: front 25, rear 25, exterior side 30, interior side 25 ft. Quote shows the first;
+    check the rest in the table.'
+  reviewed: false
+- id: dim.L.height.low_rise
+  section: 903.03.B
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: L
+  values:
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.L.height.rm
+  section: 903.03.B
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: L
+  values:
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - RM Subdistrict40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.M.min_lot
+  section: 903.03.C
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    - RM
+    density: M
+  values:
+    min_lot_area_sf: 2400
+  quotes:
+  - Site Development StandardModerate Density SubdistrictMinimum Lot Size2,400 s.f.
+  confidence: 0.95
+  reviewed: false
+- id: dim.M.setbacks.low_rise
+  section: 903.03.C
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: M
+  values:
+    front_setback_ft: 30
+    rear_setback_ft: 30
+    exterior_side_setback_ft: 30
+    interior_side_setback_ft: 5
+  quotes:
+  - Minimum Front Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  - Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts30 ft.
+  confidence: 0.9
+  reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
+    (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
+  reviewed: false
+- id: dim.M.setbacks.rm
+  section: 903.03.C
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: M
+  values:
+    front_setback_ft: 25
+    rear_setback_ft: 25
+    exterior_side_setback_ft: 25
+    interior_side_setback_ft: 10
+  quotes:
+  - RM Subdistrict25 ft.Minimum Rear Setback
+  confidence: 0.85
+  reviewer_note: 'RM values in Moderate Density: front 25, rear 25, exterior side 25, interior side 10 ft. Quote shows the
+    first; check the rest in the table.'
+  reviewed: false
+- id: dim.M.height.low_rise
+  section: 903.03.C
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: M
+  values:
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.M.height.rm
+  section: 903.03.C
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: M
+  values:
+    max_height_ft: 55
+    max_stories: 4
+  quotes:
+  - RM Subdistrict55 ft. (not to exceed 4 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.H.min_lot
+  section: 903.03.D
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    - RM
+    density: H
+  values:
+    min_lot_area_sf: 1200
+  quotes:
+  - Site Development StandardHigh Density SubdistrictMinimum Lot Size1,200 s.f.
+  confidence: 0.95
+  reviewed: false
+- id: dim.H.setbacks.low_rise
+  section: 903.03.D
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: H
+  values:
+    front_setback_ft: 15
+    rear_setback_ft: 15
+    exterior_side_setback_ft: 15
+    interior_side_setback_ft: 5
+  quotes:
+  - Minimum Front Setback R1D, R1A, R2 & R3 Subdistricts15 ft.
+  - Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts15 ft.
+  confidence: 0.9
+  reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
+    (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
+  reviewed: false
+- id: dim.H.setbacks.rm
+  section: 903.03.D
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: H
+  values:
+    front_setback_ft: 25
+    rear_setback_ft: 25
+    exterior_side_setback_ft: 25
+    interior_side_setback_ft: 10
+  quotes:
+  - RM Subdistrict25 ft.Minimum Rear Setback
+  confidence: 0.85
+  reviewer_note: 'RM values in High Density: front 25, rear 25, exterior side 25, interior side 10 ft. Quote shows the first;
+    check the rest in the table.'
+  reviewed: false
+- id: dim.H.height.low_rise
+  section: 903.03.D
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: H
+  values:
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.H.height.rm
+  section: 903.03.D
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: H
+  values:
+    max_height_ft: 85
+    max_stories: 9
+  quotes:
+  - RM Subdistrict85 ft. (not to exceed 9 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.VH.setbacks.low_rise
+  section: 903.03.E
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: VH
+  values:
+    front_setback_ft: 5
+    rear_setback_ft: 15
+    exterior_side_setback_ft: 5
+    interior_side_setback_ft: 5
+  quotes:
+  - Minimum Front Setback R1D, R1A, R2 & R3 Subdistricts5 ft.
+  - Minimum Rear Setback R1D, R1A, R2 & R3 Subdistricts15 ft.
+  confidence: 0.9
+  reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
+    (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
+  reviewed: false
+- id: dim.VH.setbacks.rm
+  section: 903.03.E
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: VH
+  values:
+    front_setback_ft: 25
+    rear_setback_ft: 25
+    exterior_side_setback_ft: 25
+    interior_side_setback_ft: 10
+  quotes:
+  - RM Subdistrict25 ft.Minimum Rear Setback
+  confidence: 0.85
+  reviewer_note: 'RM values in Very-High Density: front 25, rear 25, exterior side 25, interior side 10 ft. Quote shows the
+    first; check the rest in the table.'
+  reviewed: false
+- id: dim.VH.height.low_rise
+  section: 903.03.E
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - R1D
+    - R1A
+    - R2
+    - R3
+    density: VH
+  values:
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.VH.height.rm
+  section: 903.03.E
+  file: 903-03_development-subdistricts.txt
+  applies:
+    families:
+    - RM
+    density: VH
+  values:
+    max_height_ft: 180
+  quotes:
+  - RM Subdistrict180 ft.
+  confidence: 0.95
+  reviewed: false
+- id: dim.P
+  section: 905.01.C
+  file: 905-01_P-parks.txt
+  applies:
+    districts:
+    - P
+  values:
+    min_lot_area_sf: 3200
+    front_setback_ft: 30
+    rear_setback_ft: 20
+    exterior_side_setback_ft: 20
+    interior_side_setback_ft: 5
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - Site Development StandardP DistrictMinimum Lot Size3,200 s.f.
+  - Minimum Front Setback30 ft.Minimum Rear Setback20 ft.
+  - Maximum Height40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewed: false
+- id: dim.H
+  section: 905.02.C
+  file: 905-02_H-hillside.txt
+  applies:
+    districts:
+    - H
+  values:
+    min_lot_area_sf: 3200
+    front_setback_ft: 0
+    rear_setback_ft: 0
+    exterior_side_setback_ft: 0
+    interior_side_setback_ft: 0
+    max_height_ft: 40
+    max_stories: 3
+  quotes:
+  - Site Development StandardH DistrictMinimum Lot Size3,200 s.f.
+  - Minimum Front SetbacknoneMinimum Rear Setbacknone
+  - Maximum Height40 ft. (not to exceed 3 stories)
+  confidence: 0.95
+  reviewer_note: 'Also: maximum area of disturbance 50% of lot, Site Plan Review for building permits, and single-unit homes
+    must sit on land under 30% slope (911.04.A.69). Those are shown as notes, not checked.'
+  reviewed: false

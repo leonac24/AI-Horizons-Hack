@@ -132,14 +132,17 @@ def build(cfg: Config) -> dict:
     PROCESSED.mkdir(parents=True, exist_ok=True)
     WEB_DATA.mkdir(parents=True, exist_ok=True)
     (PROCESSED / "parcels.json").write_text(
-        json.dumps({"config_hash": cfg.hash, "suggested": suggested, "parcels": {r["id"]: r for r in records}})
-    )
-    (WEB_DATA / "parcels.geojson").write_text(json.dumps(_points(records, city["hazards"].keys()), separators=(",", ":")))
+        json.dumps({"config_hash": cfg.hash, "suggested": suggested, "parcels": {r["id"]: r for r in records}}),
+        encoding="utf-8")
+    (WEB_DATA / "parcels.geojson").write_text(
+        json.dumps(_points(records, city["hazards"].keys()), separators=(",", ":")), encoding="utf-8")
 
     by_district = Counter(r["zoning"] or "(none)" for r in records)
     rules_path = ROOT / cfg.zoning.priority_file
-    rules_path.write_text(json.dumps([{"district": d, "vacant_parcels": n} for d, n in by_district.most_common()], indent=1))
-    (PROCESSED / "pipeline_report.json").write_text(json.dumps(report, indent=2))
+    rules_path.write_text(
+        json.dumps([{"district": d, "vacant_parcels": n} for d, n in by_district.most_common()], indent=1),
+        encoding="utf-8")
+    (PROCESSED / "pipeline_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     log.info("indexed %d vacant parcels; report: %s", len(records), json.dumps(report["counts"]))
     return report
 

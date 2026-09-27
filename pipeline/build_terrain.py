@@ -114,7 +114,7 @@ def build(cfg: Config) -> dict:
         "coarse": {"extent": t["coarse"]["extent"], "step": t["coarse"]["step"], "n": cn},
         "fine": {"extent": fine_extent, "step": t["fine"]["step"], "n": fn},
     }
-    (OUT / "terrain.json").write_text(json.dumps(meta, indent=1))
+    (OUT / "terrain.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
     log.info("terrain: coarse %d², fine %d², water share %.1f%%", cn + 1, fn + 1,
              100 * float((fine == WATER).mean()))
     return meta

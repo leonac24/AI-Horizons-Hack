@@ -6,16 +6,16 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `17226496a2ed`._
+_Auto-generated for config `628e48c1d4fe`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
 - **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 54 districts reviewed).
 - **Largest unreviewed districts:** H (3,230), R1D-H (3,021), RM-M (2,461), R1D-L (2,121), R2-L (2,072), R1A-VH (1,483), P (1,207), R1D-M (1,183), R2-H (1,166), R1A-H (963), LNC (949), UI (460).
-- **Placeholder assumptions (18):** `hard_cost_psf`, `soft_cost_share`, `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_kgco2e_per_kwh`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
+- **Placeholder assumptions (15):** `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
 - **2024 ACS median income / renter burden:** 22,113 / 22,132 indexed lots have tract estimates.
 - **FEMA point screen:** 22,183 classified; 359 in a mapped Special Flood Hazard Area at the tested point.
 - **2018 PWSA combined sewersheds:** 19,444 indexed lots have a point match.
-- **Sources not yet connected (7):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, EPA eGRID, EPA Smart Location Database, ResStock.
+- **Sources not yet connected (6):** Comprehensive Housing Affordability Strategy (CHAS), Pittsburgh Regional Transit GTFS, Access Across America Transit 2024, ALCOSAN / PWSA combined sewer overflow data, EPA Smart Location Database, ResStock.
 <!-- AUTO:END -->
 
 ## What it gets wrong, or can't know

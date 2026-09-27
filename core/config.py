@@ -126,6 +126,9 @@ class Typology(_Model):
     use_key: str
     unit_size_sf: float = Field(gt=0)
     stories: float = Field(gt=0)
+    # Floor-to-floor height. The zoning code caps height in feet, a typology is
+    # described in stories; this is the only thing that lets them be compared.
+    floor_height_ft: float = Field(gt=0)
     min_lot_sf_for_form: float = Field(gt=0)
     tenure_default: Literal["owner", "renter"]
     supports_senior: bool = False
@@ -282,7 +285,7 @@ class ZoningStatus(_Model):
 class DimensionalTarget(_Model):
     label: str
     unit: str
-    check: Literal["lot_area_at_least", "lot_area_per_unit_at_least", "height_at_most", "stories_at_most"]
+    check: Literal["lot_area_at_least", "lot_area_per_unit_at_least", "height_at_most", "stories_at_most", "setback"]
 
 
 class ExtractionTargets(_Model):
@@ -517,7 +520,7 @@ def load_config(config_dir: Path | str = DEFAULT_CONFIG_DIR) -> Config:
         if not path.exists():
             raise ConfigError(f"missing config file: {path}")
         try:
-            data = yaml.safe_load(path.read_text()) or {}
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         except yaml.YAMLError as e:
             raise ConfigError(f"{path}: invalid YAML: {e}") from e
         # Some files wrap their list in a same-named key.

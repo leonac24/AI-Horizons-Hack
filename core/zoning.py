@@ -31,6 +31,14 @@ class Check(BaseModel):
     quote: str | None
 
 
+class Setback(BaseModel):
+    rule_id: str
+    label: str
+    value_ft: float
+    citation: str | None
+    quote: str | None
+
+
 class ZoningResult(BaseModel):
     district: str | None
     status: str
@@ -40,6 +48,9 @@ class ZoningResult(BaseModel):
     use_quote: str | None = None
     checks: list[Check] = []
     max_units_by_rule: int | None = None
+    # Reviewed setbacks for this district, keyed by rule id. Not checked here —
+    # the engine has no building positions — but the 3D view draws and checks them.
+    setbacks: dict[str, Setback] = {}
     note: str | None = None
     # A prohibited use is a hard requirement, not a criterion. Scenarios flagged
     # here are excluded from the ranking rather than scored, so weight on other
@@ -50,7 +61,7 @@ class ZoningResult(BaseModel):
 
 @lru_cache(maxsize=4)
 def _load_rules(path: str, mtime: float) -> dict:
-    return (yaml.safe_load(Path(path).read_text()) or {}).get("districts") or {}
+    return (yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}).get("districts") or {}
 
 
 def load_rules(cfg: Config) -> dict:
@@ -64,8 +75,28 @@ def cite(cfg: Config, section: str | None) -> str | None:
     return cfg.zoning.code.citation_format.format(section=section) if section else None
 
 
+def buildable_margins(cfg: Config, rules: dict, district: str | None) -> dict[str, float]:
+    """Reviewed setbacks for a district as margins in feet: front, rear, left,
+    right. Empty when no setback rule is reviewed. Side setbacks apply to both
+    sides; where the code gives a different "other side" value it is used on
+    the right. Exterior (street-side) yards apply only on corner lots, which we
+    cannot identify, so they are not used here."""
+    d = (rules.get(district or "") or {}).get("dimensional") or {}
+    def v(key: str) -> float | None:
+        r = d.get(key)
+        return float(r["value"]) if r and r.get("reviewed") and r.get("value") is not None else None
+    front, rear, side, other = (v("front_setback_ft"), v("rear_setback_ft"),
+                                v("interior_side_setback_ft"), v("interior_side_other_ft"))
+    if front is None and rear is None and side is None:
+        return {}
+    return {"front": front or 0.0, "rear": rear or 0.0, "left": side or 0.0,
+            "right": other if other is not None else (side or 0.0)}
+
+
 def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_area_sf: float | None,
-             units: int) -> ZoningResult:
+             units: int, frontage_ft: float | None = None) -> ZoningResult:
+    """`frontage_ft` is the lot width when it is OBSERVED; pass None when it is a
+    placeholder, so width-conditional rules stay unresolved instead of guessed."""
     labels = {k: v.label for k, v in cfg.zoning.statuses.items()}
     unreviewed = cfg.zoning.status_id("unreviewed")
     variance = cfg.zoning.status_id("variance")
@@ -87,19 +118,34 @@ def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_
         return result(unreviewed, reviewed=False,
                       note="Use rule for this housing type is not reviewed yet.")
     status = use["status"]
+    cond = use.get("when_frontage_at_most")
+    if cond:
+        if frontage_ft is None:
+            return result(unreviewed, reviewed=False,
+                          note=f"Depends on lot width (≤ {cond['ft']:g} ft vs wider, "
+                               f"{cite(cfg, use.get('code_section'))}); this lot's width is not observed.")
+        if frontage_ft <= float(cond["ft"]):
+            status = cond["status"]
     base = {"reviewed": True, "use_citation": cite(cfg, use.get("code_section")), "use_quote": use.get("quote")}
     if cfg.zoning.is_disqualifying(status):
         return result(status, **base)
 
     checks: list[Check] = []
+    setbacks: dict[str, Setback] = {}
     max_units: int | None = None
     lot = float(lot_area_sf or 0)
     stories = typ.stories
+    # The code states height in feet; a typology is described in stories.
+    height_ft = typ.stories * typ.floor_height_ft
     for rule_id, target in cfg.zoning.extraction_targets.dimensional.items():
         rule = (d.get("dimensional") or {}).get(rule_id)
         if not rule or not rule.get("reviewed") or rule.get("value") is None:
             continue
         req = float(rule["value"])
+        if target.check == "setback":
+            setbacks[rule_id] = Setback(rule_id=rule_id, label=target.label, value_ft=req,
+                                        citation=cite(cfg, rule.get("code_section")), quote=rule.get("quote"))
+            continue
         match target.check:
             case "lot_area_at_least":
                 actual, ok = lot, lot >= req
@@ -107,7 +153,7 @@ def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_
                 actual, ok = lot / max(units, 1), lot / max(units, 1) >= req
                 max_units = int(lot // req) if req > 0 else None
             case "height_at_most":
-                continue  # form heights are not modeled in feet yet
+                actual, ok = height_ft, height_ft <= req
             case "stories_at_most":
                 actual, ok = stories, stories <= req
         checks.append(Check(rule_id=rule_id, label=target.label, required=req, actual=round(actual, 1),
@@ -115,4 +161,4 @@ def evaluate(cfg: Config, rules: dict, district: str | None, typ: Typology, lot_
                             citation=cite(cfg, rule.get("code_section")), quote=rule.get("quote")))
     if any(not c.passed for c in checks):
         status = variance
-    return result(status, checks=checks, max_units_by_rule=max_units, **base)
+    return result(status, checks=checks, setbacks=setbacks, max_units_by_rule=max_units, **base)
