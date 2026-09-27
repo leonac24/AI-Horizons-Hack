@@ -43,31 +43,49 @@ assumptions:
 
   # --- Development cost -------------------------------------------------------
   hard_cost_psf:
-    value: 250
-    low: 200
-    high: 320
+    value: 200
+    low: 156
+    high: 250
     unit: USD/sf
-    provenance: placeholder
-    source: null
+    provenance: assumption
+    source: hud_tdc_2024
     rationale: >-
-      Pittsburgh residential hard construction cost. Needs a sourced local figure
-      (e.g., recent URA/PHFA project budgets or a cost guide).
+      HUD 2024 Housing Construction Cost (HCC) limits for Pittsburgh, divided by
+      the unit size HUD assumes for that bedroom count, using the building type
+      closest to each typology (detached/semi-detached, row house, walkup,
+      elevator). HCC covers hard costs incl. builder overhead and profit,
+      utilities, landscaping and Davis-Bacon wages. It is a cap for
+      publicly funded housing, so treat it as a benchmark, not a bid: low = 85%
+      of the cap, high = 110% (2024→2026 cost escalation).
     by_typology:
-      detached: { value: 230, low: 190, high: 290 }
-      adu_pair: { value: 245, low: 200, high: 310 }
-      two_unit: { value: 235, low: 195, high: 295 }
-      rowhouse: { value: 240, low: 195, high: 300 }
-      small_multi: { value: 260, low: 215, high: 330 }
-      midrise: { value: 290, low: 240, high: 370 }
+      detached: { value: 200, low: 170, high: 220 }     # Detached 3 BR: 239,813 / 1,200 sf
+      adu_pair: { value: 223, low: 190, high: 245 }     # Detached 2 BR: 200,590 / 900 sf
+      two_unit: { value: 223, low: 190, high: 245 }     # Semi-detached 2 BR: 200,590 / 900 sf
+      rowhouse: { value: 183, low: 156, high: 201 }     # Row house 3 BR: 219,650 / 1,200 sf
+      small_multi: { value: 196, low: 167, high: 216 }  # Walkup 1 BR: 137,410 / 700 sf
+      midrise: { value: 228, low: 194, high: 250 }      # Elevator 1 BR: 159,351 / 700 sf
 
   soft_cost_share:
-    value: 0.25
-    low: 0.18
-    high: 0.32
+    value: 0.75
+    low: 0.4
+    high: 0.75
     unit: share of hard cost
-    provenance: placeholder
-    source: null
-    rationale: Design, permitting, financing and fees as a share of hard cost.
+    provenance: assumption
+    source: hud_tdc_2024
+    rationale: >-
+      HUD's 2024 Total Development Cost limit for Pittsburgh is 1.75 x HCC for
+      non-elevator buildings and 1.60 x for elevator buildings; the difference
+      is everything beyond construction (design, fees, financing, site,
+      contingency — and land, which Lotline also adds separately from the
+      assessment). The TDC ratio is therefore an upper bound; the low end (0.4)
+      is a judgment for projects with lower soft costs.
+    by_typology:
+      detached: { value: 0.75, low: 0.4, high: 0.75 }
+      adu_pair: { value: 0.75, low: 0.4, high: 0.75 }
+      two_unit: { value: 0.75, low: 0.4, high: 0.75 }
+      rowhouse: { value: 0.75, low: 0.4, high: 0.75 }
+      small_multi: { value: 0.75, low: 0.4, high: 0.75 }
+      midrise: { value: 0.6, low: 0.4, high: 0.6 }
 
   steep_slope_cost_share:
     value: 0.12
@@ -149,13 +167,17 @@ assumptions:
       midrise: { value: 7, low: 5, high: 10 }
 
   grid_kgco2e_per_kwh:
-    value: 0.40
-    low: 0.33
-    high: 0.48
+    value: 0.416
+    low: 0.294
+    high: 0.434
     unit: kgCO2e/kWh
-    provenance: placeholder
+    provenance: assumption
     source: epa_egrid
-    rationale: Pennsylvania / RFC West grid emission rate. Needs the current eGRID value.
+    rationale: >-
+      eGRID2023 (rev 2) total output CO2e rate for the RFC West subregion, which
+      serves western Pennsylvania: 916.1 lb/MWh = 0.416 kg/kWh. High adds RFCW's
+      4.2% grid gross loss (0.434). Low is the Pennsylvania statewide rate,
+      647.9 lb/MWh (0.294), for a household on a cleaner PA mix.
 
   grid_decarbonization_per_yr:
     value: 0.02
