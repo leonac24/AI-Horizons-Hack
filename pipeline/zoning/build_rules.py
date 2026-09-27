@@ -4,9 +4,10 @@
     uv run python -m pipeline.zoning.build_rules --apply  # first copy ticks from REVIEW.md into facts.yaml
 
 facts.yaml holds one entry per statement in the code, each with verbatim quotes
-from data/sources/zoning/. A person reviews facts (not districts) in REVIEW.md.
-Every rule written to rules_review.yaml inherits its fact's `reviewed` flag, and
-the engine only acts on reviewed rules.
+from data/sources/zoning/. A person may confirm facts (not districts) in REVIEW.md.
+Every rule written to rules_review.yaml inherits its fact's `reviewed` flag. The
+engine acts on every rule unless zoning.yaml sets require_human_review, and the
+UI labels unconfirmed answers as not checked by a planner.
 """
 
 from __future__ import annotations
@@ -74,11 +75,15 @@ def _rule(fact: dict, **extra) -> dict:
 
 
 def expand(facts: dict, districts: list[str]) -> dict:
+    """Facts -> the rules file's shape (see its header): uses on the base district,
+    size rules on family-specific subdistrict keys (`R1D-H`, `RM-H`) because § 903.03
+    values differ by family within one suffix, and the special districts (H, P)
+    carrying their own size rules on the district itself."""
     letters = facts["status_letters"]
     families = facts["families"]
     specials = facts["special_districts"]
     width_rules = {f["use_key"]: f for f in facts["use_facts"] if f.get("frontage_rule")}
-    out: dict = {}
+    out: dict = {"districts": {}, "subdistricts": {}}
     for d in districts:
         fam, density = _split(d, families)
         column = fam or (d if d in specials else None)
@@ -110,8 +115,13 @@ def expand(facts: dict, districts: list[str]) -> dict:
                 continue
             for key, value in f["values"].items():
                 dimensional[key] = _rule(f, value=value)
-        if uses or dimensional:
-            out[d] = {"uses": uses, "dimensional": dimensional}
+        if uses:
+            out["districts"].setdefault(column, {})["uses"] = uses
+        if dimensional:
+            if fam and density:
+                out["subdistricts"][f"{fam}-{density}"] = {"dimensional": dimensional}
+            else:
+                out["districts"].setdefault(column, {})["dimensional"] = dimensional
     return out
 
 
@@ -121,7 +131,8 @@ def write_review(facts: dict) -> None:
         "",
         "Tick a box **only after checking the fact against the linked code section**.",
         "Then run `uv run python -m pipeline.zoning.build_rules --apply`.",
-        "Unticked facts stay out of the app (lots show *Needs planner review*).",
+        "Unticked facts are still used, labelled *not checked by a planner* (unless",
+        "`require_human_review` is on in zoning.yaml, which keeps them out of the app).",
         "",
         "Legend for use cells: P = by right · A = administrator exception · S = special exception (ZBA) ·",
         "C = conditional use (Council) · - = not permitted (§ 911.01).",
@@ -192,12 +203,15 @@ def main() -> None:
     rules = expand(facts, districts)
     path = ROOT / cfg.zoning.rules_file
     head = [ln for ln in path.read_text(encoding="utf-8").splitlines() if ln.startswith("#")] if path.exists() else []
-    body = yaml.safe_dump({"districts": rules}, sort_keys=False, allow_unicode=True, width=120)
+    # The city-wide section holds hand-verified rules that are not facts here; keep it.
+    kept = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("citywide") if path.exists() else None
+    body = yaml.safe_dump({**rules, "citywide": kept or {}}, sort_keys=False, allow_unicode=True, width=120)
     path.write_text("\n".join(head) + "\n" + body, encoding="utf-8")
     write_review(facts)
     reviewed = sum(1 for f in facts["use_facts"] + facts["dimensional_facts"] if f.get("reviewed"))
     total = len(facts["use_facts"]) + len(facts["dimensional_facts"])
-    print(f"verified {total} facts ({reviewed} reviewed); wrote rules for {len(rules)} districts; wrote {REVIEW.relative_to(ROOT)}")
+    print(f"verified {total} facts ({reviewed} reviewed); wrote rules for {len(rules['districts'])} districts and "
+          f"{len(rules['subdistricts'])} subdistricts; wrote {REVIEW.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

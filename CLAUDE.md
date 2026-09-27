@@ -36,8 +36,11 @@ user-controlled. No weight ever enters an evidence metric.
 **Hard requirements come before weights.** A scenario that fails a verified legal
 requirement (e.g., the use is prohibited in the district) is excluded from ranking,
 not scored low — no weighting can make an illegal option rank first. Excluded
-scenarios are still shown, with the citation. Unreviewed rules never exclude
-anything; they show "Needs planner review."
+scenarios are still shown, with the citation. A rule is "verified" when its quote
+is found verbatim in the saved code text; AI-extracted rules count (team decision,
+2026-09-27, `require_human_review: false` in `zoning.yaml`) and every answer from
+one is labelled "not checked by a planner". Districts with no rule show "Needs
+planner review."
 
 ---
 
@@ -178,7 +181,7 @@ Too many parcels to precompute everything, so split the work:
 - **Browser:** SMAA, weights, ranking flip.
 - **Map:** load parcels by viewport from the server; centroids when zoomed out, polygons when zoomed in. PMTiles fine if tippecanoe installs easily — ask first.
 - **Commute (deferred until the core comparison is solid):** precompute a PRT travel-time matrix from access cells (block groups or grid) to destination types; add each parcel's walk-to-stop leg with a slope penalty. Pittsburgh's hills make a straight-line walk estimate misleading.
-- **Zoning:** extract rules for every district in the Zoning Code that permits any residential use. Review first the districts containing the most vacant parcels. A lot whose district isn't reviewed still loads, flagged "Needs planner review."
+- **Zoning:** extract rules for every district in the Zoning Code that permits any residential use, starting with the districts containing the most vacant parcels. A lot whose district has no rules still loads, flagged "Needs planner review."
 
 ---
 
@@ -217,9 +220,11 @@ permitted status per typology (by-right / special exception / conditional use /
 not permitted), minimum lot area, lot area per unit, height, setbacks, parking,
 and any overlay or bonus provisions relevant to housing. Every rule carries
 `code_section`, a short `quote` (< 25 words), and `confidence`. Validate against
-JSON Schema. Output to `pipeline/zoning/rules_review.yaml`; **a teammate reviews
-each rule and sets `reviewed: true`.** This is the human-in-the-loop story — say so
-in the README and video.
+JSON Schema. Output to `pipeline/zoning/rules_review.yaml`. Rules are in force once
+their quotes verify and are labelled as AI-extracted, not checked by a planner; a
+person can confirm one (`reviewed: true`) to drop the label. Never present an
+unconfirmed rule as human-reviewed. `require_human_review: true` restores the
+human-in-the-loop gate.
 
 **Grounded explanations (runtime).** Input is only the computed metrics + current
 weights. Every sentence cites metric IDs, shown as chips. Server rejects sentences
@@ -265,7 +270,7 @@ for placeholders, chunky buttons. The printed memo stays white.
 2. **Compare** — all typologies from config by default; the user can pin **up to 3** for side-by-side comparison. Scenario cards with tradeoff receipt, household rows, carbon line, zoning status with citations; SMAA bars; ranking-flip sentence; optional grounded explanation. *(Next: editable scenarios — tenure, affordability mix, parking.)*
    - **Weights are a 100-point budget** across the criteria, always summing to 100. Stakeholder presets are ways to fill the budget. **No ranking is shown until the user picks a preset or moves a point** — there is no neutral default.
 3. **Work backwards** — target → what would have to change.
-4. **What we don't know** — placeholders, unreviewed districts, data gaps. Linked from every screen.
+4. **What we don't know** — placeholders, districts with no rules, how much is human-checked, data gaps. Linked from every screen.
 5. **Memo export** — one printable page for a community meeting or City Planning conversation.
 
 **Signature interaction:** move the weights, watch stakeholder rankings shift.
@@ -277,7 +282,7 @@ for placeholders, chunky buttons. The printed memo stays white.
 - `README.md` — what it does, who in Pittsburgh it's for, how to run, stack, team, next steps, pilot partners (a Pittsburgh CDC, City Planning, URA, Pittsburgh Land Bank).
 - `docs/SOURCES.md` — generated from `sources.yaml`.
 - `docs/METHODS.md` — each computation in plain language + formulas.
-- `docs/LIMITATIONS.md` — **required.** What it gets wrong, who could be harmed by misuse, data gaps, what we don't claim. Auto-append placeholder counts, unreviewed districts, and the share of vacant parcels covered by reviewed rules. City limits only.
+- `docs/LIMITATIONS.md` — **required.** What it gets wrong, who could be harmed by misuse, data gaps, what we don't claim. Auto-append placeholder counts, districts with no rules, and the share of vacant parcels covered by rules (and by human-reviewed rules). City limits only.
 - `docs/AI_DISCLOSURE.md` — AI used to build it and AI inside it, with how outputs are checked.
 - `docs/BACKEND.md` — API principles: public read-only API, the evidence boundary, idempotency and ETags, input limits from config (enforced by tests), security posture. Change a rule there, say so in the commit.
 

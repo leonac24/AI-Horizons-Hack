@@ -43,6 +43,7 @@ export interface Typology {
     body: string
     roof: string
     max_in_a_row: number
+    party_walls: boolean
   }
 }
 
@@ -88,8 +89,20 @@ export interface Config {
     tagline: string
     disclaimer: string
     placeholder_notice: string
-    smaa: { samples: number; seed: number; profile_concentration: number }
+    api: { ask_question_max_chars: number; lot_search_query_max_chars: number; plan_max_buildings: number }
+    smaa: {
+      samples: number
+      seed: number
+      profile_concentration: number
+      // Draws and noise floor for the per-criterion leverage runs that order
+      // the work plan (web/src/lib/leverage.ts).
+      leverage_samples: number
+      leverage_epsilon: number
+    }
     evidence: { topics: Record<string, { label: string; listed: boolean }> }
+    ask: { search_example: string; examples: string[] }
+    tutorial: { storage_key: string; chapters: Partial<Record<TourChapter, TourStep[]>> }
+    help: Record<string, { title: string; body: string }>
   }
   city: {
     name: string
@@ -106,7 +119,7 @@ export interface Config {
     zoning_links: string[]
   }
   zoning: {
-    statuses: Record<string, { label: string; role: 'permitted' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
+    statuses: Record<string, { label: string; role: 'permitted' | 'staff_review' | 'discretionary' | 'variance' | 'prohibited' | 'unreviewed' }>
     code: { name: string; url: string; citation_format: string }
     district_colors: { prefix: string; color: string }[]
   }
@@ -154,6 +167,7 @@ export interface ZoningResult {
   status: string
   status_label: string
   reviewed: boolean
+  human_reviewed: boolean
   use_citation: string | null
   use_quote: string | null
   checks: ZoningCheck[]
@@ -221,12 +235,56 @@ export interface Explanation {
   sentences: { text: string; metric_ids: string[] }[]
 }
 
+export interface NextStep {
+  id: 'acquire' | 'zoning' | 'confirm' | 'site_check' | 'neighborhood'
+  title: string
+  why: string
+  facts: { id: string; text: string }[]
+  questions: string[]
+  contact: { label: string; url: string | null; email: string | null; phone: string | null; checked: boolean } | null
+  letter: string
+  blocking: boolean
+  note: string | null
+}
+
+export interface OutreachDraft {
+  source: string
+  reason?: string
+  subject: string
+  to: string | null
+  body: string
+}
+
+export interface LotAnswer {
+  source: string
+  /** null when no checked answer could be produced (see `reason`). */
+  answerable: boolean | null
+  reason?: string
+  sentences: { text: string; metric_ids: string[] }[]
+}
+
+export interface LotSearchFilters {
+  neighborhoods: string[]
+  zoning_districts: string[]
+  min_lot_sf: number | null
+  max_lot_sf: number | null
+  publicly_held_only: boolean
+  avoid: string[]
+  not_understood: string[]
+}
+
+export type LotSearchResult =
+  | { ok: true; filters: LotSearchFilters; match_count: number; results: ParcelSummary[] }
+  | { ok: false; reason: string }
+
 export interface Unknowns {
   placeholder_assumptions: { id: string; unit: string; rationale: string; source: string | null }[]
   unverified_sources: { id: string; name: string; note: string | null }[]
-  unreviewed_districts: { district: string; vacant_parcels: number }[]
+  uncovered_districts: { district: string; vacant_parcels: number }[]
   vacant_parcels: number
-  share_covered_by_reviewed_rules: number
+  share_covered_by_rules: number
+  share_covered_by_human_reviewed_rules: number
+  require_human_review: boolean
   pipeline?: { counts?: Record<string, number>; context?: Record<string, unknown> } | null
 }
 
@@ -273,4 +331,11 @@ export interface PlanResult {
   eligible: boolean
   ineligible_reason: string | null
   notes: string[]
+}
+
+export type TourChapter = 'city' | 'lot'
+export interface TourStep {
+  title: string
+  body: string
+  target: string | null
 }

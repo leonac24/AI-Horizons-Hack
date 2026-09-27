@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from core.config import Config, Typology
 from core.metrics import Metric, Samples, Trace, to_metric, weakest
-from core.zoning import ZoningResult, buildable_margins, evaluate, load_rules
+from core.zoning import ZoningResult, buildable_margins, cite, evaluate, load_rules
 
 
 class HouseholdCheck(BaseModel):
@@ -117,10 +117,12 @@ def pure_buildings(typ: Typology, shape: LotShape, lot_area_sf: float,
                    margins: dict[str, float] | None = None) -> tuple[int, bool]:
     """How many of this typology's building fit side by side along the frontage
     (up to max_in_a_row), and whether the form fits the lot at all. When the
-    district's setbacks are reviewed, only the buildable area inside them counts.
-    Screening geometry only: access and topography are not modeled."""
+    district's setbacks are in force, only the buildable area inside them counts;
+    party-wall forms skip the side yards (§ 903.03(c)). Screening geometry only:
+    access and topography are not modeled."""
     m = margins or {}
-    width = shape.frontage_ft - m.get("left", 0.0) - m.get("right", 0.0)
+    sides = 0.0 if typ.building.party_walls else m.get("left", 0.0) + m.get("right", 0.0)
+    width = shape.frontage_ft - sides
     depth = shape.depth_ft - m.get("front", 0.0) - m.get("rear", 0.0)
     w, d = typ.building.footprint_ft
     fits = (w <= width and d <= depth and lot_area_sf >= typ.min_lot_sf_for_form)
@@ -240,15 +242,21 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
     for typ in cfg.typologies:
         if homes_override and typ.id not in homes_override:
             continue
-        n_buildings, form_fits = pure_buildings(typ, shape, lot, margins)
+        # Fit is judged on the lot itself. Title Nine lets new development use
+        # contextual setbacks (§ 925.06) that match the neighbours, which is how
+        # most narrow city lots get built, so the full § 903.03 yards are reported
+        # and drawn but do not rule a form out.
+        n_buildings, form_fits = pure_buildings(typ, shape, lot)
         units = homes_override[typ.id] if homes_override else n_buildings * typ.building.homes
         notes: list[str] = []
+        w, d = typ.building.footprint_ft
         if not form_fits and not homes_override:
-            w, d = typ.building.footprint_ft
-            where = "the buildable area inside the setbacks" if margins else (
-                f"a {shape.frontage_ft:.0f}×{shape.depth_ft:.0f} ft lot")
-            notes.append(f"This building ({w:.0f}×{d:.0f} ft) doesn't fit {where}, or the lot is under "
-                         f"{typ.min_lot_sf_for_form:,.0f} sf.")
+            notes.append(f"This building ({w:.0f}×{d:.0f} ft) doesn't fit a {shape.frontage_ft:.0f}×"
+                         f"{shape.depth_ft:.0f} ft lot, or the lot is under {typ.min_lot_sf_for_form:,.0f} sf.")
+        elif margins and not pure_buildings(typ, shape, lot, margins)[1]:
+            notes.append(f"This building ({w:.0f}×{d:.0f} ft) fits the lot but not inside the full setbacks; "
+                         "it would rely on contextual setbacks that match neighbouring buildings "
+                         f"({cite(cfg, cfg.zoning.contextual_setbacks_section)}).")
         zres = evaluate(cfg, rules, parcel.get("zoning"), typ, lot, units, observed_frontage)
         if zres.max_units_by_rule is not None and zres.max_units_by_rule < units:
             notes.append(f"Zoning lot-area-per-unit allows {zres.max_units_by_rule} units here; showing {units} as planned.")
@@ -317,7 +325,9 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
 
         # Zoning path score
         zscore = cfg.assumption("zoning_status_score")
-        zt = Trace({"assumption"})
+        # This one draws from its own stream rather than S.a(), so it has to
+        # declare the assumption it rests on itself.
+        zt = Trace({"assumption"}, keys={"zoning_status_score"})
         unreviewed_status = cfg.zoning.status_id("unreviewed")
         if zres.status == unreviewed_status:
             # Unknown approval path: the band spans every outcome the code allows.
@@ -328,7 +338,7 @@ def analyze(cfg: Config, parcel: dict, samples: Samples | None = None,
             zarr = np.concatenate([[zscore.by_key[unreviewed_status]],
                                    rng.uniform(min(vals), max(vals), S.n)])
             zmetric = to_metric("feasibility.zoning_score", "Zoning path score", zarr, "0–1", zt,
-                                note="District not reviewed — range covers every possible outcome.",
+                                note="No zoning rule in force here yet — range covers every possible outcome.",
                                 provenance="placeholder")
         else:
             zt.add("observed", cfg.zoning.code.source)

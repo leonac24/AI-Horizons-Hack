@@ -10,7 +10,7 @@ import re
 from collections import Counter
 
 from core.config import ROOT, load_config
-from core.zoning import load_rules
+from core.zoning import covered_bases, in_force, load_rules
 
 DOCS = ROOT / "docs"
 START, END = "<!-- AUTO:START -->", "<!-- AUTO:END -->"
@@ -43,21 +43,38 @@ def limitations_auto(cfg) -> str:
     report_path = ROOT / "data" / "processed" / "pipeline_report.json"
     counts = json.loads(report_path.read_text(encoding="utf-8")).get("counts", {}) if report_path.exists() else {}
     parcels = json.loads(idx_path.read_text(encoding="utf-8"))["parcels"].values() if idx_path.exists() else []
-    by_district = Counter(p.get("zoning") or "(no district)" for p in parcels)
-    reviewed = {d for d, r in rules.items() if any(u.get("reviewed") for u in (r.get("uses") or {}).values())}
+    # Use rules hang off the base district, so parcels are counted that way too —
+    # reviewing R1D covers every R1D-* code at once.
+    def _base(code):
+        return cfg.zoning.district_code.split(code)[0] or "(no district)"
+
+    by_district = Counter(_base(p.get("zoning")) for p in parcels)
+
+    covered_b = covered_bases(cfg, rules)
+    human_b = covered_bases(cfg, rules, human_only=True)
+    citywide = [u for u, r in ((rules.get("citywide") or {}).get("uses") or {}).items() if in_force(cfg, r)]
     total = sum(by_district.values()) or 1
-    covered = sum(n for d, n in by_district.items() if d in reviewed)
+    covered = sum(n for d, n in by_district.items() if d in covered_b)
+    human = sum(n for d, n in by_district.items() if d in human_b)
     placeholders = [k for k, a in cfg.assumptions.items() if a.provenance == "placeholder"]
     unverified = [s.name for s in cfg.sources.sources.values() if s.verified is False]
-    top_unreviewed = [f"{d} ({n:,})" for d, n in by_district.most_common() if d not in reviewed][:12]
+    top_uncovered = [f"{d} ({n:,})" for d, n in by_district.most_common() if d not in covered_b][:12]
+    mode = ("only human-reviewed rules are in force" if cfg.zoning.require_human_review else
+            "AI-extracted rules are in force once their quotes verify against the saved code text; "
+            "they are labelled as not checked by a planner")
     return "\n".join([
         START,
         f"_Auto-generated for config `{cfg.hash}`._",
         "",
         f"- **Vacant parcels indexed:** {total:,} (City of Pittsburgh only).",
-        (f"- **Share of vacant parcels covered by human-reviewed zoning rules:** {covered / total:.1%} "
-        f"({len(reviewed)} of {len(by_district)} districts reviewed)."),
-        f"- **Largest unreviewed districts:** {', '.join(top_unreviewed) or 'none'}.",
+        f"- **Zoning rules in force:** {mode} (`require_human_review` in zoning.yaml).",
+        (f"- **Share of vacant parcels covered by zoning rules:** {covered / total:.1%} "
+         f"({len(covered_b)} of {len(by_district)} base districts); "
+         f"by human-reviewed rules: {human / total:.1%}."),
+        f"- **Largest base districts with no rules yet:** {', '.join(top_uncovered) or 'none'}.",
+        (f"- **Uses settled city-wide ({len(citywide)}):** {', '.join(f'`{u}`' for u in citywide) or 'none'}"
+         + (". These are decided by a rule that applies in every district, "
+            "so they are excluded from the ranking everywhere, with a citation." if citywide else ".")),
         f"- **Placeholder assumptions ({len(placeholders)}):** {', '.join(f'`{p}`' for p in placeholders) or 'none'}.",
         (f"- **2024 ACS median income / renter burden:** {counts.get('acs_income_values', 0):,} / "
          f"{counts.get('acs_renter_burden_values', 0):,} indexed lots have tract estimates."),

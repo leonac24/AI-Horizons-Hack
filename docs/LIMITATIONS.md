@@ -6,11 +6,13 @@ Confirm anything consequential with the City of Pittsburgh Department of City Pl
 ## Current state (updated automatically)
 
 <!-- AUTO:START -->
-_Auto-generated for config `628e48c1d4fe`._
+_Auto-generated for config `ef5b13cf1ef5`._
 
 - **Vacant parcels indexed:** 22,183 (City of Pittsburgh only).
-- **Share of vacant parcels covered by human-reviewed zoning rules:** 0.0% (0 of 54 districts reviewed).
-- **Largest unreviewed districts:** H (3,230), R1D-H (3,021), RM-M (2,461), R1D-L (2,121), R2-L (2,072), R1A-VH (1,483), P (1,207), R1D-M (1,183), R2-H (1,166), R1A-H (963), LNC (949), UI (460).
+- **Zoning rules in force:** AI-extracted rules are in force once their quotes verify against the saved code text; they are labelled as not checked by a planner (`require_human_review` in zoning.yaml).
+- **Share of vacant parcels covered by zoning rules:** 88.1% (7 of 41 base districts); by human-reviewed rules: 0.0%.
+- **Largest base districts with no rules yet:** LNC (949), UI (460), NDI (185), RIV-MU (148), UPR-B (98), RIV-IMU (97), RIV-RM (88), RIV-NS (87), RP (77), HC (52), GI (42), AP (41).
+- **Uses settled city-wide (1):** `single_unit_detached_with_adu`. These are decided by a rule that applies in every district, so they are excluded from the ranking everywhere, with a citation.
 - **Placeholder assumptions (15):** `steep_slope_cost_share`, `landslide_cost_share`, `undermined_cost_share`, `annual_capital_cost_share`, `operating_cost_per_unit_month`, `embodied_kgco2e_psf`, `operational_kwh_psf_yr`, `grid_decarbonization_per_yr`, `vmt_per_household_yr`, `kgco2e_per_vmt`, `lot_depth_to_frontage_ratio`, `tract_median_household_income`, `tract_renter_cost_burden_share`, `jobs_access_index`, `sewer_stress_index`.
 - **2024 ACS median income / renter burden:** 22,113 / 22,132 indexed lots have tract estimates.
 - **FEMA point screen:** 22,183 classified; 359 in a mapped Special Flood Hazard Area at the tested point.
@@ -67,6 +69,18 @@ _Auto-generated for config `628e48c1d4fe`._
   a stop or route alone cannot establish jobs reachable by transit.
 - **City limits only.** Other Allegheny County municipalities have their own
   zoning codes.
+- **Next steps name an agency, not a person, and the links are unconfirmed.**
+  Land Bank, URA, City Real Estate and City Planning contacts in
+  `next_steps.yaml` were found by web search; the pages could not be opened from
+  the build environment, so each shows "not yet confirmed" until a teammate
+  checks it and sets `checked: true`. Which agency handles a public lot is read
+  from the city inventory's type; that routing is our reading, not the city's.
+- **Lotline does not know which Registered Community Organization covers a lot.**
+  WPRDC publishes RCO boundaries, but they are not joined to the parcel index
+  yet, so the neighborhood step and handout point to the City's RCO list instead
+  of naming an organization.
+- **Outreach drafts are starting points.** They state only the facts on the step
+  card, but the user is responsible for what they send.
 
 ## Who could be harmed by misuse
 

@@ -18,6 +18,12 @@ DEFAULT_CONFIG_DIR = ROOT / "data" / "config"
 Provenance = Literal["observed", "modeled", "assumption", "placeholder"]
 
 
+# The FEMA high-risk flood flag is a parcel field (`fema_sfha`), not a city.yaml
+# hazard. Features that treat it like one (lot search, site checks) use this key.
+FEMA_FLOOD_KEY = "fema_high_risk_flood"
+FEMA_FLOOD_FIELD = "fema_sfha"
+
+
 class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -33,6 +39,10 @@ class SmaaSettings(_Model):
     samples: int = Field(gt=0)
     seed: int
     profile_concentration: float = Field(gt=0)
+    # Draws for the per-criterion leverage runs, and how much change in the
+    # leader's first-place share counts as a real effect rather than noise.
+    leverage_samples: int = Field(gt=0)
+    leverage_epsilon: float = Field(ge=0, le=1)
 
 
 class UncertaintySettings(_Model):
@@ -68,6 +78,9 @@ class ApiSettings(_Model):
     explain_max_weights: int = Field(gt=0)
     explain_max_ranking: int = Field(gt=0)
     explain_requests_per_minute: int = Field(gt=0)
+    ask_question_max_chars: int = Field(gt=0)
+    lot_search_query_max_chars: int = Field(gt=0)
+    lot_search_results_max: int = Field(gt=0)
     analysis_cache_entries: int = Field(gt=0)
     cache_max_age_seconds: int = Field(ge=0)
     work_backwards_max_units: int = Field(gt=0)
@@ -88,6 +101,11 @@ class ExplanationSettings(_Model):
     max_tokens: int = Field(gt=0)
 
 
+class AskSettings(_Model):
+    search_example: str = ""
+    examples: list[str] = Field(default_factory=list)
+
+
 class EvidenceTopic(_Model):
     label: str
     description: str
@@ -99,6 +117,37 @@ class EvidenceSettings(_Model):
     topics: dict[str, EvidenceTopic] = Field(min_length=1)
 
 
+class TutorialStep(_Model):
+    """One card of the walk-through. `target` names a `data-tour` anchor in the
+    UI; without one the card is centered on screen."""
+
+    title: str
+    body: str
+    target: str | None = None
+
+
+class TutorialSettings(_Model):
+    # Where the browser remembers that someone finished or skipped the tour.
+    # Change it to show the tour to everyone again.
+    storage_key: str = Field(min_length=1)
+    # One chapter per screen: `city` on first visit, `lot` on first lot opened.
+    chapters: dict[Literal["city", "lot"], list[TutorialStep]]
+
+    @model_validator(mode="after")
+    def _non_empty(self) -> TutorialSettings:
+        for name, steps in self.chapters.items():
+            if not steps:
+                raise ValueError(f"tutorial chapter {name!r} has no steps")
+        return self
+
+
+class HelpTip(_Model):
+    """Text behind one of the small ? buttons."""
+
+    title: str
+    body: str
+
+
 class AppConfig(_Model):
     name: str
     tagline: str
@@ -108,7 +157,10 @@ class AppConfig(_Model):
     api: ApiSettings
     smaa: SmaaSettings
     explanation: ExplanationSettings
+    ask: AskSettings
     evidence: EvidenceSettings
+    tutorial: TutorialSettings
+    help: dict[str, HelpTip] = Field(default_factory=dict)
 
 
 # --- typologies.yaml -------------------------------------------------------------
@@ -125,6 +177,9 @@ class Building(_Model):
     body: str
     roof: str
     max_in_a_row: int = Field(ge=1)
+    # Attached by party walls to homes on neighbouring lots: § 903.03(c) sets the
+    # interior side yard to zero on the party-wall side, so side setbacks don't apply.
+    party_walls: bool = False
 
     @model_validator(mode="after")
     def _positive(self) -> Building:
@@ -144,7 +199,12 @@ class Typology(_Model):
     # Floor-to-floor height. The zoning code caps height in feet, a typology is
     # described in stories; this is the only thing that lets them be compared.
     floor_height_ft: float = Field(gt=0)
-    min_lot_sf_for_form: float = Field(gt=0)
+    # Screening floor on lot size for this form. Normally left out of
+    # typologies.yaml and derived at load time from the building's own footprint
+    # and the site_area_per_building_footprint assumption, so the floor is one
+    # documented ratio rather than a literal per typology. Set it here only to
+    # override a single form deliberately.
+    min_lot_sf_for_form: float | None = Field(default=None, gt=0)
     tenure_default: Literal["owner", "renter"]
     supports_senior: bool = False
     building: Building
@@ -285,7 +345,7 @@ class SourcesConfig(_Model):
 
 
 # --- zoning.yaml ---------------------------------------------------------------
-StatusRole = Literal["permitted", "discretionary", "variance", "prohibited", "unreviewed"]
+StatusRole = Literal["permitted", "staff_review", "discretionary", "variance", "prohibited", "unreviewed"]
 
 # Roles the engine must be able to resolve to exactly one status id. Code asks
 # for a role; zoning.yaml decides which id plays it. No status id in code.
@@ -317,6 +377,29 @@ class ZoningCode(_Model):
     raw_text_dir: str
 
 
+class DistrictCode(_Model):
+    """How a zoning map code splits into the two things the code governs apart.
+
+    Title Nine sets *use* by base district (the Chapter 911 use table is keyed
+    R1D, R2, RM ...) and *dimensions* by development subdistrict (§ 903.03 keys
+    VL, L, M, H, VH). A map code like `R1D-H` is both at once. Many other codes
+    contain a hyphen that is not this split at all — `UC-MU`, `R-MU`, `GT-B`,
+    `SP-1` — so a code is only split when the part after its last hyphen is one
+    of the suffixes declared here.
+    """
+
+    subdistrict_suffixes: list[str]
+
+    def split(self, code: str | None) -> tuple[str | None, str | None]:
+        """(base district, subdistrict) — subdistrict is None when the code has none."""
+        if not code:
+            return None, None
+        base, sep, suffix = code.rpartition("-")
+        if sep and suffix in self.subdistrict_suffixes:
+            return base, suffix
+        return code, None
+
+
 class DistrictColor(_Model):
     prefix: str
     color: str
@@ -326,6 +409,9 @@ class ZoningConfig(_Model):
     code: ZoningCode
     rules_file: str
     priority_file: str
+    require_human_review: bool
+    contextual_setbacks_section: str
+    district_code: DistrictCode
     statuses: dict[str, ZoningStatus]
     extraction_targets: ExtractionTargets
     district_colors: list[DistrictColor] = []
@@ -350,7 +436,185 @@ class ZoningConfig(_Model):
         return s is not None and s.role == "prohibited"
 
 
+# --- inquiries.yaml ------------------------------------------------------------
+# What to go and find out. Lotline may not say what to build, but it can say what
+# is still unknown, who answers it, and what to ask them for — so this file is the
+# resolver record for every unknown the evidence layer can surface.
+#
+# `trigger` is a role, not a name: code asks "which record handles an unreviewed
+# use rule?" the same way core/zoning.py asks for the status playing a role. That
+# keeps every Pittsburgh-specific string in here rather than in Python.
+InquiryTrigger = Literal["public_parcel", "lot_shape", "zoning_use", "zoning_dimensional",
+                         "assumption"]
+
+# Triggers that must resolve to exactly one record, because the builder looks them
+# up by role rather than by key.
+_REQUIRED_TRIGGERS: tuple[InquiryTrigger, ...] = ("public_parcel", "zoning_use")
+
+
+class CostRange(_Model):
+    """An illustrative planning range — what this step tends to cost or take.
+
+    These are estimates about the *user's own predevelopment process*, not claims
+    about Pittsburgh or about a parcel, which is why they can live here at all.
+    They are always rendered as placeholders, and `core/inquiries.py` keeps them
+    out of every ordering so a wrong number here cannot reorder the work plan.
+    """
+
+    low: float = Field(ge=0)
+    high: float = Field(ge=0)
+    unit: str
+
+    @model_validator(mode="after")
+    def _ordered(self) -> CostRange:
+        if self.high < self.low:
+            raise ValueError(f"need low <= high, got {self.low}/{self.high}")
+        return self
+
+
+class Resolver(_Model):
+    """Who can answer a question: an agency, a utility, a professional."""
+
+    label: str
+    kind: str
+    contact_hint: str | None = None
+
+
+class EffortTier(_Model):
+    label: str
+    order: int
+
+
+class InquiryRecord(_Model):
+    trigger: InquiryTrigger
+    question: str
+    why: str
+    resolver: str
+    ask_for: str
+    effort: str
+    contact_template: str
+    cost: CostRange | None = None
+    weeks: CostRange | None = None
+    source: str | None = None
+    # True when not knowing this can exclude an option outright rather than merely
+    # reorder the ranking. No weight can undo an exclusion, so these sort first.
+    blocks_eligibility: bool = False
+    # The assumption key an answer to this question would settle. It is what lets
+    # a question be tied back to the metrics it holds up without any metric id
+    # being written in Python: the builder reads the dependency edges the engine
+    # recorded and looks this key up among them. For a `trigger: assumption`
+    # record the dict key already is that key, so this stays null there.
+    pins: str | None = None
+
+
+class InquiriesConfig(_Model):
+    cost_notice: str
+    no_leverage_notice: str
+    resolvers: dict[str, Resolver]
+    effort_tiers: dict[str, EffortTier]
+    inquiries: dict[str, InquiryRecord]
+    # Used when an assumption has no record of its own, so a new assumption shows
+    # up as a real question instead of vanishing. Its text may use {label},
+    # {rationale} and {unit}.
+    generic: InquiryRecord
+
+    @model_validator(mode="after")
+    def _triggers_resolvable(self) -> InquiriesConfig:
+        for trigger in _REQUIRED_TRIGGERS:
+            ids = [i for i, r in self.inquiries.items() if r.trigger == trigger]
+            if len(ids) != 1:
+                raise ValueError(
+                    f"inquiries needs exactly one record with trigger {trigger!r}, found {ids}")
+        return self
+
+    def by_trigger(self, trigger: InquiryTrigger) -> tuple[str, InquiryRecord]:
+        """The record playing `trigger`, so code branches on meaning, not on key."""
+        return next((i, r) for i, r in self.inquiries.items() if r.trigger == trigger)
+
+
 # --- everything ----------------------------------------------------------------
+
+# --- next_steps.yaml -------------------------------------------------------------
+class Contact(_Model):
+    label: str
+    url: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    # False until a person has opened the page and confirmed it is the right one.
+    checked: bool = False
+
+
+class AcquireStep(_Model):
+    title: str
+    default_contact: str
+    by_inventory_type: dict[str, str] = Field(default_factory=dict)
+    not_for_sale_statuses: list[str] = Field(default_factory=list)
+    ask_for_question: str
+    not_for_sale_note: str
+    why: str
+
+
+class ZoningStep(_Model):
+    title: str
+    contact: str
+    why: str
+    questions: list[str]
+
+
+class ConfirmStep(_Model):
+    title: str
+    contact: str
+    why_unreviewed: str
+    why_unchecked: str
+    questions: list[str]
+
+
+class SiteCheckStep(_Model):
+    title: str
+    contact: str
+    why: str
+    flood_label: str
+    hazards: dict[str, list[str]]
+
+
+class NeighborhoodStep(_Model):
+    title: str
+    contact: str
+    why: str
+    rco_placeholder: str
+    discussion_questions: list[str]
+
+
+class DraftSettings(_Model):
+    max_paragraphs: int = Field(gt=0)
+    subject: str
+    greeting: str
+    intro: str
+    facts_lead: str
+    questions_lead: str
+    closing: str
+    sign_off: str
+
+
+class NextStepsConfig(_Model):
+    contacts: dict[str, Contact]
+    acquire: AcquireStep
+    zoning: ZoningStep
+    confirm: ConfirmStep
+    site_check: SiteCheckStep
+    neighborhood: NeighborhoodStep
+    draft: DraftSettings
+
+    @model_validator(mode="after")
+    def _contacts_exist(self) -> NextStepsConfig:
+        used = [self.acquire.default_contact, *self.acquire.by_inventory_type.values(), self.zoning.contact,
+                self.confirm.contact, self.site_check.contact, self.neighborhood.contact]
+        missing = sorted({c for c in used if c not in self.contacts})
+        if missing:
+            raise ValueError(f"next_steps.yaml names contacts that are not defined: {missing}")
+        return self
+
+
 class Config(_Model):
     app: AppConfig
     city: _Open
@@ -361,6 +625,8 @@ class Config(_Model):
     stakeholders: StakeholdersConfig
     assumptions: dict[str, Assumption]
     sources: SourcesConfig
+    inquiries: InquiriesConfig
+    next_steps: NextStepsConfig
     hash: str = ""
 
     @model_validator(mode="after")
@@ -421,6 +687,32 @@ class Config(_Model):
         if parcels.get("assessments_source") not in self.sources.sources:
             errors.append(f"city.parcels.assessments_source "
                           f"{parcels.get('assessments_source')!r} not in sources.yaml")
+
+        # inquiries.yaml points at four other files. A dangling pointer here would
+        # not crash anything — the work plan would just quietly drop a question —
+        # so it has to be caught at startup instead.
+        inq = self.inquiries
+        dimensional = set(self.zoning.extraction_targets.dimensional)
+        for key, rec in [*inq.inquiries.items(), ("generic", inq.generic)]:
+            where = f"inquiries.inquiries.{key}"
+            if rec.resolver not in inq.resolvers:
+                errors.append(f"{where}: unknown resolver {rec.resolver!r}")
+            if rec.effort not in inq.effort_tiers:
+                errors.append(f"{where}: unknown effort tier {rec.effort!r}")
+            if rec.source and rec.source not in self.sources.sources:
+                errors.append(f"{where}: unknown source {rec.source!r}")
+            if rec.pins and rec.pins not in self.assumptions:
+                errors.append(f"{where}: pins unknown assumption {rec.pins!r}")
+            if key == "generic":
+                continue
+            if rec.trigger == "assumption" and key not in self.assumptions:
+                errors.append(f"{where}: no assumption named {key!r}")
+            if rec.trigger == "zoning_dimensional" and key not in dimensional:
+                errors.append(f"{where}: no dimensional rule named {key!r} in zoning.yaml")
+        known_hazards = {*(self.city.model_dump().get("hazards") or {}), FEMA_FLOOD_KEY}
+        for h in self.next_steps.site_check.hazards:
+            if h not in known_hazards:
+                errors.append(f"next_steps.site_check.hazards: {h!r} is not a city.yaml hazard or {FEMA_FLOOD_KEY!r}")
         if errors:
             raise ValueError("config cross-reference errors:\n  - " + "\n  - ".join(errors))
         return self
@@ -520,6 +812,8 @@ _FILES = {
     "stakeholders": "stakeholders.yaml",
     "assumptions": "assumptions.yaml",
     "sources": "sources.yaml",
+    "inquiries": "inquiries.yaml",
+    "next_steps": "next_steps.yaml",
 }
 
 
@@ -547,6 +841,14 @@ def load_config(config_dir: Path | str = DEFAULT_CONFIG_DIR) -> Config:
         cfg = Config(**raw)
     except ValidationError as e:
         raise ConfigError(f"invalid config in {config_dir}:\n{e}") from e
+    # Derive each typology's lot-size screening floor from its own footprint, so
+    # the floor tracks the form instead of being a literal someone has to keep in
+    # step with it. An explicit value in typologies.yaml wins.
+    per_footprint = cfg.assumption("site_area_per_building_footprint").value
+    for typ in cfg.typologies:
+        if typ.min_lot_sf_for_form is None:
+            width, depth = typ.building.footprint_ft
+            typ.min_lot_sf_for_form = round(width * depth * per_footprint)
     cfg.hash = digest
     return cfg
 

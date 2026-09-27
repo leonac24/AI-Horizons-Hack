@@ -20,15 +20,19 @@ def test_prohibited_scenario_is_ineligible_and_excluded(config_copy, lot, monkey
     typ = base.typologies[0]
     prohibited = base.zoning.status_id("prohibited")
 
+    # Use rules hang off the base district, not the full map code (see zoning.yaml).
+    base_district, _ = base.zoning.district_code.split(lot["zoning"])
     rules = tmp_path / "rules_review.yaml"
-    rules.write_text(yaml.safe_dump({"districts": {lot["zoning"]: {"uses": {
+    rules.write_text(yaml.safe_dump({"districts": {base_district: {"uses": {
         typ.use_key: {"status": prohibited, "reviewed": True,
-                      "code_section": "911.02", "quote": "not permitted"}}}}}), encoding="utf-8")
+                      "code_section": "911.02", "quote": "not permitted"}}}},
+        "subdistricts": {}, "citywide": {}}), encoding="utf-8")
 
+    load = lambda _cfg: yaml.safe_load(rules.read_text(encoding="utf-8"))
     import core.zoning as zoning_mod
-    monkeypatch.setattr(zoning_mod, "load_rules", lambda cfg: yaml.safe_load(rules.read_text(encoding="utf-8"))["districts"])
+    monkeypatch.setattr(zoning_mod, "load_rules", load)
     import core.engine as engine_mod
-    monkeypatch.setattr(engine_mod, "load_rules", lambda cfg: yaml.safe_load(rules.read_text(encoding="utf-8"))["districts"])
+    monkeypatch.setattr(engine_mod, "load_rules", load)
 
     a = analyze(load_config(d), lot)
     blocked = next(s for s in a.scenarios if s.typology_id == typ.id)
@@ -46,11 +50,24 @@ def test_prohibited_scenario_is_ineligible_and_excluded(config_copy, lot, monkey
 
 def test_unreviewed_district_is_not_disqualified(cfg, lot):
     """Unknown is not the same as prohibited. An unreviewed district withholds an
-    answer; it must never silently exclude a scenario from the ranking."""
+    answer; it must never silently exclude a scenario from the ranking.
+
+    Uses the code governs city-wide (Chapter 912) are answered without consulting
+    a district, so they can legitimately be excluded here. What must hold is the
+    direction of the rule: absence of a rule never excludes, and every exclusion
+    traces back to a reviewed rule with a citation."""
     a = analyze(cfg, lot)
-    assert a.excluded_typology_ids == []
-    assert len(a.rankable_typology_ids) == len(a.scenarios)
-    assert all(s.zoning.status == cfg.zoning.status_id("unreviewed") for s in a.scenarios)
+    unreviewed = cfg.zoning.status_id("unreviewed")
+
+    open_questions = [s for s in a.scenarios if s.zoning.status == unreviewed]
+    assert open_questions, "expected at least one use still awaiting review"
+    assert all(not s.zoning.disqualified for s in open_questions)
+    assert all(s.typology_id in a.rankable_typology_ids for s in open_questions)
+
+    for s in a.scenarios:
+        if s.zoning.disqualified:
+            assert s.zoning.reviewed, f"{s.typology_id} excluded without a reviewed rule"
+            assert s.zoning.use_citation, f"{s.typology_id} excluded without a citation"
 
 
 def test_config_rejects_a_status_set_missing_a_role(config_copy):

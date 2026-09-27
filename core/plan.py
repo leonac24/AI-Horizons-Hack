@@ -65,6 +65,7 @@ def _combine(mid: str, parts: list[tuple[int, Metric]]) -> Metric:
         provenance=weakest(*(m.provenance for _, m in parts)),
         sourceIds=sorted({s for _, m in parts for s in m.sourceIds}),
         note=first.note if len(parts) == 1 else "Combined across the building types in this plan.",
+        dependsOn=sorted({k for _, m in parts for k in m.dependsOn}),
     )
 
 
@@ -102,7 +103,8 @@ def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> Plan
         for c in z.checks:
             if c.rule_id not in checks or not c.passed:
                 checks[c.rule_id] = c
-    zoning = worst.model_copy(update={"checks": list(checks.values())})
+    zoning = worst.model_copy(update={"checks": list(checks.values()),
+                                      "human_reviewed": all(z.human_reviewed for z in zres.values())})
     failed = [tid for tid, z in zres.items() if z.disqualified]
 
     # Carbon: home-weighted average of the per-household series.
@@ -126,7 +128,7 @@ def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> Plan
     if lot:
         notes.append(f"Buildings cover about {round(100 * fp / lot)}% of the lot.")
     if zoning.max_units_by_rule is not None and zoning.max_units_by_rule < total:
-        notes.append(f"Reviewed lot-area-per-unit rule allows {zoning.max_units_by_rule} homes here; the plan has {total}.")
+        notes.append(f"Lot-area-per-unit rule allows {zoning.max_units_by_rule} homes here; the plan has {total}.")
 
     return PlanResult(
         units=total, by_typology=counts, homes_by_typology=homes, metrics=metrics, zoning=zoning,

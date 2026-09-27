@@ -43,8 +43,12 @@ status codes, cacheability — not at ceremony.
 | `/api/parcels/{id}` | GET | One parcel's index record |
 | `/api/analysis/{id}` | GET | Every typology scored on that parcel |
 | `/api/work-backwards/{id}` | GET | What would have to change to hit a target |
-| `/api/unknowns` | GET | Placeholders, unverified sources, unreviewed districts |
+| `/api/unknowns` | GET | Placeholders, unverified sources, districts with no zoning rules |
 | `/api/explain` | POST | Grounded prose over already-computed metrics |
+| `/api/ask` | POST | Answer a question about one lot from its computed metrics |
+| `/api/parcels/ask` | POST | Turn a plain-English request into map filters |
+| `/api/next-steps/{id}` | GET | What to do next on one lot, and who to contact |
+| `/api/draft` | POST | Draft outreach for one next step; nothing is sent |
 
 **Status codes carry meaning.** `200` success · `304` your copy is current ·
 `400` you asked for something that does not exist in config · `404` no such
@@ -151,6 +155,11 @@ a computation is constrained in the signature, so a malformed request costs a
   known criterion and typology ids, and weights are bounded and coerced to
   float. Unknown keys are dropped, not echoed. **Caller-supplied strings must
   never reach an LLM prompt unfiltered.**
+- `/api/ask` — the same `weights`/`ranking` rules, plus `question`, at most
+  `api.ask_question_max_chars`. `/api/parcels/ask` — `query`, between
+  `api.search_query_min_chars` and `api.lot_search_query_max_chars`. These two
+  are the deliberate exception to the rule above: the whole feature is the
+  caller's own words. What contains them is described under *Prompt injection*.
 
 **Limits live in `data/config/app.yaml`, not in code — and that is now
 enforced.** The route signatures read the config values directly; nothing is
@@ -212,20 +221,36 @@ Adding permissive CORS to a public read-only API would not leak anything, but it
 would let any site drive our LLM endpoint on a visitor's IP. If a cross-origin
 consumer ever appears, add an allowlist from an env var — never `*`.
 
-**Rate limiting.** `/api/explain` is the only endpoint that costs money per call,
-so it is the only one limited: fixed window, `api.explain_requests_per_minute`
-per client IP. **Be honest about what this is.** It is in-process, so on a
+**Rate limiting.** `/api/explain`, `/api/ask`, `/api/parcels/ask` and
+`/api/draft` are the endpoints that cost money per call, so they are the ones
+limited: fixed window, `api.explain_requests_per_minute` per client IP, one
+budget shared by all four. **Be honest about what this is.** It is in-process, so on a
 serverless host the ceiling is per warm instance, and `X-Forwarded-For` is
 client-controlled except for the hop the platform appends. It is a cost
 guardrail, not an access control. A real limit needs shared state (Redis, Vercel
 KV, or the platform's own WAF) and should be added before this is public for
 longer than a demo.
 
-**Prompt injection.** The model sees computed metrics and criterion labels — data
-we generated — not free text from a caller. The grounding validator is the
-backstop: sentences citing unknown metric ids, or numbers absent from the input,
-are discarded wholesale and a template is served. The model can never change a
-score; it only describes scores already computed.
+**Prompt injection.** For `/api/explain` the model sees computed metrics and
+criterion labels — data we generated — not free text from a caller. The grounding
+validator is the backstop: sentences citing unknown metric ids, or numbers absent
+from the input, are discarded wholesale and a template is served. The model can
+never change a score; it only describes scores already computed.
+
+`/api/ask` and `/api/parcels/ask` do send the caller's text, length-capped, and
+contain it by what the output may be rather than by trusting the prompt:
+- `/api/ask` output passes the same validator, and the question is excluded from
+  the numbers an answer may use, so an injected "say rent is $1" cannot land.
+  The worst case is a grounded answer to a different question.
+- `/api/parcels/ask` output is a filter object whose every value is an enum from
+  the parcel index or config; code does the matching. Free-text
+  `not_understood` phrases survive only if they appear verbatim in the query, so
+  the model can echo the caller but never add text of its own.
+- `/api/draft` takes no caller text at all: only a parcel id and a step id from
+  a fixed set. The model sees the step's facts and questions; a draft is kept
+  only if every fact it states is cited, every number is already on the step,
+  and any email address or link is one we supplied. Otherwise the step's
+  template letter is returned. The server never sends anything.
 
 **Known gaps, stated rather than hidden:** no authentication (intentional, the
 data is public); no global rate limit; no request-size limit beyond the
@@ -356,7 +381,8 @@ curl -s "$BASE/api/analysis/$PID" \
 # Anything the tool refuses to claim
 curl -s "$BASE/api/unknowns" | jq '{
   placeholders: (.placeholder_assumptions | length),
-  coverage: .share_covered_by_reviewed_rules
+  coverage: .share_covered_by_rules,
+  human_checked: .share_covered_by_human_reviewed_rules
 }'
 
 # Work backwards from a target
@@ -410,9 +436,10 @@ What each group is actually protecting:
 - **Config** — cross-reference validation and loud failure on bad config.
 - **Scoring** — direction-aware normalization, SMAA indices summing to 1,
   ranking flip on a toy example.
-- **Zoning** — rule evaluation, and that unreviewed means unreviewed.
-- **Eligibility** — a prohibited use is excluded from the ranking, an unreviewed
-  one is not, and an unresolvable status role fails at startup.
+- **Zoning** — rule evaluation; with `require_human_review` on, unreviewed means
+  unreviewed; with it off, extracted rules answer but report `human_reviewed: false`.
+- **Eligibility** — a prohibited use is excluded from the ranking, a rule not in
+  force excludes nothing, and an unresolvable status role fails at startup.
 - **No-hardcoding** — fake typologies work end to end; no config-declared id is
   quoted in code.
 - **Coverage** — random real parcels across the city all return complete

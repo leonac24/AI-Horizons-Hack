@@ -18,8 +18,13 @@ from pydantic import BaseModel, Field
 
 from core.config import ROOT, get_config
 from core.engine import Analysis, analyze, work_backwards
+from core.next_steps import Step, StepKind
+from core.next_steps import build as build_next_steps
 from core.plan import Placement, PlanResult, analyze_plan
-from core.zoning import load_rules
+from core.zoning import covered_bases, load_rules
+from server import lot_search
+from server.ask import ask
+from server.draft import draft
 from server.explain import explain
 from server.llm import get_provider
 
@@ -78,7 +83,7 @@ async def unhandled(request: Request, exc: Exception) -> Response:
 
 
 class _RateLimiter:
-    """Fixed-window limiter for the one endpoint that costs money per call.
+    """Fixed-window limiter for the endpoints that cost money per call.
 
     In-process, so on a serverless host the ceiling is per warm instance rather
     than global — this is a cost guardrail, not an access control. Anything
@@ -103,7 +108,7 @@ class _RateLimiter:
 
 
 @lru_cache(maxsize=1)
-def _explain_limiter() -> _RateLimiter:
+def _llm_limiter() -> _RateLimiter:
     return _RateLimiter(get_config().app.api.explain_requests_per_minute)
 
 
@@ -235,6 +240,30 @@ def analysis(request: Request, response: Response, parcel_id: str = PARCEL_ID) -
     return result
 
 
+@api.get("/next-steps/{parcel_id}", summary="What to do next on one lot, and who to contact")
+def next_steps(request: Request, response: Response, parcel_id: str = PARCEL_ID) -> list[Step]:
+    steps = build_next_steps(get_config(), _analysis(parcel_id))
+    if _conditional(request, response, [s.model_dump(mode="json") for s in steps]):
+        return Response(status_code=304)  # type: ignore[return-value]
+    return steps
+
+
+class DraftRequest(BaseModel):
+    parcel_id: str = ParcelId
+    step_id: StepKind
+
+
+@api.post("/draft", summary="Draft outreach for one next step; nothing is sent")
+def draft_route(req: DraftRequest, request: Request) -> dict:
+    cfg = get_config()
+    a = _analysis(req.parcel_id)
+    step = next((s for s in build_next_steps(cfg, a) if s.id == req.step_id), None)
+    if step is None:
+        raise HTTPException(404, "that step does not apply to this lot")
+    _spend(request)
+    return draft(cfg, get_provider(), a, step)
+
+
 class PlanRequest(BaseModel):
     """Buildings placed in the 3D lot view, as counts per building type. Where
     they sit on the lot is the client's concern; the evidence only needs counts."""
@@ -269,24 +298,61 @@ class ExplainRequest(BaseModel):
     ranking: list[str] = Field(default_factory=list)
 
 
+def _values(cfg, weights: dict[str, float], ranking: list[str]) -> tuple[dict[str, float], list[str]]:
+    """Cap, then filter the caller's weights and ranking to known ids. Unknown
+    keys and non-finite weights are dropped rather than forwarded into a prompt."""
+    limits = cfg.app.api
+    if len(weights) > limits.explain_max_weights or len(ranking) > limits.explain_max_ranking:
+        raise HTTPException(413, "too many weights or ranking entries")
+    known_criteria = {c.id for c in cfg.criteria}
+    known_typologies = {t.id for t in cfg.typologies}
+    return ({k: float(v) for k, v in weights.items() if k in known_criteria and -1e6 < float(v) < 1e6},
+            [t for t in ranking if t in known_typologies])
+
+
+def _spend(request: Request) -> None:
+    if not _llm_limiter().check(_client_key(request)):
+        raise HTTPException(429, "too many AI requests; try again shortly")
+
+
 @api.post("/explain", summary="Grounded prose over already-computed metrics")
 def explain_route(req: ExplainRequest, request: Request) -> dict:
     cfg = get_config()
-    limits = cfg.app.api
-    if len(req.weights) > limits.explain_max_weights or len(req.ranking) > limits.explain_max_ranking:
-        raise HTTPException(413, "too many weights or ranking entries")
-    if not _explain_limiter().check(_client_key(request)):
-        raise HTTPException(429, "too many explanation requests; try again shortly")
-
+    weights, ranking = _values(cfg, req.weights, req.ranking)
+    _spend(request)
     a = _analysis(req.parcel_id)  # recomputed server-side; client numbers are never trusted
-    known_criteria = {c.id for c in cfg.criteria}
-    known_typologies = {t.id for t in cfg.typologies}
-    # Drop unknown keys and non-finite weights rather than forwarding caller-supplied
-    # strings into an LLM prompt.
-    weights = {k: float(v) for k, v in req.weights.items()
-               if k in known_criteria and -1e6 < float(v) < 1e6}
-    ranking = [t for t in req.ranking if t in known_typologies]
     return explain(cfg, get_provider(), a, weights, ranking)
+
+
+class AskRequest(ExplainRequest):
+    question: str = Field(min_length=1, max_length=_API.ask_question_max_chars)
+
+
+@api.post("/ask", summary="Answer a question about one lot from its computed metrics")
+def ask_route(req: AskRequest, request: Request) -> dict:
+    cfg = get_config()
+    weights, ranking = _values(cfg, req.weights, req.ranking)
+    _spend(request)
+    return ask(cfg, get_provider(), _analysis(req.parcel_id), weights, ranking, req.question.strip())
+
+
+class LotSearchRequest(BaseModel):
+    query: str = Field(min_length=_API.search_query_min_chars, max_length=_API.lot_search_query_max_chars)
+
+
+@lru_cache(maxsize=1)
+def _search_vocab() -> dict:
+    return lot_search.vocab(list(_index()["parcels"].values()))
+
+
+@api.post("/parcels/ask", summary="Turn a plain-English request into map filters")
+def lot_search_route(req: LotSearchRequest, request: Request) -> dict:
+    _spend(request)
+    out = lot_search.search(get_config(), get_provider(), list(_index()["parcels"].values()), _search_vocab(),
+                            req.query.strip())
+    if out.get("ok"):
+        out["results"] = [_summary(p) for p in out["results"]]
+    return out
 
 
 @api.get("/work-backwards/{parcel_id}", summary="What would have to change to hit a target")
@@ -307,10 +373,14 @@ def unknowns() -> dict:
     rules = load_rules(cfg)
     parcels = _index()["parcels"].values()
     by_district = Counter(p.get("zoning") or "(no district)" for p in parcels)
-    reviewed = {d for d, r in rules.items()
-                if any(u.get("reviewed") for u in (r.get("uses") or {}).values())}
+
+    def base(code: str) -> str | None:
+        return cfg.zoning.district_code.split(code)[0]
+
+    covered_b, human_b = covered_bases(cfg, rules), covered_bases(cfg, rules, human_only=True)
     total = sum(by_district.values()) or 1
-    covered = sum(n for d, n in by_district.items() if d in reviewed)
+    covered = sum(n for d, n in by_district.items() if base(d) in covered_b)
+    human = sum(n for d, n in by_district.items() if base(d) in human_b)
     report_path = ROOT / "data" / "processed" / "pipeline_report.json"
     return {
         "placeholder_assumptions": [
@@ -318,10 +388,12 @@ def unknowns() -> dict:
             for k, a in cfg.assumptions.items() if a.provenance == "placeholder"],
         "unverified_sources": [
             {"id": k, "name": s.name, "note": s.note} for k, s in cfg.sources.sources.items() if s.verified is False],
-        "unreviewed_districts": [
-            {"district": d, "vacant_parcels": n} for d, n in by_district.most_common() if d not in reviewed],
+        "uncovered_districts": [
+            {"district": d, "vacant_parcels": n} for d, n in by_district.most_common() if base(d) not in covered_b],
         "vacant_parcels": total,
-        "share_covered_by_reviewed_rules": round(covered / total, 4),
+        "share_covered_by_rules": round(covered / total, 4),
+        "share_covered_by_human_reviewed_rules": round(human / total, 4),
+        "require_human_review": cfg.zoning.require_human_review,
         "pipeline": json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None,
     }
 

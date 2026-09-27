@@ -20,6 +20,7 @@ import geopandas as gpd
 import pandas as pd
 
 from core.config import ROOT, Config, load_config
+from core.engine import lot_shape, pure_buildings
 from pipeline.adapters.ckan import CkanDatastore, CkanDownload
 from pipeline.enrich_context import enrich_records
 from pipeline.steps.suggest import pick_suggested
@@ -126,7 +127,11 @@ def build(cfg: Config) -> dict:
     enrich_records(cfg, records, report)
 
     report["counts"]["indexed"] = len(records)
-    suggested = pick_suggested(records, city["suggested_lots"])
+    def _any_form_fits(r: dict) -> bool:
+        shape = lot_shape(cfg, r)
+        return any(pure_buildings(t, shape, float(r.get("lot_area_sf") or 0))[1] for t in cfg.typologies)
+
+    suggested = pick_suggested(records, city["suggested_lots"], usable=_any_form_fits)
     report["counts"]["suggested"] = len(suggested)
 
     PROCESSED.mkdir(parents=True, exist_ok=True)

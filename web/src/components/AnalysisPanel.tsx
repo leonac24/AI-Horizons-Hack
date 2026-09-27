@@ -4,11 +4,15 @@ import { PLAN_ID, type Crossing, type Option, type Ranking, type SetbackEnvelope
 import type { Placement } from '../three/engine'
 import type { Analysis, Config, EvidenceLeads, Explanation, Unknowns, WorkBackwardsResult } from '../types'
 import { ROLE_COLOR, roleOf, usd } from '../lib/format'
+import { AskLot, Dots, TypedSentences } from './ai'
+import { HelpTip } from './help'
+import { NextStepsTab } from './NextSteps'
 import { MetricBox, ProvTag, SourceRefs } from './ui'
 
-export type Tab = 'compare' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
+export type Tab = 'compare' | 'next' | 'priorities' | 'households' | 'emissions' | 'backwards' | 'unknowns'
 const TABS: [Tab, string][] = [
   ['compare', 'Compare'],
+  ['next', 'Next steps'],
   ['priorities', 'Whose priorities?'],
   ['households', 'Households'],
   ['emissions', 'Carbon'],
@@ -40,7 +44,7 @@ export function AnalysisPanel(p: Props) {
   const { L } = p
   return (
     <section className="panel" style={{ top: L.pTop, right: L.pRight, bottom: L.pBottom, left: L.pLeft, width: L.pWidth, height: L.pHeight, borderRadius: L.pRadius }}>
-      <div className="tabs">
+      <div className="tabs" data-tour="tabs">
         {TABS.map(([id, label]) => (
           <button key={id} className={`tab-${id} ${p.tab === id ? 'on' : ''}`} onClick={() => p.setTab(id)}>
             {label}
@@ -49,6 +53,14 @@ export function AnalysisPanel(p: Props) {
       </div>
       <div className="panel-body">
         {p.tab === 'compare' && <CompareTab {...p} />}
+        {p.tab === 'next' && (
+          <NextStepsTab
+            config={p.config}
+            analysis={p.analysis}
+            ranking={p.ranking}
+            profileLabel={p.config.stakeholders.profiles.find((x) => x.id === p.profileId)?.label ?? 'Custom'}
+          />
+        )}
         {p.tab === 'priorities' && <Priorities {...p} />}
         {p.tab === 'households' && <Households {...p} />}
         {p.tab === 'emissions' && <Carbon {...p} />}
@@ -61,7 +73,7 @@ export function AnalysisPanel(p: Props) {
 
 function Presets({ config, profileId, onWeights }: Pick<Props, 'config' | 'profileId' | 'onWeights'>) {
   return (
-    <div className="presets">
+    <div className="presets" data-tour="presets">
       {config.stakeholders.profiles.map((pr) => (
         <button key={pr.id} className={pr.id === profileId ? 'on' : ''} onClick={() => onWeights({ ...pr.weights }, pr.id)}>
           {pr.label}
@@ -87,8 +99,20 @@ function CompareTab(p: Props) {
   const f = ranking.flip
   const crit = f ? config.criteria[f.criterionIndex] : null
   const labelOf = (id: string) => pool.find((o) => o.id === id)?.label ?? id
+  const rankedIds = ranking.ranked.filter((o) => !o.isPlan).map((o) => o.id)
+  // "typology:metric" -> "Duplex · Income needed to afford a home"
+  const chip = (id: string) => {
+    const [t, m] = id.split(':')
+    const metricLabel =
+      config.criteria.find((c) => c.metric_id === m)?.label ?? analysis.scenarios.find((s) => s.typology_id === t)?.metrics[m]?.label ?? m
+    return `${config.typologies.find((x) => x.id === t)?.short_label ?? t} · ${metricLabel}`
+  }
   const z = plan?.zoning
   const zRole = z ? roleOf(config, z.status) : 'unreviewed'
+  const sitePlaceholderCount = analysis.site_context.filter((m) => m.provenance === 'placeholder').length
+    + analysis.site_facts.filter((f) => f.provenance === 'placeholder').length
+  const scenarioPlaceholderCount = analysis.scenarios.reduce((count, s) =>
+    count + Object.values(s.metrics).filter((m) => m.provenance === 'placeholder').length, 0)
 
   return (
     <div className="compare-grid">
@@ -112,11 +136,14 @@ function CompareTab(p: Props) {
           </div>
           {analysis.placeholder_count > 0 && (
             <div className="hatched note-box small">
-              {analysis.placeholder_count} values for this lot are placeholders. {config.app.placeholder_notice}
+              {analysis.placeholder_count} displayed values depend on placeholders: {sitePlaceholderCount} site values
+              {' '}and {scenarioPlaceholderCount} results across {analysis.scenarios.length} housing types.
+              {' '}Several results reuse the same unsourced inputs. Rankings are provisional.
+              {' '}{config.app.placeholder_notice}
             </div>
           )}
         </div>
-        <div className="h-sec">Your plan</div>
+        <div className="h-sec">Your plan<HelpTip id="your_plan" /></div>
         {!plan ? (
           <div className="empty-box">Nothing placed yet. Drag a building from the palette, or place one of the ranked options.</div>
         ) : (
@@ -126,7 +153,8 @@ function CompareTab(p: Props) {
                 <strong style={{ color: ROLE_COLOR[zRole] }}>{z!.status_label}</strong>
                 <span className="eyebrow">Title Nine</span>
               </div>
-              {!z!.reviewed && <div className="muted small">Rules for {par.zoning} haven’t been extracted and reviewed by a person yet, so no approval path is claimed.</div>}
+              {!z!.reviewed && <div className="muted small">{z!.note ?? `No zoning rules for ${par.zoning} yet.`} No approval path is claimed.</div>}
+              {z!.reviewed && !z!.human_reviewed && <div className="muted small">AI-extracted from Title Nine with a verbatim quote; not checked by a planner.</div>}
               {Object.entries(plan.zoningByType ?? {}).map(([tid, zt]) => (
                 <div key={tid} className="small" style={{ color: zt.disqualified ? '#ff7a5c' : '#c5d0d8' }}>
                   {zt.disqualified ? '✗' : '·'} {config.typologies.find((t) => t.id === tid)?.short_label} use: {zt.status_label}
@@ -166,7 +194,7 @@ function CompareTab(p: Props) {
 
       <div className="col">
         <Presets {...p} />
-        <div className="h-sec">Ranking under these priorities</div>
+        <div className="h-sec">Ranking under these priorities<HelpTip id="ranking" /></div>
         <div className="col tight">
           {ranking.ranked.map((o, i) => (
             <div key={o.id} className={`rank-row ${o.isPlan ? 'mine' : ''}`}>
@@ -179,10 +207,17 @@ function CompareTab(p: Props) {
               {o.isPlan ? <span className="yours">yours</span> : <button className="go-btn sm" onClick={() => o.placements && p.onPlace(o.placements)}>Place</button>}
             </div>
           ))}
+          {ranking.ranked.length === 0 && (
+            <div className="warn small">
+              No housing type fits this lot on its own. At {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft,
+              every one of the {config.typologies.length} forms screened here needs more frontage, depth or lot area than this parcel has.
+              Parcels this small are usually built on together with a neighboring lot; combining parcels is not modeled here.
+            </div>
+          )}
           {ranking.notFitting.length > 0 && <div className="dim small">Doesn’t fit this lot: {ranking.notFitting.map((o) => o.label).join(', ')}</div>}
           {ranking.excluded.length > 0 && (
             <div className="warn small">
-              Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}`).join('; ')}
+              Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}${o.zoning?.human_reviewed ? '' : ' (AI-extracted rule, not checked by a planner)'}`).join('; ')}
             </div>
           )}
         </div>
@@ -191,12 +226,19 @@ function CompareTab(p: Props) {
             ? `${labelOf(f.challengerId)} would overtake ${labelOf(f.winnerId)} if the weight on ${crit.label.toLowerCase()} ${f.delta > 0 ? 'rose' : 'fell'} from ${Math.round(f.from * 100)}% to ${Math.round(f.to * 100)}% of the total.`
             : ranking.ranked.length > 1
               ? 'No single-weight change flips the top two here — the leader wins across every weighting of one criterion.'
-              : 'Only one option can be ranked on this lot.'}
+              : ranking.ranked.length === 1
+                ? 'Only one option can be ranked on this lot.'
+                : 'No option can be ranked on this lot, so there is nothing to flip.'}
+          <HelpTip id="flip" />
         </div>
-        <div className="h-sec">How often does each option come out on top?</div>
-        <div className="dim small">
-          {config.app.smaa.samples.toLocaleString()} runs, each with different weights near your current priorities and every value drawn from its uncertainty range. Darker = better rank.
-        </div>
+        {ranking.ranked.length > 0 && (
+          <>
+            <div className="h-sec">How often does each option come out on top?<HelpTip id="smaa" /></div>
+            <div className="dim small">
+              {config.app.smaa.samples.toLocaleString()} runs, each with different weights near your current priorities and every value drawn from its uncertainty range. Darker = better rank.
+            </div>
+          </>
+        )}
         <div className="col tight">
           {ranking.ranked.map((o) => (
             <div key={o.id} className="smaa-row">
@@ -214,15 +256,23 @@ function CompareTab(p: Props) {
           <button
             className="go-btn"
             disabled={loading}
+            aria-busy={loading}
             onClick={() => {
               setLoading(true)
               api
-                .explain(par.id, p.weights, ranking.ranked.filter((o) => !o.isPlan).map((o) => o.id))
+                .explain(par.id, p.weights, rankedIds)
                 .then(setExpl)
                 .finally(() => setLoading(false))
             }}
           >
-            {loading ? 'Explaining…' : 'Explain these tradeoffs'}
+            {loading ? (
+              <>
+                Explaining
+                <Dots />
+              </>
+            ) : (
+              'Explain these tradeoffs with AI'
+            )}
           </button>
           {expl && (
             <div className="expl">
@@ -232,23 +282,21 @@ function CompareTab(p: Props) {
                   : `Written by ${expl.source}, then checked against the numbers on this page.`}{' '}
                 Covers the ranked building types; every sentence cites the metrics it uses.
               </div>
-              {expl.sentences.map((s, i) => (
-                <p key={i}>
-                  {s.text}{' '}
-                  {s.metric_ids.map((id) => {
-                    const [t, m] = id.split(':')
-                    return (
-                      <span key={id} className="chip">
-                        {config.typologies.find((x) => x.id === t)?.short_label ?? t} · {config.criteria.find((c) => c.metric_id === m)?.label ?? m}
-                      </span>
-                    )
-                  })}
-                </p>
-              ))}
+              <TypedSentences key={expl.sentences.map((s) => s.text).join('|')} sentences={expl.sentences} chip={chip} />
             </div>
           )}
+          <div className="h-sec">Ask about this lot<HelpTip id="ask" /></div>
+          <AskLot
+            key={par.id}
+            parcelId={par.id}
+            weights={p.weights}
+            ranking={rankedIds}
+            examples={config.app.ask.examples}
+            maxChars={config.app.api.ask_question_max_chars}
+            chip={chip}
+          />
         </div>
-        <div className="h-sec">About this lot</div>
+        <div className="h-sec">About this lot<HelpTip id="about_lot" /></div>
         <div className="ctx-grid">
           <div className={`mbox prov-${analysis.lot_shape.provenance}`}>
             <div className="mbox-head">
@@ -279,7 +327,7 @@ function Priorities(p: Props) {
   const tot = config.criteria.reduce((a, c) => a + (weights[c.id] ?? 0), 0) || 1
   return (
     <div className="values-box">
-      <div className="h-values">Whose priorities?</div>
+      <div className="h-values">Whose priorities?<HelpTip id="priorities" /></div>
       <p className="muted small">These are values, not evidence. Pick a starting point or move the sliders — the evidence doesn’t change, only how it’s weighed. Presets are illustrative, not positions of real organizations.</p>
       <Presets {...p} />
       <div className="col">
@@ -302,7 +350,7 @@ function Households({ config, pool }: Props) {
   const V = { yes: ['●', 'Yes', '#2fd06b'], maybe: ['◐', 'Maybe', '#ffb800'], no: ['○', 'No', '#ff7a45'] } as const
   return (
     <div>
-      <div className="h-tab">Could this household afford it?</div>
+      <div className="h-tab">Could this household afford it?<HelpTip id="households" /></div>
       <p className="muted small">Illustrative households, not real people. “Yes” = affordable at 30% of income across the whole cost range; “Maybe” = only at the low end; “No” = not without subsidy.</p>
       <div className="table-wrap">
         <table className="dtable">
@@ -373,7 +421,7 @@ function Carbon({ pool, year, setYear, config }: Props) {
   return (
     <div>
       <div className="row-between">
-        <div className="h-tab">Carbon per household over time</div>
+        <div className="h-tab">Carbon per household over time<HelpTip id="carbon_over_time" /></div>
         <ProvTag p={prov} />
       </div>
       <p className="muted small">Building materials at year 0, then home energy (PA grid, decarbonizing) and travel each year. Tonnes CO₂e.</p>
@@ -388,8 +436,8 @@ function Carbon({ pool, year, setYear, config }: Props) {
                 </text>
               </g>
             ))}
-            {[0, Math.round(last / 3), Math.round((2 * last) / 3), last].map((t) => (
-              <text key={t} x={X(t)} y={190} fill="#7d9cc0" fontSize={9} textAnchor="middle" fontFamily="Fredoka">
+            {[0, Math.round(last / 3), Math.round((2 * last) / 3), last].map((t, i) => (
+              <text key={i} x={X(t)} y={190} fill="#7d9cc0" fontSize={9} textAnchor="middle" fontFamily="Fredoka">
                 yr {t}
               </text>
             ))}
@@ -454,7 +502,7 @@ function Backwards({ config, analysis, wb, setWb }: Props) {
   const role = res ? roleOf(config, res.zoning.status) : 'unreviewed'
   return (
     <div>
-      <div className="h-tab">Work backwards</div>
+      <div className="h-tab">Work backwards<HelpTip id="backwards" /></div>
       <p className="muted small">Pick a target. See what would have to change on this lot to get there.</p>
       <div className="wb-controls">
         <label>
@@ -497,7 +545,7 @@ function Backwards({ config, analysis, wb, setWb }: Props) {
                 {c.label}: needs {c.required.toLocaleString()} {c.unit}, has {c.actual.toLocaleString()} → variance or special exception {c.citation ? `(${c.citation})` : ''}
               </div>
             ))}
-            {!res.failed_rules.length && <div className="dim small">{res.zoning.note ?? 'No reviewed dimensional rule fails.'}</div>}
+            {!res.failed_rules.length && <div className="dim small">{res.zoning.note ?? 'No dimensional rule fails.'}</div>}
             {scen && !scen.form_fits && <div className="warn small">This building form doesn’t physically fit the lot.</div>}
           </div>
           <div className={`card-box prov-${res.subsidy_per_unit.provenance}`}>
@@ -547,18 +595,20 @@ function UnknownsTab({ config }: Pick<Props, 'config'>) {
   if (!u) return <div className="muted">Loading…</div>
   return (
     <div className="unknowns">
-      <div className="h-tab">What we don’t know</div>
+      <div className="h-tab">What we don’t know<HelpTip id="unknowns" /></div>
       <p className="muted">
         This tool is decision support. Here is everything it is not yet sure about. Values marked <ProvTag p="placeholder" /> are stand-ins that show how the tool works — not facts about Pittsburgh.
       </p>
       <div className="h-card">Zoning rules</div>
       <p className="small">
-        {Math.round(u.share_covered_by_reviewed_rules * 100)}% of the city’s {u.vacant_parcels.toLocaleString()} vacant lots are in a district whose rules a person has reviewed. Every other lot shows “Needs planner review.”
+        {Math.round(u.share_covered_by_rules * 100)}% of the city’s {u.vacant_parcels.toLocaleString()} vacant lots are in a district with zoning rules
+        {u.require_human_review ? ' a person has reviewed.' : `; ${Math.round(u.share_covered_by_human_reviewed_rules * 100)}% by rules a person has checked. The rest were extracted by AI from the code text, each with a verbatim quote, and are labelled that way.`}
+        {' '}Lots in other districts show “Needs planner review.”
       </p>
       <details className="small">
-        <summary>{u.unreviewed_districts.length} districts not yet reviewed (by vacant lots)</summary>
+        <summary>{u.uncovered_districts.length} districts with no rules yet (by vacant lots)</summary>
         <div className="columns">
-          {u.unreviewed_districts.map((d) => (
+          {u.uncovered_districts.map((d) => (
             <div key={d.district}>
               {d.district}: {d.vacant_parcels.toLocaleString()}
             </div>

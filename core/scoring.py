@@ -85,3 +85,40 @@ def ranking_flip(value: np.ndarray, higher_is_better: np.ndarray, weights: np.nd
             best = {"criterion_index": j, "from": float(w[j]), "to": float(t), "delta": float(d),
                     "winner": a, "challenger": b}
     return best
+
+
+def leverage(value: np.ndarray, low: np.ndarray, high: np.ndarray, higher_is_better: np.ndarray,
+             weights: np.ndarray, samples: int, seed: int, center: np.ndarray | None = None,
+             concentration: float = 40) -> np.ndarray:
+    """How much settling each criterion's evidence would move the leader's rank.
+
+    Mirror of web/src/lib/leverage.ts — keep in sync.
+
+    For each criterion j: collapse its uncertainty band to the central estimate,
+    resample with the SAME seed, and report the change in the share of draws where
+    the current leader comes first. Sharing one seed makes this a difference of
+    matched samples, so most of the Monte Carlo noise cancels and a few hundred
+    draws are enough to order the criteria — which is all the work plan needs.
+
+    This is the whole reason a work plan can be prioritised: a question whose
+    answer cannot move the ranking is one the user should not pay for yet.
+
+    The sign carries meaning and must be preserved:
+      > 0  settling this would confirm the leader more often
+      < 0  settling this could unseat the leader
+    Both say the question is worth asking; only the magnitude orders them.
+    """
+    k = value.shape[1]
+    if value.shape[0] < 2 or k == 0:
+        return np.zeros(k)  # nothing to reorder, so nothing has leverage
+    base = smaa(value, low, high, higher_is_better, samples, seed, center, concentration)
+    # The leader at the user's actual weights, matching rankOrder's stable sort.
+    lead = int(np.argsort(-scores(value, higher_is_better, weights), kind="stable")[0])
+    out = np.zeros(k)
+    for j in range(k):
+        lo, hi = low.copy(), high.copy()
+        lo[:, j] = hi[:, j] = value[:, j]
+        acc = smaa(value, lo, hi, higher_is_better, samples, seed, center, concentration)
+        out[j] = acc[lead, 0] - base[lead, 0]
+    return out
+

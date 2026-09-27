@@ -1,0 +1,149 @@
+# What a CDC can do next on one lot, and who to contact.
+#
+# core/next_steps.py turns a parcel's evidence (ownership, zoning results, site
+# flags) and its open inquiries (inquiries.yaml) into a short list of actions.
+# Every Pittsburgh-specific string, contact and question lives here; the builder
+# only decides which steps apply.
+#
+# Contacts were found by web search on 2026-09-27; the pages themselves could not
+# be opened from the build environment, so each carries `checked: false` until a
+# teammate clicks through and flips it. The UI says so next to the link.
+#
+# Template fields for any text below:
+#   {address} {parcel_id} {neighborhood} {district} {lot_area_sf}
+#   acquire also: {inventory_type} {status}
+
+contacts:
+  land_bank:
+    label: Pittsburgh Land Bank
+    url: https://pghlandbank.org/contact-us/
+    checked: false
+  ura:
+    label: Urban Redevelopment Authority of Pittsburgh — available properties
+    url: https://www.ura.org/pages/available-properties
+    checked: false
+  city_real_estate:
+    label: City of Pittsburgh Real Estate Division (Department of Finance)
+    url: https://www.pittsburghpa.gov/City-Government/Finance-Budget/Real-Estate
+    phone: (412) 255-2300
+    checked: false
+  city_zoning:
+    label: City of Pittsburgh Department of City Planning — zoning pre-application meeting
+    url: https://www.pittsburghpa.gov/Business-Development/City-Planning/Zoning/Planning-Applications-and-Processes/Pre-Application-Meeting
+    email: zoning@pittsburghpa.gov
+    phone: (412) 255-2241
+    checked: false
+  rco_list:
+    label: City of Pittsburgh — list of Registered Community Organizations
+    url: https://www.pittsburghpa.gov/Business-Development/Planning/Planning-Programs/Registered-Community-Organizations/List-of-RCOs
+    checked: false
+  geotechnical:
+    label: A licensed geotechnical or civil engineer
+    checked: true
+
+acquire:
+  title: Ask about acquiring this lot
+  # Who to ask, by the city inventory's `inventory_type`. Anything unlisted goes
+  # to `default_contact`.
+  default_contact: city_real_estate
+  by_inventory_type:
+    PLB Transfer: land_bank
+    URA Transfer: ura
+  # Statuses that mean the city intends to keep the lot.
+  not_for_sale_statuses:
+    - Permanent City Ownership
+  # Turns the inquiry's `ask_for` ("Disposition status, asking terms, ...") into a question.
+  ask_for_question: Could you share the {ask_for}?
+  not_for_sale_note: >-
+    The city inventory lists this lot as "{status}" ({inventory_type}). Lots like
+    this are generally kept in public use, so ask first whether a transfer is
+    possible at all.
+  why: >-
+    {address} is publicly held. The city inventory lists it as "{inventory_type}",
+    status "{status}". Ownership is not availability: before paying for design,
+    confirm it can be transferred, on what terms, and with what conditions.
+
+zoning:
+  title: Talk to Zoning
+  contact: city_zoning
+  why: >-
+    Some housing types on this lot need a hearing or a variance in {district},
+    not an over-the-counter permit. A pre-application meeting with City Planning
+    is the usual first step.
+  questions:
+    - Which approval path applies to the options below in {district}, and what does the application need?
+    - Is a variance for the failed rules below realistic here, and how have similar requests gone?
+    - Will the application need a meeting with the neighborhood's Registered Community Organization?
+
+confirm:
+  title: Confirm with City Planning
+  contact: city_zoning
+  why_unreviewed: >-
+    Lotline has no zoning use rules in force for {district}, so every approval path
+    shown for this lot is unknown until City Planning confirms it.
+  why_unchecked: >-
+    The zoning rules used here for {district} were extracted from Title Nine by AI
+    and have not been checked by a planner yet.
+  questions:
+    - Is {address} (parcel {parcel_id}) zoned {district}, and do any overlays apply?
+    - Which residential uses are permitted by right in {district}, and which need a special exception or conditional use?
+    - What minimum lot area, lot area per unit, height and setbacks apply to residential use here?
+    - Would a zoning verification letter for this parcel be available, and how is it requested?
+
+site_check:
+  title: Get a site check before paying for design
+  contact: geotechnical
+  why: >-
+    This lot is flagged for site conditions that change what building here costs,
+    or whether it is practical. An engineer's desk review costs far less than a
+    design that has to be redone.
+  flood_label: FEMA high-risk flood zone
+  # Keyed by a city.yaml hazard id, or `fema_high_risk_flood` for the FEMA flag.
+  hazards:
+    steep_slope:
+      - How much grading and retaining would a small building on this slope need, roughly?
+      - Does the City's steep-slope review apply here, and what would it ask for?
+    landslide:
+      - Is there evidence of past movement on or next to this lot?
+      - What investigation (borings, a slope stability study) would a lender expect before design?
+    undermined:
+      - Is there a record of mine workings under this parcel, and at what depth?
+      - Would foundations need special design or mine subsidence insurance here?
+    fema_high_risk_flood:
+      - Where is the lot relative to the base flood elevation, and would the first floor have to be raised?
+      - What would flood insurance and floodplain permitting add to cost and schedule?
+
+neighborhood:
+  title: Take it to the neighborhood
+  contact: rco_list
+  why: >-
+    The City of Pittsburgh registers community organizations (RCOs) as key
+    stakeholders for each area. Find out which one covers {neighborhood} and talk
+    to them early; City Planning can tell you whether your application will need a
+    formal meeting with them.
+  # Shown instead of an organization name until RCO boundaries are joined to the
+  # parcel index (WPRDC publishes them; not loaded yet).
+  rco_placeholder: >-
+    Lotline does not know which RCO covers this lot yet. Look up {neighborhood} on
+    the City's list.
+  discussion_questions:
+    - "What does this block need most: homes for families, older neighbors, first-time buyers, or renters?"
+    - Which of these options would fit the street, and which would feel out of place?
+    - "What worries you about new housing here: prices, parking, construction, who it is for?"
+    - Who else on this block should be part of this conversation?
+
+# Short outreach drafts (POST /api/draft). The model writes from the step's facts
+# only; if its draft fails the check, the step's template letter is used.
+draft:
+  max_paragraphs: 5
+  subject: "{title}: {address} (parcel {parcel_id})"
+  # The template letter, used as-is when no model is configured or its draft fails
+  # the check, and as the model's example of tone and length.
+  greeting: Hello,
+  intro: >-
+    We are a community development organization in Pittsburgh screening housing
+    options for {address} (parcel {parcel_id}, zoned {district}) in {neighborhood}.
+  facts_lead: "What we know so far:"
+  questions_lead: "Could you help us with the following?"
+  closing: Thank you for your time. We would be glad to talk by phone or meet.
+  sign_off: "[Your name]\n[Your organization]\n[Phone or email]"

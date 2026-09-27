@@ -1,0 +1,539 @@
+# What to go and find out.
+#
+# Lotline never says what to build. It does say what is still unknown, who can
+# answer it, and what to ask them for — and core/inquiries.py builds that list per
+# parcel by following the dependency edges the engine recorded. This file holds
+# every Pittsburgh-specific string in that feature: no resolver name, question or
+# cost appears in Python.
+#
+# `trigger` is a role, not a name:
+#   public_parcel        the lot is publicly held, so availability is in question
+#   zoning_use           no use rule is in force for the district yet
+#   zoning_dimensional   keyed by a rule id from zoning.yaml extraction_targets
+#   assumption           keyed by an assumption id from assumptions.yaml
+#
+# `pins` names the assumption an answer would settle. It is how a question is tied
+# back to the metrics it holds up without a metric id being written in code.
+#
+# Template fields available to `question`, `why`, `ask_for` and `contact_template`:
+#   {parcel_id} {address} {district} {neighborhood} {lot_area_sf}
+#   zoning_dimensional also: {rule_label} {required} {actual} {rule_unit}
+#   assumption also: {label} {rationale} {unit} {low} {high} {value}
+
+cost_notice: >-
+  Cost and timing are illustrative planning estimates, not quotes. They describe
+  the kind of work a step usually takes, not what anyone has offered to do it for.
+  They never affect the ranking or the order of this list.
+
+no_leverage_notice: >-
+  Settling these would not change which option comes out on top, at your current
+  priorities. They still matter for design and budget later — but they are not
+  what is holding this decision up today.
+
+# --- who answers a question ----------------------------------------------------
+resolvers:
+  land_bank:
+    label: City of Pittsburgh real estate / Pittsburgh Land Bank
+    kind: agency
+    contact_hint: Ask which entity holds title and whether the lot is in an active disposition process.
+  city_planning:
+    label: City of Pittsburgh, Department of City Planning
+    kind: agency
+    contact_hint: Zoning counter staff can confirm a district and a use in one call.
+  zoning_board:
+    label: Zoning Board of Adjustment
+    kind: agency
+    contact_hint: Ask about filing requirements and the current hearing calendar.
+  pgh_water:
+    label: Pittsburgh Water (and ALCOSAN for combined-sewer questions)
+    kind: utility
+    contact_hint: Request capacity in writing; verbal assurances are not evidence of capacity.
+  transit:
+    label: Pittsburgh Regional Transit
+    kind: agency
+  geotechnical:
+    label: A geotechnical engineer
+    kind: professional
+  surveyor:
+    label: A land surveyor
+    kind: professional
+  architect:
+    label: Your architect
+    kind: professional
+  estimator:
+    label: A general contractor or cost estimator
+    kind: professional
+  energy_modeler:
+    label: An energy modeler or MEP engineer
+    kind: professional
+  lender:
+    label: A construction lender, CDFI, or the URA
+    kind: lender
+  operator:
+    label: A property manager or operator
+    kind: professional
+  own_team:
+    label: Your own team
+    kind: desk
+    contact_hint: No one to call — this is a published figure someone needs to look up.
+
+# --- how much work a question is -----------------------------------------------
+effort_tiers:
+  desk_check:
+    label: Desk check — an hour on a public website
+    order: 1
+  phone_call:
+    label: A call or email you can send today
+    order: 2
+  agency_request:
+    label: A written request to an agency
+    order: 3
+  professional_study:
+    label: A paid professional study
+    order: 4
+
+# --- the fallback when an assumption has no record of its own -------------------
+# Keeps a newly added assumption visible as a real question instead of silently
+# dropping out of the work plan.
+generic:
+  trigger: assumption
+  question: What is the real figure for {label} at this site?
+  why: >-
+    The tool is currently working from a range ({low}–{high} {unit}) rather than a
+    measured value. {rationale}
+  resolver: own_team
+  ask_for: A sourced value for {label}
+  effort: desk_check
+  contact_template: >-
+    Re {address} (parcel {parcel_id}, zoning {district}): we are screening housing
+    options and need a defensible figure for {label}, currently modelled as
+    {low}–{high} {unit}.
+
+inquiries:
+
+  # --- Can we even use this lot? ----------------------------------------------
+  land_availability:
+    trigger: public_parcel
+    blocks_eligibility: true
+    question: Is this lot actually available, and on what terms?
+    why: >-
+      Ownership is not availability. This parcel is publicly held, which says who
+      holds title — not whether it can be transferred, at what price, or with what
+      conditions attached. If it cannot be acquired, no other answer on this page
+      matters.
+    resolver: land_bank
+    ask_for: Disposition status, asking terms, and any deed restrictions or reverter clauses
+    effort: phone_call
+    source: wprdc_city_owned
+    contact_template: >-
+      Re {address} (parcel {parcel_id}) in {neighborhood}: we are a community
+      development organisation screening housing options for this lot. Could you
+      confirm who currently holds title, whether it is available for disposition,
+      and any conditions or restrictions that would come with a transfer?
+
+  # --- Is the housing type even allowed? ---------------------------------------
+  zoning_use_review:
+    trigger: zoning_use
+    blocks_eligibility: true
+    pins: zoning_status_score
+    question: In {district}, which of these housing types is allowed — and by right or by hearing?
+    why: >-
+      Lotline has no use rules in force for {district} yet, so every approval
+      path shown for this lot spans the full range from by-right to prohibited.
+      This is the single answer that most changes what this lot can be, and it is
+      usually one phone call.
+    resolver: city_planning
+    ask_for: A zoning verification letter, or confirmation of permitted use for {forms}
+    effort: phone_call
+    source: pgh_zoning_code
+    contact_template: >-
+      Re {address} (parcel {parcel_id}), zoned {district}: could you confirm
+      whether the following residential uses are permitted by right, by special
+      exception, by conditional use, or not at all in this district — {forms}?
+
+  # --- Dimensional rules this lot fails ----------------------------------------
+  lot_area_per_unit_sf:
+    trigger: zoning_dimensional
+    pins: zoning_status_score
+    question: How many homes will {district} actually allow on {lot_area_sf} sf here?
+    why: >-
+      The rule requires {required} {rule_unit} and this plan works out at
+      {actual}. That makes it a variance request rather than an over-the-counter
+      permit, which adds a hearing, a timeline and a real chance of refusal.
+    resolver: zoning_board
+    ask_for: Variance filing requirements, recent outcomes for similar requests, and the hearing calendar
+    effort: agency_request
+    cost: { low: 500, high: 4000, unit: USD }
+    weeks: { low: 8, high: 20, unit: weeks }
+    contact_template: >-
+      Re {address} (parcel {parcel_id}), zoned {district}: we expect to need a
+      variance from the {rule_label} requirement ({required} {rule_unit} required,
+      {actual} proposed). Could you confirm filing requirements and the next
+      available hearing date?
+
+  min_lot_area_sf:
+    trigger: zoning_dimensional
+    pins: zoning_status_score
+    question: Is this lot large enough for this use in {district}, or does it need a variance?
+    why: >-
+      The minimum is {required} {rule_unit} and this lot is {actual}.
+      Undersized lots are common in Pittsburgh and are often still buildable — but
+      through a variance, not by right.
+    resolver: zoning_board
+    ask_for: Confirmation of minimum lot area and the variance path for an undersized lot
+    effort: agency_request
+    cost: { low: 500, high: 4000, unit: USD }
+    weeks: { low: 8, high: 20, unit: weeks }
+    contact_template: >-
+      Re {address} (parcel {parcel_id}), zoned {district}: this lot is {actual}
+      {rule_unit} against a {required} {rule_unit} minimum. Could you confirm
+      whether a variance is the right route and what the filing requires?
+
+  max_height_ft:
+    trigger: zoning_dimensional
+    pins: zoning_status_score
+    question: Can this building be as tall as modelled in {district}?
+    why: >-
+      The height limit is {required} {rule_unit} and this form is
+      {actual}. Losing a storey usually removes homes, which changes both the cost
+      per home and who can afford to live here.
+    resolver: city_planning
+    ask_for: Confirmation of the height limit and how it is measured on a sloping lot
+    effort: phone_call
+    contact_template: >-
+      Re {address} (parcel {parcel_id}), zoned {district}: could you confirm the
+      maximum height for residential use, and how height is measured here given
+      the slope across the lot?
+
+  max_stories:
+    trigger: zoning_dimensional
+    pins: zoning_status_score
+    question: How many storeys does {district} allow on this lot?
+    why: >-
+      The limit is {required} {rule_unit} and this form is {actual}.
+      Fewer storeys means fewer homes and a higher cost per home.
+    resolver: city_planning
+    ask_for: Confirmation of the permitted number of storeys for residential use
+    effort: phone_call
+    contact_template: >-
+      Re {address} (parcel {parcel_id}), zoned {district}: could you confirm the
+      maximum number of storeys permitted for residential use in this district?
+
+  # --- Site conditions ---------------------------------------------------------
+  steep_slope_cost_share:
+    trigger: assumption
+    question: What does this slope really add to the cost of building here?
+    why: >-
+      A steep-slope allowance of {low}–{high} as a share of hard cost is the widest
+      band in the whole model, and it falls on every option at once. On a
+      Pittsburgh hillside the honest answer is site-specific and cannot be read off
+      a map.
+    resolver: geotechnical
+    ask_for: A preliminary geotechnical reconnaissance with a foundation and retaining strategy
+    effort: professional_study
+    cost: { low: 3000, high: 9000, unit: USD }
+    weeks: { low: 3, high: 8, unit: weeks }
+    contact_template: >-
+      Re {address} (parcel {parcel_id}) in {neighborhood}: we are screening housing
+      options on a sloping {lot_area_sf} sf lot and need a preliminary read on
+      foundation and retaining requirements before we commission design.
+
+  landslide_cost_share:
+    trigger: assumption
+    question: How much stabilisation would this landslide-prone site need?
+    why: >-
+      Landslide-prone ground carries a {low}–{high} share of hard cost in this
+      model — a range so wide it can reorder the options on its own. It is also the
+      kind of risk a lender will ask about before it asks about anything else.
+    resolver: geotechnical
+    ask_for: A slope stability opinion and an order-of-magnitude stabilisation cost
+    effort: professional_study
+    cost: { low: 5000, high: 15000, unit: USD }
+    weeks: { low: 4, high: 10, unit: weeks }
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): this parcel is mapped as landslide-prone.
+      We need a preliminary stability opinion and a rough stabilisation cost to
+      judge whether housing here is viable at all.
+
+  undermined_cost_share:
+    trigger: assumption
+    question: Is there a mine under this lot, and what would that cost to deal with?
+    why: >-
+      Mine-subsidence allowance spans {low}–{high} of hard cost. Whether that is
+      near zero or project-ending depends on records that exist but have not been
+      pulled for this parcel.
+    resolver: geotechnical
+    ask_for: A mine-void records search and a subsidence risk opinion
+    effort: professional_study
+    cost: { low: 2000, high: 8000, unit: USD }
+    weeks: { low: 3, high: 8, unit: weeks }
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): this parcel is mapped as undermined. We
+      need a records search for workings beneath the site and an opinion on
+      subsidence risk and mitigation.
+
+  lot_depth_to_frontage_ratio:
+    trigger: lot_shape
+    pins: lot_depth_to_frontage_ratio
+    question: What shape is this lot, actually?
+    why: >-
+      No usable dimensions came with this parcel, so the {frontage} × {depth} ft
+      shape shown here was drawn from lot area and a placeholder ratio of
+      {low}–{high}. Every question about how many buildings fit rests on that
+      guess, and a wrong frontage changes the unit count before it changes
+      anything else.
+    resolver: surveyor
+    ask_for: A boundary survey, or the recorded plat if one exists
+    effort: professional_study
+    cost: { low: 1200, high: 4000, unit: USD }
+    weeks: { low: 2, high: 6, unit: weeks }
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): we need recorded boundary dimensions for
+      this {lot_area_sf} sf lot. Is there a plat on file, or would this need a new
+      boundary survey?
+
+  sewer_stress_index:
+    trigger: assumption
+    question: Is there sewer capacity for new homes here, or is this a combined-sewer constraint?
+    why: >-
+      This is a placeholder index, not a capacity finding. Being near a sewer is
+      not evidence of room in it, and in a combined-sewer area added flow can be
+      the thing that stops a project or adds stormwater controls to it.
+    resolver: pgh_water
+    ask_for: A written capacity or point-of-connection letter, and any stormwater requirements
+    effort: agency_request
+    weeks: { low: 4, high: 16, unit: weeks }
+    source: alcosan_cso
+    contact_template: >-
+      Re {address} (parcel {parcel_id}) in {neighborhood}: we are evaluating new
+      residential construction on this lot. Could you confirm available sanitary
+      capacity, the point of connection, and any stormwater management
+      requirements that would apply?
+
+  # --- Money -------------------------------------------------------------------
+  hard_cost_psf:
+    trigger: assumption
+    question: What does construction actually cost per square foot in Pittsburgh right now?
+    why: >-
+      Hard cost is modelled at {low}–{high} {unit} and is unsourced. It drives the
+      rent or price needed to cover the project, which drives who can afford to
+      live here — so it moves the affordability answer for every option at once.
+    resolver: estimator
+    ask_for: A square-foot cost range for each form under consideration, at current prices
+    effort: phone_call
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): we are comparing housing forms on this
+      {lot_area_sf} sf lot and need current Pittsburgh square-foot hard costs for
+      each. Ranges are fine at this stage — we are screening, not pricing a job.
+
+  soft_cost_share:
+    trigger: assumption
+    question: What will design, permitting and financing add on top of construction?
+    why: >-
+      Soft costs are modelled at {low}–{high} of hard cost, unsourced. For a small
+      infill project this share is often higher than developers expect, because the
+      fixed costs do not shrink with the building.
+    resolver: lender
+    ask_for: A soft-cost breakdown from a comparable recent small infill project
+    effort: phone_call
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): could you share a soft-cost breakdown from
+      a recent small infill housing project in Pittsburgh, so we can sanity-check a
+      {low}–{high} assumption against something real?
+
+  annual_capital_cost_share:
+    trigger: assumption
+    question: What would this project actually cost to finance?
+    why: >-
+      Debt service plus required return is modelled at {low}–{high} per year of
+      development cost, unsourced. It converts a capital cost into a monthly cost,
+      so it decides what rent the project has to charge.
+    resolver: lender
+    ask_for: Indicative terms — rate, amortisation, and required equity return
+    effort: phone_call
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): we are screening housing options and need
+      indicative financing terms for a small infill project — rate, amortisation
+      and expected equity return — to test what rents would have to cover.
+
+  operating_cost_per_unit_month:
+    trigger: assumption
+    question: What does it cost to run one of these homes each month?
+    why: >-
+      Operating cost is modelled at {low}–{high} {unit}, unsourced. Taxes,
+      insurance and reserves come straight off what a household can pay toward the
+      building, so this shifts the affordability result directly.
+    resolver: operator
+    ask_for: Per-unit monthly operating costs from a comparable Pittsburgh property
+    effort: phone_call
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): could you share per-unit monthly operating
+      costs — taxes, insurance, maintenance, management, reserves — from a
+      comparable small Pittsburgh residential property?
+
+  # --- Who lives here, and what they earn --------------------------------------
+  ami_4person:
+    trigger: assumption
+    question: What is the current HUD area median income for Pittsburgh?
+    why: >-
+      Every affordability answer on this page is expressed against area median
+      income, and the figure in use is a placeholder because the HUD site blocked
+      an automated download. This is a published number — an hour of someone's
+      time, and it is no longer a guess.
+    resolver: own_team
+    ask_for: The current fiscal-year HUD median family income for the Pittsburgh metro area
+    effort: desk_check
+    source: hud_income_limits
+    contact_template: >-
+      Look up the current HUD income limits for the Pittsburgh, PA HUD Metro FMR
+      Area and record the 4-person median family income, then set it in
+      assumptions.yaml and change its provenance from placeholder.
+
+  tract_median_household_income:
+    trigger: assumption
+    question: What do households near this lot actually earn?
+    why: >-
+      Local income is a placeholder spanning {low}–{high} {unit}. It sets the bar
+      for whether new homes here would be affordable to people already in
+      {neighborhood}, which is the displacement-pressure question.
+    resolver: own_team
+    ask_for: ACS median household income for the tract containing this parcel
+    effort: desk_check
+    source: acs_5yr
+    contact_template: >-
+      Pull ACS 5-year median household income for the census tract containing
+      {address} (parcel {parcel_id}) and record it against this parcel.
+
+  tract_renter_cost_burden_share:
+    trigger: assumption
+    question: How many renters near this lot are already cost-burdened?
+    why: >-
+      Modelled at {low}–{high} of renter households, from a placeholder. This is
+      the evidence for how much housing need exists around this lot, so it carries
+      the demand side of the comparison.
+    resolver: own_team
+    ask_for: HUD CHAS cost-burden counts for the tract containing this parcel
+    effort: desk_check
+    source: hud_chas
+    contact_template: >-
+      Pull HUD CHAS renter cost-burden figures for the census tract containing
+      {address} (parcel {parcel_id}) and record them against this parcel.
+
+  jobs_access_index:
+    trigger: assumption
+    question: What can someone living here actually reach on transit?
+    why: >-
+      Transit access is a placeholder index spanning {low}–{high}. Pittsburgh's
+      hills make straight-line distance to a stop misleading, so this needs real
+      travel times rather than proximity.
+    resolver: transit
+    ask_for: Service levels on nearby routes, and any planned changes
+    effort: phone_call
+    source: prt_gtfs
+    contact_template: >-
+      Re {address} (parcel {parcel_id}) in {neighborhood}: could you confirm
+      current weekday and weekend service levels on the routes serving this
+      location, and whether any changes are planned?
+
+  # --- Carbon ------------------------------------------------------------------
+  embodied_kgco2e_psf:
+    trigger: assumption
+    question: What is the upfront carbon of actually building this?
+    why: >-
+      Embodied carbon is modelled at {low}–{high} {unit}, unsourced. It is paid in
+      year zero and is most of the difference between the options in the early
+      years of the comparison.
+    resolver: architect
+    ask_for: A whole-life carbon estimate, or published EPD figures for the intended assemblies
+    effort: professional_study
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): for the forms we are screening, can you
+      give upfront (A1–A5) embodied carbon per square foot from published EPDs or a
+      comparable project?
+
+  operational_kwh_psf_yr:
+    trigger: assumption
+    question: How much energy would these homes really use?
+    why: >-
+      Energy use is modelled at {low}–{high} {unit}. Operational carbon overtakes
+      embodied carbon somewhere in the analysis period, and this figure decides
+      when that crossover happens.
+    resolver: energy_modeler
+    ask_for: Modelled annual energy use intensity for each form under consideration
+    effort: professional_study
+    source: nrel_resstock
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): we need modelled energy use intensity for
+      all-electric new residential construction in each of the forms we are
+      screening, for a carbon comparison at concept stage.
+
+  grid_kgco2e_per_kwh:
+    trigger: assumption
+    question: How dirty is the grid these homes would run on?
+    why: >-
+      The grid emission rate is a placeholder at {low}–{high} {unit}. It is a
+      published regional figure, so this is a lookup rather than a study.
+    resolver: own_team
+    ask_for: The current eGRID emission rate for the Pennsylvania / RFC West subregion
+    effort: desk_check
+    source: epa_egrid
+    contact_template: >-
+      Look up the current EPA eGRID output emission rate for the subregion
+      covering Pittsburgh and record it in assumptions.yaml.
+
+  grid_decarbonization_per_yr:
+    trigger: assumption
+    question: How fast should we assume the grid cleans up?
+    why: >-
+      Assumed at {low}–{high} per year. This is a forecast, not a measurement, and
+      it compounds over the analysis period — so it deserves a stated basis rather
+      than a default.
+    resolver: own_team
+    ask_for: A citable decarbonisation trajectory for the regional grid
+    effort: desk_check
+    contact_template: >-
+      Find a citable projection for the regional grid's emission rate over the
+      analysis period and record the basis alongside the value.
+
+  vmt_per_household_yr:
+    trigger: assumption
+    question: How much would households here need to drive?
+    why: >-
+      Modelled at {low}–{high} {unit} before adjusting for transit access.
+      Transport is a large share of household carbon and of household cost, and
+      both depend on this.
+    resolver: own_team
+    ask_for: EPA Smart Location household VMT for the block group containing this parcel
+    effort: desk_check
+    source: epa_smart_location
+    contact_template: >-
+      Pull EPA Smart Location Database household VMT for the block group
+      containing {address} (parcel {parcel_id}).
+
+  kgco2e_per_vmt:
+    trigger: assumption
+    question: What should we assume a mile of driving emits?
+    why: >-
+      Modelled at {low}–{high} {unit} with no fleet turnover. A published figure
+      exists; using it removes one unsourced number from the carbon comparison.
+    resolver: own_team
+    ask_for: A current light-duty fleet emission rate per mile
+    effort: desk_check
+    contact_template: >-
+      Find a current published light-duty fleet emissions-per-mile figure and
+      record it, noting whether fleet turnover is included.
+
+  site_area_per_building_footprint:
+    trigger: assumption
+    question: How much of this lot can a building actually cover?
+    why: >-
+      The screening floor is {low}–{high} times a building's own footprint, which
+      is deliberately permissive — setbacks, lot coverage and access are what
+      really decide this, and none of them have been checked for this parcel.
+    resolver: architect
+    ask_for: A test fit against setbacks, coverage limits and access requirements
+    effort: professional_study
+    contact_template: >-
+      Re {address} (parcel {parcel_id}): could you do a quick test fit on this
+      {lot_area_sf} sf lot for the forms we are screening, accounting for setbacks,
+      lot coverage and access?
