@@ -43,8 +43,20 @@ def limitations_auto(cfg) -> str:
     report_path = ROOT / "data" / "processed" / "pipeline_report.json"
     counts = json.loads(report_path.read_text(encoding="utf-8")).get("counts", {}) if report_path.exists() else {}
     parcels = json.loads(idx_path.read_text(encoding="utf-8"))["parcels"].values() if idx_path.exists() else []
-    by_district = Counter(p.get("zoning") or "(no district)" for p in parcels)
-    reviewed = {d for d, r in rules.items() if any(u.get("reviewed") for u in (r.get("uses") or {}).values())}
+    # Use rules hang off the base district, so parcels are counted that way too —
+    # reviewing R1D covers every R1D-* code at once.
+    def _base(code):
+        return cfg.zoning.district_code.split(code)[0] or "(no district)"
+
+    by_district = Counter(_base(p.get("zoning")) for p in parcels)
+
+    def _has_reviewed_use(r):
+        return any(u.get("reviewed") for u in (r.get("uses") or {}).values())
+
+    reviewed = {d for d, r in (rules.get("districts") or {}).items() if _has_reviewed_use(r)}
+    # City-wide uses (Chapter 912) are not a district and must not be counted as
+    # coverage — they answer one use everywhere, not one district's whole table.
+    citywide = [u for u, r in ((rules.get("citywide") or {}).get("uses") or {}).items() if r.get("reviewed")]
     total = sum(by_district.values()) or 1
     covered = sum(n for d, n in by_district.items() if d in reviewed)
     placeholders = [k for k, a in cfg.assumptions.items() if a.provenance == "placeholder"]
@@ -57,7 +69,10 @@ def limitations_auto(cfg) -> str:
         f"- **Vacant parcels indexed:** {total:,} (City of Pittsburgh only).",
         (f"- **Share of vacant parcels covered by human-reviewed zoning rules:** {covered / total:.1%} "
         f"({len(reviewed)} of {len(by_district)} districts reviewed)."),
-        f"- **Largest unreviewed districts:** {', '.join(top_unreviewed) or 'none'}.",
+        f"- **Largest unreviewed base districts:** {', '.join(top_unreviewed) or 'none'}.",
+        (f"- **Uses settled city-wide ({len(citywide)}):** {', '.join(f'`{u}`' for u in citywide) or 'none'}"
+         + (". These are decided by a reviewed rule that applies in every district, "
+            "so they are excluded from the ranking everywhere, with a citation." if citywide else ".")),
         f"- **Placeholder assumptions ({len(placeholders)}):** {', '.join(f'`{p}`' for p in placeholders) or 'none'}.",
         (f"- **2024 ACS median income / renter burden:** {counts.get('acs_income_values', 0):,} / "
          f"{counts.get('acs_renter_burden_values', 0):,} indexed lots have tract estimates."),

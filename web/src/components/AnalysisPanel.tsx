@@ -179,6 +179,13 @@ function CompareTab(p: Props) {
               {o.isPlan ? <span className="yours">yours</span> : <button className="go-btn sm" onClick={() => o.placements && p.onPlace(o.placements)}>Place</button>}
             </div>
           ))}
+          {ranking.ranked.length === 0 && (
+            <div className="warn small">
+              No housing type fits this lot on its own. At {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft,
+              every one of the {config.typologies.length} forms screened here needs more frontage, depth or lot area than this parcel has.
+              Parcels this small are usually built on together with a neighboring lot; combining parcels is not modeled here.
+            </div>
+          )}
           {ranking.notFitting.length > 0 && <div className="dim small">Doesn’t fit this lot: {ranking.notFitting.map((o) => o.label).join(', ')}</div>}
           {ranking.excluded.length > 0 && (
             <div className="warn small">
@@ -191,12 +198,18 @@ function CompareTab(p: Props) {
             ? `${labelOf(f.challengerId)} would overtake ${labelOf(f.winnerId)} if the weight on ${crit.label.toLowerCase()} ${f.delta > 0 ? 'rose' : 'fell'} from ${Math.round(f.from * 100)}% to ${Math.round(f.to * 100)}% of the total.`
             : ranking.ranked.length > 1
               ? 'No single-weight change flips the top two here — the leader wins across every weighting of one criterion.'
-              : 'Only one option can be ranked on this lot.'}
+              : ranking.ranked.length === 1
+                ? 'Only one option can be ranked on this lot.'
+                : 'No option can be ranked on this lot, so there is nothing to flip.'}
         </div>
-        <div className="h-sec">How often does each option come out on top?</div>
-        <div className="dim small">
-          {config.app.smaa.samples.toLocaleString()} runs, each with different weights near your current priorities and every value drawn from its uncertainty range. Darker = better rank.
-        </div>
+        {ranking.ranked.length > 0 && (
+          <>
+            <div className="h-sec">How often does each option come out on top?</div>
+            <div className="dim small">
+              {config.app.smaa.samples.toLocaleString()} runs, each with different weights near your current priorities and every value drawn from its uncertainty range. Darker = better rank.
+            </div>
+          </>
+        )}
         <div className="col tight">
           {ranking.ranked.map((o) => (
             <div key={o.id} className="smaa-row">

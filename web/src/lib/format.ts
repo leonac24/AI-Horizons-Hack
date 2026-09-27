@@ -3,6 +3,9 @@ import type { Config } from '../types'
 // Zoning path colors keyed by the semantic role from zoning.yaml.
 export const ROLE_COLOR: Record<string, string> = {
   permitted: '#2fd06b',
+  // Staff review, no hearing: nearly permitted, so it sits between the
+  // permitted green and the discretionary amber rather than beside either.
+  staff_review: '#8ed14a',
   discretionary: '#ffb800',
   variance: '#ff7a45',
   prohibited: '#ff3b3b',

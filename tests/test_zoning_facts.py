@@ -29,13 +29,26 @@ def test_a_misquote_is_rejected(facts):
 
 def test_family_and_density_fan_out(facts):
     rules = expand(facts, ["R2-L", "RM-M", "H", "LNC"])
-    assert set(rules) == {"R2-L", "RM-M", "H"}  # LNC not extracted yet
-    assert rules["R2-L"]["uses"]["two_unit"]["status"] == "by_right"
-    assert rules["R2-L"]["uses"]["multi_unit"]["status"] == "not_permitted"
-    assert rules["R2-L"]["dimensional"]["min_lot_area_sf"]["value"] == 3000
-    assert rules["RM-M"]["dimensional"]["max_stories"]["value"] == 4
-    assert rules["H"]["uses"]["single_unit_detached"]["status"] == "administrator_exception"
-    assert all(not r["reviewed"] for r in rules["R2-L"]["uses"].values())  # nothing reviewed by default
+    # Uses sit on the base district, size rules on the family-specific subdistrict.
+    assert set(rules["districts"]) == {"R2", "RM", "H"}  # LNC not extracted yet
+    assert set(rules["subdistricts"]) == {"R2-L", "RM-M"}
+    assert rules["districts"]["R2"]["uses"]["two_unit"]["status"] == "by_right"
+    assert rules["districts"]["R2"]["uses"]["multi_unit"]["status"] == "not_permitted"
+    assert rules["subdistricts"]["R2-L"]["dimensional"]["min_lot_area_sf"]["value"] == 3000
+    assert rules["subdistricts"]["RM-M"]["dimensional"]["max_stories"]["value"] == 4
+    assert rules["districts"]["H"]["uses"]["single_unit_detached"]["status"] == "administrator_exception"
+    assert rules["districts"]["H"]["dimensional"]["min_lot_area_sf"]["value"] == 3200  # § 905.02, no suffix
+    assert all(not r["reviewed"] for r in rules["districts"]["R2"]["uses"].values())  # nothing reviewed by default
+
+
+def test_family_specific_subdistrict_overrides_generic(cfg, facts):
+    """RM-H and R1D-H share the H suffix but not their height limit."""
+    from core.zoning import dimensional_rules
+    rules = expand(facts, ["R1D-H", "RM-H"])
+    rules["subdistricts"]["H"] = {"dimensional": {"max_height_ft": {"value": 1, "reviewed": False}}}
+    assert dimensional_rules(cfg, rules, "RM-H")["max_height_ft"]["value"] == 85
+    assert dimensional_rules(cfg, rules, "R1D-H")["max_height_ft"]["value"] == 40
+    assert dimensional_rules(cfg, rules, "R3-H")["max_height_ft"]["value"] == 1  # generic entry only
 
 
 def _reviewed(rule):
@@ -48,7 +61,8 @@ def _typ(cfg, use_key):
 
 def test_width_conditional_use_needs_observed_frontage(cfg, facts):
     rules = expand(facts, ["R1D-M"])
-    rules["R1D-M"]["uses"]["single_unit_attached"] = _reviewed(rules["R1D-M"]["uses"]["single_unit_attached"])
+    uses = rules["districts"]["R1D"]["uses"]
+    uses["single_unit_attached"] = _reviewed(uses["single_unit_attached"])
     typ = _typ(cfg, "single_unit_attached")
     narrow = evaluate(cfg, rules, "R1D-M", typ, 4000, 2, frontage_ft=30)
     wide = evaluate(cfg, rules, "R1D-M", typ, 4000, 2, frontage_ft=50)
@@ -60,10 +74,11 @@ def test_width_conditional_use_needs_observed_frontage(cfg, facts):
 
 def test_reviewed_setbacks_are_reported_not_scored(cfg, facts):
     rules = expand(facts, ["R2-L"])
-    d = rules["R2-L"]
-    d["uses"]["two_unit"] = _reviewed(d["uses"]["two_unit"])
-    for k in d["dimensional"]:
-        d["dimensional"][k] = _reviewed(d["dimensional"][k])
+    uses = rules["districts"]["R2"]["uses"]
+    uses["two_unit"] = _reviewed(uses["two_unit"])
+    dims = rules["subdistricts"]["R2-L"]["dimensional"]
+    for k in dims:
+        dims[k] = _reviewed(dims[k])
     r = evaluate(cfg, rules, "R2-L", _typ(cfg, "two_unit"), 4000, 2, frontage_ft=40)
     assert r.setbacks["front_setback_ft"].value_ft == 30
     assert r.setbacks["interior_side_setback_ft"].value_ft == 5
@@ -74,7 +89,7 @@ def test_reviewed_setbacks_are_reported_not_scored(cfg, facts):
 def test_options_are_sized_to_the_buildable_area_once_setbacks_are_reviewed(cfg, facts):
     rules = expand(facts, ["R2-L"])
     assert buildable_margins(cfg, rules, "R2-L") == {}  # unreviewed setbacks change nothing
-    d = rules["R2-L"]["dimensional"]
+    d = rules["subdistricts"]["R2-L"]["dimensional"]
     for k in d:
         d[k] = _reviewed(d[k])
     m = buildable_margins(cfg, rules, "R2-L")

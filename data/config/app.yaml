@@ -42,6 +42,15 @@ smaa:
   seed: 20260926
   # Dirichlet concentration when centering on a stakeholder profile (higher = tighter).
   profile_concentration: 40
+  # Leverage re-runs SMAA once per criterion plus a baseline, so it uses a smaller
+  # draw count than the headline bars. It only has to put the open questions in
+  # order, and every run is paired on the one seed above, so most of the sampling
+  # noise cancels out of the difference.
+  leverage_samples: 600
+  # Below this much change in the leader's first-place share, settling a question
+  # counts as changing nothing. Roughly the noise floor at the draw count above:
+  # sqrt(0.25 / 600) is about 0.02.
+  leverage_epsilon: 0.02
 explanation:
   max_sentences: 6
   # Restating given numbers is light work; low effort keeps the click responsive.

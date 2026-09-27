@@ -1,5 +1,5 @@
 {
-  "config_hash": "e059290e476f",
+  "config_hash": "7119c2477d9b",
   "sources": {
     "wprdc_assessments": {
       "provenance": "observed",
@@ -37,14 +37,14 @@
     "flag_steep_slope": 5743,
     "flag_landslide": 5155,
     "flag_undermined": 5946,
-    "indexed": 22183,
-    "suggested": 12,
     "acs_income_values": 22113,
     "acs_renter_burden_values": 22132,
     "parcel_polygons_matched": 22028,
     "fema_classified": 22183,
     "fema_sfha_flagged": 359,
-    "combined_sewershed_matched": 19444
+    "combined_sewershed_matched": 19444,
+    "indexed": 22183,
+    "suggested": 12
   },
   "context": {
     "acs": {
@@ -64,7 +64,7 @@
       "polygons": 182,
       "join": "parcel interior point; centroid fallback"
     },
-    "generated_at_utc": "2026-09-26T22:52:58.596130+00:00",
+    "generated_at_utc": "2026-09-27T01:58:49.421455+00:00",
     "join_methods": {
       "point inside county parcel polygon": 22028,
       "published parcel centroid (boundary unavailable)": 155
