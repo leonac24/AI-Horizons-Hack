@@ -11,6 +11,392 @@
 #     dimensional:
 #       <rule_id>: { value, code_section, quote, confidence, extracted_by, reviewed }
 #
-# Empty on first pass: eCode360 blocked scripted retrieval (2026-09-26), and we
-# do not write rules from memory.
-districts: {}
+# Code text was captured from eCode360 via a browser (scripted fetches are blocked)
+# into data/raw/zoning/; extraction never writes a rule from memory.
+
+districts:
+  R1D-L:
+    uses:
+      single_unit_detached:
+        status: by_right
+        code_section: '911.02'
+        quote: 'Single-Unit Detached Residential means the use of a zoning lot for
+          one detached housing unit.
+
+          DISTRICTS: R1D=P;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      two_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: 'Two-Unit Residential means the use of a zoning lot for two dwelling
+          units that are contained within a single building.)
+
+          DISTRICTS: R1D=-;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      multi_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: 'Multi-Unit Residential means the use of a zoning lot for four or more
+          dwelling units that are contained within a single building.
+
+          DISTRICTS: R1D=-;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+    dimensional:
+      min_lot_area_sf:
+        value: 3000.0
+        code_section: 903.03.B.2
+        quote: Minimum Lot Size | 3,000 s.f.
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_height_ft:
+        value: 40.0
+        code_section: 903.03.B.2
+        quote: Maximum Height | // R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to
+          exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_stories:
+        value: 3.0
+        code_section: 903.03.B.2
+        quote: Maximum Height | // R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to
+          exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+  R2-L:
+    uses:
+      single_unit_detached:
+        status: by_right
+        code_section: '911.02'
+        quote: 'USE: Single-Unit Detached Residential means the use of a zoning lot
+          for one detached housing unit.
+
+          DISTRICTS: R1D=P; R1A=P; R2=P;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      single_unit_attached:
+        status: by_right
+        code_section: '911.02'
+        quote: 'DISTRICTS: R1D=P/S; R1A=P; R2=P;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      two_unit:
+        status: by_right
+        code_section: '911.02'
+        quote: 'Two-Unit Residential means the use of a zoning lot for two dwelling
+          units that are contained within a single building.)
+
+          DISTRICTS: R1D=-; R1A=-; R2=P;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      multi_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: 'DISTRICTS: R1D=-; R1A=-; R2=-; R3=-; RM=P;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+    dimensional:
+      min_lot_area_sf:
+        value: 3000.0
+        code_section: 903.03.B
+        quote: Minimum Lot Size | 3,000 s.f.
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_height_ft:
+        value: 40.0
+        code_section: 903.03.B
+        quote: R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_stories:
+        value: 3.0
+        code_section: 903.03.B
+        quote: R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+  H:
+    uses:
+      two_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: '"-" means the cell is blank (use not listed as allowed).'
+        confidence: 0.9
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      multi_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: '"-" means the cell is blank (use not listed as allowed).'
+        confidence: 0.9
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+    dimensional:
+      min_lot_area_sf:
+        value: 3200.0
+        code_section: 905.02.C
+        quote: Minimum Lot Size | 3,200 s.f.
+        confidence: 0.95
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_height_ft:
+        value: 40.0
+        code_section: 905.02.C
+        quote: Maximum Height | 40 ft. (not to exceed 3 stories)
+        confidence: 0.95
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_stories:
+        value: 3.0
+        code_section: 905.02.C
+        quote: Maximum Height | 40 ft. (not to exceed 3 stories)
+        confidence: 0.95
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+  R1D-H:
+    uses:
+      single_unit_detached:
+        status: by_right
+        code_section: '911.02'
+        quote: 'USE: Single-Unit Detached Residential means the use of a zoning lot
+          for one detached housing unit.
+
+          DISTRICTS: R1D=P;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      single_unit_attached:
+        status: by_right
+        code_section: 911.04.A.69A
+        quote: For lots with Lot Widths of 35 feet or smaller, Single-Unit Attached
+          Uses shall be permitted by right.
+        confidence: 0.85
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      two_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: 'USE: Two-Unit Residential means the use of a zoning lot for two dwelling
+          units that are contained within a single building.)
+
+          DISTRICTS: R1D=-;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+    dimensional:
+      min_lot_area_sf:
+        value: 1200.0
+        code_section: 903.03.D.2
+        quote: Minimum Lot Size | 1,200 s.f.
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_height_ft:
+        value: 40.0
+        code_section: 903.03.D.2
+        quote: Maximum Height | // R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to
+          exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_stories:
+        value: 3.0
+        code_section: 903.03.D.2
+        quote: Maximum Height | // R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to
+          exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+  RM-M:
+    uses:
+      single_unit_detached:
+        status: by_right
+        code_section: '911.02'
+        quote: RM=P;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      single_unit_attached:
+        status: by_right
+        code_section: '911.02'
+        quote: RM=P;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      two_unit:
+        status: by_right
+        code_section: '911.02'
+        quote: RM=P;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      multi_unit:
+        status: by_right
+        code_section: '911.02'
+        quote: RM=P;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+    dimensional:
+      min_lot_area_sf:
+        value: 2400.0
+        code_section: 903.03.C
+        quote: Minimum Lot Size | 2,400 s.f.
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_height_ft:
+        value: 55.0
+        code_section: 903.03.C
+        quote: RM Subdistrict | 55 ft. (not to exceed 4 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_stories:
+        value: 4.0
+        code_section: 903.03.C
+        quote: RM Subdistrict | 55 ft. (not to exceed 4 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+  R1A-VH:
+    uses:
+      single_unit_detached:
+        status: by_right
+        code_section: '911.02'
+        quote: 'USE: Single-Unit Detached Residential means the use of a zoning lot
+          for one detached housing unit. DISTRICTS: R1D=P; R1A=P;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      two_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: 'USE: Two-Unit Residential means the use of a zoning lot for two dwelling
+          units that are contained within a single building.) DISTRICTS: R1D=-; R1A=-;'
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+    dimensional:
+      max_height_ft:
+        value: 40.0
+        code_section: 903.03.E.2
+        quote: R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_stories:
+        value: 3.0
+        code_section: 903.03.E.2
+        quote: R1D, R1A, R2 & R3 Subdistricts | 40 ft. (not to exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+  P:
+    uses:
+      single_unit_detached:
+        status: by_right
+        code_section: '911.02'
+        quote: P=P;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      single_unit_attached:
+        status: not_permitted
+        code_section: '911.02'
+        quote: P=-;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      two_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: P=-;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      multi_unit:
+        status: not_permitted
+        code_section: '911.02'
+        quote: P=-;
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+    dimensional:
+      min_lot_area_sf:
+        value: 3200.0
+        code_section: 905.01.C
+        quote: Minimum Lot Size | 3,200 s.f.
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_height_ft:
+        value: 40.0
+        code_section: 905.01.C
+        quote: Maximum Height | 40 ft. (not to exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
+      max_stories:
+        value: 3.0
+        code_section: 905.01.C
+        quote: Maximum Height | 40 ft. (not to exceed 3 stories)
+        confidence: 1.0
+        extracted_by: gemini-3.8-flash
+        retrieved: '2026-09-27'
+        reviewed: false
