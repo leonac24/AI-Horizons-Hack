@@ -177,10 +177,10 @@ def compile_index(
         rel = path.relative_to(root).as_posix()
         pages = read_pages(path)
         registered_url = registry[source_id].get("url")
-        if rel.startswith("data/sources/zoning/"):
-            if path.name not in zoning_urls:
+        if rel.startswith(("data/sources/zoning/", "data/raw/zoning/")):
+            if rel.startswith("data/sources/zoning/") and path.name not in zoning_urls:
                 raise ValueError(f"Zoning snapshot has no source URL in README.md: {path.name}")
-            registered_url = zoning_urls[path.name]
+            registered_url = zoning_urls.get(path.name, registered_url)
         document_url = source_url(path, registered_url)
         doc_count = 0
         for page_no, page in enumerate(pages, 1):
@@ -218,7 +218,7 @@ def verify_index(index: dict, documents: list[tuple[str, Path]], root: Path, che
     def expected_document(source_id: str, path: Path) -> tuple[str, str, str | None]:
         rel = path.relative_to(root).as_posix()
         registered_url = registry[source_id].get("url")
-        if rel.startswith("data/sources/zoning/"):
+        if rel.startswith(("data/sources/zoning/", "data/raw/zoning/")):
             registered_url = zoning_urls.get(path.name, registered_url)
         return source_id, sha256(path.read_bytes()), source_url(path, registered_url)
 

@@ -76,6 +76,55 @@
       "source_url": "https://www.pittsburghpa.gov/Business-Development/City-Planning/Zoning",
       "sha256": "20d55779bc08e0b58063f32cd30bd6e398e62cd7b11f68542b2a79409dc3cfbd",
       "passage_count": 2
+    },
+    {
+      "source_id": "pgh_zoning_code",
+      "path": "data/raw/zoning/903.02.txt",
+      "source_url": "https://ecode360.com/45474194",
+      "sha256": "f3cced124aca0ec4d2809d78379e4ecd41e3fe1807a412669ddb0ffda3a6871c",
+      "passage_count": 2
+    },
+    {
+      "source_id": "pgh_zoning_code",
+      "path": "data/raw/zoning/903.03.txt",
+      "source_url": "https://ecode360.com/45474237",
+      "sha256": "ea1ebad8e15182bf5529b77702311cade1dd95fe5c888d4a50b585571ff6fea7",
+      "passage_count": 7
+    },
+    {
+      "source_id": "pgh_zoning_code",
+      "path": "data/raw/zoning/905.01.txt",
+      "source_url": "https://ecode360.com/45474542",
+      "sha256": "d2fffdaaddbef583e1ecd2899c9185c2f53a15797079f84873f845d18656ae97",
+      "passage_count": 2
+    },
+    {
+      "source_id": "pgh_zoning_code",
+      "path": "data/raw/zoning/905.02.txt",
+      "source_url": "https://ecode360.com/45474542",
+      "sha256": "b9a17737c175bcbe567156ebf1b86c55b3f090a7b7506363c0927e3d394f16ea",
+      "passage_count": 2
+    },
+    {
+      "source_id": "pgh_zoning_code",
+      "path": "data/raw/zoning/911.02.txt",
+      "source_url": "https://ecode360.com/45476524",
+      "sha256": "ed34e217bfa7dce242eef1e2ca0ec42b03fc48d318b0126fdc5e78036760e54d",
+      "passage_count": 3
+    },
+    {
+      "source_id": "pgh_zoning_code",
+      "path": "data/raw/zoning/911.04.txt",
+      "source_url": "https://ecode360.com/45476524",
+      "sha256": "c29a5ba62e0f2748fed6dc7f0cfc730e821636ff34d581e5e0cbfbda95e4f870",
+      "passage_count": 4
+    },
+    {
+      "source_id": "pgh_zoning_code",
+      "path": "data/raw/zoning/912.08.txt",
+      "source_url": "https://ecode360.com/45477814",
+      "sha256": "72e62c7a7614b0e2e72aa3227e7435b45776d2fa662c28880d113720e08b6f5e",
+      "passage_count": 3
     }
   ],
   "passages": [
@@ -773,6 +822,282 @@
       "part": 2,
       "input_sha256": "d0a6f8f637738c1c82c80e247afc952b891b4d56f7a05a73439538050b2d1bb2",
       "excerpt": "Occupancy for particular property documents explain how that property is legally allowed to be used. The City of Pittsburgh Zoning Code (Title 9) is",
+      "topic": "zoning"
+    },
+    {
+      "id": "f3152da66e4a35fd3089",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474194",
+      "document": "data/raw/zoning/903.02.txt",
+      "page": null,
+      "part": 1,
+      "input_sha256": "5fa4388781b887adbd75116cad29b30c4c3739dcc011268cec8ab017ae977719",
+      "excerpt": "§ 903.02 Use Subdistricts. [Ord. 25-2001, § 1A, eff. 11-30-2001; Ord. 45-2003, § 1, eff. 12-31-2003] Use Subdistricts establish regulations governing the land use",
+      "topic": "zoning"
+    },
+    {
+      "id": "8031332c0bde9dcf108c",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474194",
+      "document": "data/raw/zoning/903.02.txt",
+      "page": null,
+      "part": 2,
+      "input_sha256": "2a37215388ccf51c76b737b0e33bb007c991c98e24abfa602d55b55d0c53e204",
+      "excerpt": "shall be allowed in the R3 Subdistrict in accordance with the Accessory Use regulations of Chapter 912. E. RM, Multi-Unit Residential. 1. Use Regulations.",
+      "topic": "zoning"
+    },
+    {
+      "id": "bed5a694eaf7fc97eca6",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474237",
+      "document": "data/raw/zoning/903.03.txt",
+      "page": null,
+      "part": 1,
+      "input_sha256": "6b5af4fe06d7edce618b415a47e4f824fd9bba5d6a6431b4e2fb3dbf7433cf45",
+      "excerpt": "§ 903.03 Development Subdistricts. [Ord. 25-2001, §§ 1C—1L, eff. 11-30-2001; Ord. No. 25-2011, § 1, eff. 12-22-2011; Ord. No. 10-2025, eff. 5-7-2025] Development Subdistricts",
+      "topic": "zoning"
+    },
+    {
+      "id": "4cdb08ce8dfc642ccf66",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474237",
+      "document": "data/raw/zoning/903.03.txt",
+      "page": null,
+      "part": 2,
+      "input_sha256": "865a40a5c50804a7a42ca185b282c203c5ef4d99d8702dd0968a74ffe2769f6d",
+      "excerpt": "Subdistrict // Minimum Lot Size | 6,000 s.f. // Minimum Front Setback | // R1D, R1A, R2 & R3 Subdistricts | 30 ft. //",
+      "topic": "zoning"
+    },
+    {
+      "id": "37986071ce0a47feaeb4",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474237",
+      "document": "data/raw/zoning/903.03.txt",
+      "page": null,
+      "part": 3,
+      "input_sha256": "0afb1fc32fc0b5d3db39271e510c5b757a0911342a7a3f3115b878ad96ad20c7",
+      "excerpt": "description of site development standards and a listing of exemptions to various standards. [/TABLE] (c) When a dwelling is \"attached\" to one (1) or",
+      "topic": "zoning"
+    },
+    {
+      "id": "d44a08d11e67e8639807",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474237",
+      "document": "data/raw/zoning/903.03.txt",
+      "page": null,
+      "part": 4,
+      "input_sha256": "49681204c110102acc3500c6bffb5b4e1c2d35b2ef60a661770824920e0bf754",
+      "excerpt": "development shall be allowed to use Contextual Setbacks and Contextual Building Heights in accordance with the provisions of Section 925.06 and Section 925.07; and",
+      "topic": "zoning"
+    },
+    {
+      "id": "6cecc3ca8dfb1268c94a",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474237",
+      "document": "data/raw/zoning/903.03.txt",
+      "page": null,
+      "part": 5,
+      "input_sha256": "7e9a8cc29034287daf7f2d2a6d796c2c24a19e42c730c54a5fbcf5782691f8a3",
+      "excerpt": "Designation. The zoning map designation for lands classified in the High-Density Subdistrict shall be the Letter \"H\" which shall follow the Use Subdistrict designation",
+      "topic": "zoning"
+    },
+    {
+      "id": "8e7d63e9bf9e08c2b352",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474237",
+      "document": "data/raw/zoning/903.03.txt",
+      "page": null,
+      "part": 6,
+      "input_sha256": "04a97579a843b0b4751bda1c33fd766e5570a1c4a27f68df072b43862ec094cf",
+      "excerpt": "R1D, R1A, R2 & R3 Subdistricts | 15 ft. // RM Subdistrict | 25 ft. // Minimum Rear Setback | // R1D, R1A, R2",
+      "topic": "zoning"
+    },
+    {
+      "id": "2eb8c80262a3e5e01198",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474237",
+      "document": "data/raw/zoning/903.03.txt",
+      "page": null,
+      "part": 7,
+      "input_sha256": "fc5f4fab25a63a39c5c233e5897d2ece646dc438bd0e026866c00bec23a45146",
+      "excerpt": "Chapter 915 shall impose additional regulations on site development if such conditions exist. [TABLE] Article VI and Chapter 925 contain a complete description of",
+      "topic": "zoning"
+    },
+    {
+      "id": "51c6fe07f1a4e1290055",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474542",
+      "document": "data/raw/zoning/905.01.txt",
+      "page": null,
+      "part": 1,
+      "input_sha256": "6e6dec2a902ff0bc9f0705f60dfe870363a770320f8ecc986c00b75ef98d2de3",
+      "excerpt": "§ 905.01 P, Parks District. [Ord. 25-2001, § 1N, eff. 11-30-2001; Ord. 45-2003, § 9, eff. 12-31-2003; Ord. 40-2005, §§ 1A, 1B, eff. 12-30-2005[1]]",
+      "topic": "zoning"
+    },
+    {
+      "id": "81cfd37a297447360323",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474542",
+      "document": "data/raw/zoning/905.01.txt",
+      "page": null,
+      "part": 2,
+      "input_sha256": "9a4cf3b85c1d775f9aea8976930ec73e1f28fae91e0de35395c5fcdb0531b340",
+      "excerpt": "Area Ratio | 1:1 // Minimum Front Setback | 30 ft. // Minimum Rear Setback | 20 ft. // Minimum Exterior Sideyard Setback |",
+      "topic": "zoning"
+    },
+    {
+      "id": "f3ca666aaf62b0c7289c",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474542",
+      "document": "data/raw/zoning/905.02.txt",
+      "page": null,
+      "part": 1,
+      "input_sha256": "d1ee0ac6f273009cb7a3f2c3d6e574232e1bcb7181d91053e4d9c880ea771bed",
+      "excerpt": "§ 905.02 H, Hillside District. [Ord. 35-2002, §§ 1A, AB, eff. 12-3-2002; Ord. 40-2005, §§ 1C—1F, eff. 12-30-2005] A. Purpose. The H, Hillside District",
+      "topic": "zoning"
+    },
+    {
+      "id": "d90f6a06ebddf6faecbb",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45474542",
+      "document": "data/raw/zoning/905.02.txt",
+      "page": null,
+      "part": 2,
+      "input_sha256": "3b0d3676b11a4dae8b11e9a6eaa66d10da9283157dea5b0e3438953ecb599cd6",
+      "excerpt": "the Zoning Ordinance. [TABLE] Article VI and Chapter 925 contain a complete description of site development standards and a listing of exemptions to various",
+      "topic": "zoning"
+    },
+    {
+      "id": "3f933255f61eb15e8885",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45476524",
+      "document": "data/raw/zoning/911.02.txt",
+      "page": null,
+      "part": 1,
+      "input_sha256": "dc9eabce71ac6090d9a7f0828ef6d71e1dea839277dc9ae152879400337a5b39",
+      "excerpt": "§ 911.02 Use Table. [Ord. 19-1999, eff. 7-8-1999; ... Ord. No. 4-2026, eff. 2-27-2026; Ord. No. 18-2026, § 1, eff. 6-11-2026] Pittsburgh Urban Zoning",
+      "topic": "zoning"
+    },
+    {
+      "id": "448955d7b0dca18182c0",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45476524",
+      "document": "data/raw/zoning/911.02.txt",
+      "page": null,
+      "part": 2,
+      "input_sha256": "f825bad84300d0faf4c0dd98fd08e17f12d1b24a0e7b0bde2a3786cfca3a33f3",
+      "excerpt": "RIV-MU=-; RIV-NS=-; RIV-GI=-; RIV-IMU=- STANDARD: § 911.04A.69 USE: Single-Unit Attached Residential means the use of a zoning lot for one dwelling unit that is",
+      "topic": "zoning"
+    },
+    {
+      "id": "1ed5fd937ac121bcec77",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45476524",
+      "document": "data/raw/zoning/911.02.txt",
+      "page": null,
+      "part": 3,
+      "input_sha256": "4d6d5980500dce3d7dd4f175e4aae720b80db39fc3269213d511cfc0a0552e02",
+      "excerpt": "DT-GT=P; DT-(unnamed)=-; RIV-RM=P; RIV-MU=P; RIV-NS=-; RIV-GI=-; RIV-IMU=P STANDARD: - USE: Three-Unit Residential means the use of a zoning lot for three dwelling units that",
+      "topic": "zoning"
+    },
+    {
+      "id": "c90bc82db021e2d32933",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45476524",
+      "document": "data/raw/zoning/911.04.txt",
+      "page": null,
+      "part": 1,
+      "input_sha256": "7552ee38ac106e0193928510f622f9e30ed659a3e99512d25d4608e587b7c024",
+      "excerpt": "§ 911.04 Use Standards. (excerpt: A.69, A.69A, A.85 — the standards referenced by the residential rows of the § 911.02 Use Table) 69. Single-Unit",
+      "topic": "zoning"
+    },
+    {
+      "id": "4e47f39288b02147112b",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45476524",
+      "document": "data/raw/zoning/911.04.txt",
+      "page": null,
+      "part": 2,
+      "input_sha256": "c996f09ce09f0c13e7c373b02bde251954694bc2fb2885a1f7c6f38f81b3b39a",
+      "excerpt": "show the Administrator how: a. Any deep-rooted woody vegetation reduces storm runoff volume over the slope; b. Existing and proposed foliage reduces the velocity",
+      "topic": "zoning"
+    },
+    {
+      "id": "a257f968d0696d4e868f",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45476524",
+      "document": "data/raw/zoning/911.04.txt",
+      "page": null,
+      "part": 3,
+      "input_sha256": "ba7ce4407362e93d9f9b768dfca24026201a7cd0587848b65637924bcfc0fed1",
+      "excerpt": "905.02.E. (b) Existing vegetation shall be cleared only to the extent needed for the structure, driveway, and outdoor activities that are associated with the",
+      "topic": "zoning"
+    },
+    {
+      "id": "7db818cdcf484115e216",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45476524",
+      "document": "data/raw/zoning/911.04.txt",
+      "page": null,
+      "part": 4,
+      "input_sha256": "2fa0ce424357e3e7b30a6292eb1c88511dd1995266158d43cfad8d0d9d3f4a1a",
+      "excerpt": "and (2) The Approving Body shall determine that the proposed use will not create detrimental impacts on surrounding residential properties, taking into consideration the",
+      "topic": "zoning"
+    },
+    {
+      "id": "286e7b142678da2c40f0",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45477814",
+      "document": "data/raw/zoning/912.08.txt",
+      "page": null,
+      "part": 1,
+      "input_sha256": "3c1a3a9c1b177e33ce42cbef0d2cf326ccf0d7cd6ff486302a57c9511b28362d",
+      "excerpt": "§ 912.08 Accessory Dwelling Unit Overlay District. [Ord. No. 32-2018, § 1, eff. 9-10-2018] A. Intent. It is the intent of this Section to",
+      "topic": "zoning"
+    },
+    {
+      "id": "13e173015e19236e114d",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45477814",
+      "document": "data/raw/zoning/912.08.txt",
+      "page": null,
+      "part": 2,
+      "input_sha256": "54f3b2c6382a93cdb79076bbdfab3fb3d0a2dbe78e72cb3a3f7e2036d99d5c49",
+      "excerpt": "located within an existing accessory structure. E. Standards. 1. The requirements of this Section shall apply to both interim and permanent Accessory Dwelling Unit",
+      "topic": "zoning"
+    },
+    {
+      "id": "581776466a5bf476a5c1",
+      "source_id": "pgh_zoning_code",
+      "source_name": "Pittsburgh Code of Ordinances, Title Nine — Zoning Code",
+      "source_url": "https://ecode360.com/45477814",
+      "document": "data/raw/zoning/912.08.txt",
+      "page": null,
+      "part": 3,
+      "input_sha256": "b736bd627f4ebb8a9a1c0df548fee838f7499f274531ae6af2ebc445a7280c8b",
+      "excerpt": "Section 912.08.E.6, Accessory Dwelling Units shall comply with the development standards of the underlying zoning district and other applicable requirements of the Code, except",
       "topic": "zoning"
     }
   ]

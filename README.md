@@ -127,8 +127,9 @@ Laya is only for unstructured source documents.
    source, then update the snapshot and link. eCode360 blocks scripted downloads.
 2. Optionally save other text, Markdown, or PDF source documents in
    `data/raw/laya/<source_id>/`, using an ID from `data/config/sources.yaml`.
-   Additional zoning text can go in `data/raw/zoning/`. These extra files are
-   gitignored; keep only public documents in this corpus.
+   Additional zoning text can go in `data/raw/zoning/`. Newly added raw files
+   are gitignored by default; the repository already tracks seven curated
+   zoning excerpts there. Keep only public documents in this corpus.
 3. Install a CPU-only PyTorch build, then install `requirements-laya.txt`
    in a local virtual environment. Laya's first run downloads its checkpoint.
 4. From the repository root, run

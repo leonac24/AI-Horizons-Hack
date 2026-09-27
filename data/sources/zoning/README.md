@@ -24,4 +24,18 @@ these files; `pipeline/zoning/build_rules.py` fails otherwise.
 | 905-02_H-hillside.txt | § 905.02 | https://ecode360.com/45474542 |
 | 912-08_ADU-overlay.txt | § 912.08 | https://ecode360.com/45477814 |
 
+The repository also tracks these curated files under `data/raw/zoning/`, added
+for the separate Gemini extraction workflow. They are included in the local
+Laya compile. Newly added files under `data/raw/` are ignored by default.
+
+| File | Section | Source |
+|---|---|---|
+| 903.02.txt | § 903.02 | https://ecode360.com/45474194 |
+| 903.03.txt | § 903.03 | https://ecode360.com/45474237 |
+| 905.01.txt | § 905.01 | https://ecode360.com/45474542 |
+| 905.02.txt | § 905.02 | https://ecode360.com/45474542 |
+| 911.02.txt | § 911.02 | https://ecode360.com/45476524 |
+| 911.04.txt | § 911.04 | https://ecode360.com/45476524 |
+| 912.08.txt | § 912.08 | https://ecode360.com/45477814 |
+
 Public law; retrieved 2026-09-26. Confirm against the current code before relying on it.
