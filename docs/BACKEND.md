@@ -84,7 +84,7 @@ Concretely:
   pins this.
 - `POST /api/explain` returns the same sentences for the same
   `(parcel, weights, ranking, config)` **when `LLM_PROVIDER=none`**, because the
-  template path is deterministic. With Gemini enabled the prose may vary between
+  template path is deterministic. With the Anthropic provider enabled the prose may vary between
   calls — the model is not a pure function. The *grounding* is still
   deterministic: any sentence citing an unknown metric id, or a number not in the
   input, is rejected and the deterministic template is served instead. So the
@@ -176,7 +176,7 @@ the limiter's 60-second window (that one is the *unit* of
 
 What we actually defend against, and what we do not pretend to.
 
-**Secrets.** `GEMINI_API_KEY` is read from the environment, server-side only.
+**Secrets.** `ANTHROPIC_API_KEY` is read from the environment, server-side only.
 `.env` is gitignored, `.env.example` ships with empty values. No key is ever
 placed in a response, a log line, or `/api/config`. The browser never holds a
 model key — all LLM calls are proxied.

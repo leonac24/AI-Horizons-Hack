@@ -179,8 +179,9 @@ ParcelId = Field(**_PID)
 @api.get("/health", summary="Liveness plus what this instance loaded")
 def health() -> dict:
     cfg = get_config()
+    provider = get_provider()
     return {"ok": True, "config_hash": cfg.hash, "parcels": len(_index()["parcels"]),
-            "llm": get_provider().name}
+            "llm": provider.name, "llm_note": getattr(provider, "reason", None)}
 
 
 @api.get("/config", summary="Labels, criteria, typologies and assumptions for the UI")
@@ -326,8 +327,12 @@ def unknowns() -> dict:
 
 
 @api.get("/evidence", summary="Locally compiled document leads; not verified findings")
-def evidence(topic: str = Query("zoning", pattern="^(zoning|transit_jobs|carbon|housing_need|sewer|cost|site|other)$"),
+def evidence(topic: str | None = Query(None, max_length=_API.id_param_max_chars),
              offset: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100)) -> dict:
+    topics = get_config().app.evidence.topics
+    topic = topic or next(iter(topics))
+    if topic not in topics:
+        raise HTTPException(422, "unknown evidence topic")
     index = _laya_evidence()
     if index is None:
         return {"compiled": False, "documents": 0, "passages": 0, "total": 0, "items": []}

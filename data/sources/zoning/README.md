@@ -25,7 +25,7 @@ these files; `pipeline/zoning/build_rules.py` fails otherwise.
 | 912-08_ADU-overlay.txt | § 912.08 | https://ecode360.com/45477814 |
 
 The repository also tracks these curated files under `data/raw/zoning/`, added
-for the separate Gemini extraction workflow. They are included in the local
+for the separate LLM extraction workflow (`pipeline/zoning/extract.py`). They are included in the local
 Laya compile. Newly added files under `data/raw/` are ignored by default.
 
 | File | Section | Source |

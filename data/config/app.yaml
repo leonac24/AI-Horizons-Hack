@@ -44,3 +44,21 @@ smaa:
   profile_concentration: 40
 explanation:
   max_sentences: 6
+  # Restating given numbers is light work; low effort keeps the click responsive.
+  effort: low
+  timeout_s: 30
+  max_tokens: 4000
+# Topics the offline Laya compile sorts source passages into, and the choices in
+# the "What we don't know" source filter. Descriptions are what Laya is asked, so
+# editing one changes the question hash and requires a recompile.
+evidence:
+  question: Which Lotline input does this passage most directly address? Choose other if none applies.
+  topics:
+    zoning: { label: Zoning, description: "Land use, permitted housing, dimensions, or zoning approval" }
+    transit_jobs: { label: Transit access to jobs, description: Jobs reachable by transit or transit travel time }
+    carbon: { label: Carbon, description: "Building energy, embodied carbon, electricity, or travel emissions" }
+    housing_need: { label: Housing need, description: Housing affordability or income-specific housing need }
+    sewer: { label: Sewer, description: "Sewer overflow, sewer sheds, or available sewer capacity" }
+    cost: { label: Costs, description: "Construction, operating, financing, or subsidy costs" }
+    site: { label: Site conditions, description: "Parcel geometry, flood, slope, mine, or other site condition" }
+    other: { label: Other, description: None of these inputs, listed: false }

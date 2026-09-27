@@ -3,6 +3,7 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { mat } from './typologyMeshes'
+import { WATER_LEVEL } from './terrain'
 
 const K = 3.4 // cartoon scale-up
 const STEEL = '#ffc21a' // Pittsburgh bridge yellow
@@ -30,7 +31,7 @@ export function makeBridge(form: string, lengthUnits: number, deckY: number): TH
     boxAt(Math.hypot(dx, dy), t, t, (x1 + x2) / 2, (y1 + y2) / 2, z, c, Math.atan2(dy, dx))
   }
   const S = [-0.9, 0.9]
-  const WY = 0.3 / K
+  const WY = WATER_LEVEL / K
   boxAt(L, 0.45, 1.8, 0, y, 0, DECK)
   for (const s of S) boxAt(L, 0.3, 0.12, 0, y + 0.3, s, STEEL)
   const piers = (xs: number[]) => xs.forEach((x) => boxAt(0.8, y + 0.6, 1.4, x, (y - 0.6) / 2, 0, PIER))

@@ -21,6 +21,27 @@ Rules:
 - If a metric's provenance is "placeholder", say the value is a placeholder.
 Return JSON: {"sentences": [{"text": "...", "metric_ids": ["..."]}]}"""
 
+# Enforced by the API; the grounding checks in validate() still run on top.
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "sentences": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string"},
+                    "metric_ids": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["text", "metric_ids"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["sentences"],
+    "additionalProperties": False,
+}
+
 log = logging.getLogger("lotline.explain")
 
 NUM = re.compile(r"-?\d[\d,]*\.?\d*")
@@ -124,8 +145,10 @@ def template(cfg: Config, payload: dict) -> list[dict]:
 def explain(cfg: Config, provider: Provider, a: Analysis, weights: dict[str, float], ranking: list[str]) -> dict:
     payload = build_input(cfg, a, weights, ranking)
     try:
-        out = provider.complete_json(SYSTEM, json.dumps(payload))
-        sentences = validate(payload, out, cfg.app.explanation.max_sentences)
+        s = cfg.app.explanation
+        out = provider.complete_json(SYSTEM, json.dumps(payload), schema=SCHEMA, effort=s.effort,
+                                     timeout_s=s.timeout_s, max_tokens=s.max_tokens)
+        sentences = validate(payload, out, s.max_sentences)
         if sentences:
             return {"source": provider.name, "sentences": sentences}
         reason = "model output failed grounding checks"

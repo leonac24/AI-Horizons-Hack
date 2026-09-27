@@ -89,6 +89,7 @@ export interface Config {
     disclaimer: string
     placeholder_notice: string
     smaa: { samples: number; seed: number; profile_concentration: number }
+    evidence: { topics: Record<string, { label: string; listed: boolean }> }
   }
   city: {
     name: string

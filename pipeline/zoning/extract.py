@@ -25,7 +25,7 @@ import yaml
 from pydantic import BaseModel, Field, ValidationError
 
 from core.config import ROOT, Config, load_config
-from server.llm import GeminiProvider, LLMUnavailable
+from server.llm import DEFAULT_MODEL, AnthropicProvider, LLMUnavailable
 
 log = logging.getLogger("zoning")
 
@@ -60,14 +60,32 @@ class DistrictRules(BaseModel):
 SYSTEM = """You extract zoning rules from the Pittsburgh Zoning Code text provided.
 Use ONLY the provided text. If a rule is not stated for the district, omit it.
 Every rule needs: code_section (e.g. "911.02"), a verbatim quote of at most 25 words
-copied exactly from the text, and confidence 0-1. Return JSON only."""
+copied exactly from the text, and confidence 0-1."""
 
 
 def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
-def extract_district(cfg: Config, provider: GeminiProvider, district: str, text: str, model: str) -> DistrictRules:
+def _schema(cfg: Config) -> dict:
+    """Structured-output schema. Keys are enums from zoning.yaml, so the model
+    cannot invent a use or rule the app doesn't know about."""
+    t = cfg.zoning.extraction_targets
+
+    def rows(key: str, keys: list[str], value: dict) -> dict:
+        props = {key: {"type": "string", "enum": keys}, **value,
+                 "code_section": {"type": "string"}, "quote": {"type": "string"},
+                 "confidence": {"type": "number"}}
+        return {"type": "array", "items": {"type": "object", "properties": props,
+                                           "required": list(props), "additionalProperties": False}}
+
+    return {"type": "object",
+            "properties": {"uses": rows("use_key", list(t.use_keys), {"status": {"type": "string", "enum": extractable_statuses(cfg)}}),
+                           "dimensional": rows("rule_id", list(t.dimensional), {"value": {"type": "number"}})},
+            "required": ["uses", "dimensional"], "additionalProperties": False}
+
+
+def extract_district(cfg: Config, provider: AnthropicProvider, district: str, text: str, model: str) -> DistrictRules:
     t = cfg.zoning.extraction_targets
     statuses = extractable_statuses(cfg)
     prompt = json.dumps({
@@ -75,12 +93,15 @@ def extract_district(cfg: Config, provider: GeminiProvider, district: str, text:
         "use_keys": t.use_keys,
         "dimensional_rules": {k: f"{v.label} ({v.unit})" for k, v in t.dimensional.items()},
         "statuses": {k: cfg.zoning.statuses[k].label for k in statuses},
-        "output_shape": {"uses": {"<use_key>": {"status": "...", "code_section": "...", "quote": "...", "confidence": 0.0}},
-                         "dimensional": {"<rule_id>": {"value": 0, "code_section": "...", "quote": "...", "confidence": 0.0}}},
         "code_text": text,
     })
-    raw = provider.complete_json(SYSTEM, prompt, model=model)
-    rules = DistrictRules.model_validate(raw)
+    # Long legal text and accuracy matters: high effort, streamed, generous output room.
+    raw = provider.complete_json(SYSTEM, prompt, schema=_schema(cfg), model=model, effort="high",
+                                 max_tokens=32000)
+    rules = DistrictRules.model_validate({
+        "uses": {r.pop("use_key"): r for r in raw.get("uses", [])},
+        "dimensional": {r.pop("rule_id"): r for r in raw.get("dimensional", [])},
+    })
     haystack = _norm(text)
     for k in list(rules.uses):
         if rules.uses[k].status not in statuses:
@@ -100,7 +121,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--districts", nargs="*", help="default: districts by vacant-parcel count")
     ap.add_argument("--limit", type=int, default=10)
-    ap.add_argument("--retries", type=int, default=4, help="retries per district on 429/503")
+    ap.add_argument("--retries", type=int, default=4, help="retries per district on 429/503/529")
     ap.add_argument("--backoff", type=int, default=15, help="first retry wait in seconds (doubles)")
     args = ap.parse_args()
 
@@ -117,10 +138,10 @@ def main() -> None:
         districts = [d["district"] for d in prio if d["district"] != "(none)"][: args.limit]
 
     try:
-        provider = GeminiProvider()
+        provider = AnthropicProvider()
     except LLMUnavailable as e:
         raise SystemExit(f"LLM unavailable: {e}") from e
-    model = os.environ.get("ZONING_EXTRACT_MODEL", "gemini-3.8-flash")
+    model = os.environ.get("ZONING_EXTRACT_MODEL", DEFAULT_MODEL)
 
     rules_path = ROOT / cfg.zoning.rules_file
     raw_rules = rules_path.read_text(encoding="utf-8")
@@ -136,7 +157,7 @@ def main() -> None:
                 got = extract_district(cfg, provider, d, text, model)
                 break
             except LLMUnavailable as e:
-                transient = any(code in str(e) for code in ("429", "503"))
+                transient = any(code in str(e) for code in ("429", "503", "529"))
                 if not transient or attempt == args.retries:
                     log.error("%s: extraction failed: %s", d, str(e)[:200])
                     break

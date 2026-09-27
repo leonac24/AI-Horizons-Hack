@@ -83,6 +83,20 @@ class ApiSettings(_Model):
 
 class ExplanationSettings(_Model):
     max_sentences: int = Field(gt=0)
+    effort: Literal["low", "medium", "high", "xhigh", "max"]
+    timeout_s: float = Field(gt=0)
+    max_tokens: int = Field(gt=0)
+
+
+class EvidenceTopic(_Model):
+    label: str
+    description: str
+    listed: bool = True  # shown as a filter choice in the UI
+
+
+class EvidenceSettings(_Model):
+    question: str
+    topics: dict[str, EvidenceTopic] = Field(min_length=1)
 
 
 class AppConfig(_Model):
@@ -94,6 +108,7 @@ class AppConfig(_Model):
     api: ApiSettings
     smaa: SmaaSettings
     explanation: ExplanationSettings
+    evidence: EvidenceSettings
 
 
 # --- typologies.yaml -------------------------------------------------------------

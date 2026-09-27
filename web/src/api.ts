@@ -21,7 +21,7 @@ export const api = {
   search: (q: string) => get<ParcelSummary[]>(`/api/parcels/search?q=${encodeURIComponent(q)}`),
   analysis: (id: string) => get<Analysis>(`/api/analysis/${encodeURIComponent(id)}`),
   unknowns: () => get<Unknowns>('/api/unknowns'),
-  evidence: (topic = 'zoning', offset = 0, limit = 20) =>
+  evidence: (topic: string, offset = 0, limit = 20) =>
     get<EvidenceLeads>(`/api/evidence?topic=${encodeURIComponent(topic)}&offset=${offset}&limit=${limit}`),
   workBackwards: (id: string, typology: string, units: number, amiPct: number) =>
     get<WorkBackwardsResult>(
