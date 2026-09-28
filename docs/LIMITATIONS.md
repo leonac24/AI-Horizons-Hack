@@ -24,12 +24,17 @@ _Auto-generated for config `0b5630e45ee1`._
 
 ## What it gets wrong, or can't know
 
-- **Zoning is not yet reviewed.** eCode360, which hosts Title Nine, blocks
-  scripted access, and we do not write rules from memory. Until a person
-  extracts and reviews a district's rules, every lot there shows
-  "Needs planner review". Only base districts are joined. Overlays (Riverfront,
-  IPOD, historic districts) are not joined, and neither are planned-unit
-  developments or specially planned districts.
+- **No zoning rule has been checked by a planner.** eCode360, which hosts Title
+  Nine, blocks scripted access, so the code text was saved through a browser and
+  the rules were extracted from it by AI; we do not write rules from memory.
+  Every rule's quote is verified word for word against that saved text, and every
+  answer one produces is labelled "AI-extracted … not checked by a planner".
+  But none of the 171 extracted rules has been confirmed by a person yet, so the
+  approval path on 87.9% of vacant lots — including every option excluded as
+  prohibited — rests on an unchecked extraction. Lots in the 34 base districts
+  with no rules show "Needs planner review". Only base districts are joined.
+  Overlays (Riverfront, IPOD, historic districts) are not joined, and neither are
+  planned-unit developments or specially planned districts.
 - **Carbon values are partial modeled scenarios.** DOE climate-zone prototype
   electricity, a partial A1–A3 materials benchmark, annualized LATCH travel and
   Cambium grid pathways now replace numerical stand-ins for every parcel.

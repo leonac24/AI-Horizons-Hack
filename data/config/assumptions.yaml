@@ -279,8 +279,10 @@ assumptions:
       Screening floor on how much lot a building form needs, as a multiple of its
       own footprint. Deliberately permissive: what actually limits how much of a
       Pittsburgh lot may be covered is the zoning code's lot-coverage and setback
-      rules, which are evaluated separately in core/zoning.py against reviewed
-      rules. This check exists only to stop a form being offered on a lot that
+      rules. Setbacks are evaluated separately in core/zoning.py against the rules
+      in force (not necessarily rules a person has reviewed); lot coverage is not
+      extracted from the code at all yet, so no lot-coverage limit is applied
+      anywhere. This check exists only to stop a form being offered on a lot that
       plainly cannot hold it, so it is set just above bare footprint rather than
       at a coverage ratio that would silently duplicate — and pre-empt — the
       zoning layer. Each typology's floor is derived from this and its own
