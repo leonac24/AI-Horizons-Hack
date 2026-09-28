@@ -6,7 +6,7 @@ Housing Typology, Equity & Climate Matchmaker.**
 
 | | |
 |---|---|
-| **Demo video (3–5 min)** | _TODO: add the public link_ |
+| **Demo video (3–5 min)** | https://www.youtube.com/watch?v=zWiRUNKKWFk |
 | **Live app** | https://lotline-pgh.vercel.app |
 | **Repository** | https://github.com/leonac24/LotLine |
 
@@ -35,12 +35,12 @@ depends on whose priorities you use.
 
 ## What it does
 
-Pick any of the **22,183 vacant lots in the City of Pittsburgh** (from county
+Pick any of the **22,233 vacant lots in the City of Pittsburgh** (from county
 assessment records). Lotline compares six housing types from
 `data/config/typologies.yaml` (detached house through midrise) by:
 
-- who each one houses and what it costs;
-- what it emits over 30 years;
+- who each one houses and what it costs to build and live in;
+- what it emits over 30 years (materials, home electricity and driving);
 - what the Zoning Code allows;
 - how the ranking changes depending on whose priorities you use.
 
@@ -56,8 +56,10 @@ The workflow:
    Every change re-evaluates "Your plan" on the server.
 3. **Compare.** Your plan next to each housing type: zoning status with Title
    Nine citations, "Could this household afford it?" for illustrative
-   households, carbon over time with crossover years, and site flags (slope,
-   landslide, undermining, flood, combined sewer).
+   households, a line-item budget (land from comparable sales, construction,
+   site work, soft costs, financing) for renting and for owning, carbon over
+   time with crossover years, and site flags (slope, landslide, undermining,
+   flood, combined sewer and modeled sewer overflow).
 4. **Whose priorities?** A 100-point weight budget and stakeholder presets
    (long-time resident, CDC, developer, City Planning, URA, climate). SMAA bars
    show how often each option ranks first once weights and uncertainty are
@@ -66,9 +68,13 @@ The workflow:
 5. **Work backwards.** Pick a housing type, a home count and an income tier. See
    the zoning rules that fail (with the variance or special exception path),
    the subsidy gap per home, and the site flags.
-6. **What we don't know.** Every placeholder, unconnected source and unreviewed
+6. **What we don't know.** Every estimate, unconnected source and unreviewed
    zoning district, plus citywide coverage counts.
-7. **Memo.** One printable page for a community meeting or a City Planning
+7. **Where does this number come from?** An (i) next to every score, lot fact
+   and zoning answer opens the method, the live inputs behind that number on
+   this lot (value, range, provenance), its sources and what it doesn't tell
+   you. Zoning answers show the verbatim Title Nine quote.
+8. **Memo.** One printable page for a community meeting or a City Planning
    conversation.
 
 **Evidence and values are separate.** Every metric carries a range, a
@@ -78,29 +84,49 @@ never enter a metric. An option that fails a verified zoning requirement is
 excluded from the ranking, not scored low, and is still shown with its
 citation.
 
-## What works and what is a placeholder
+## What works and what is still an estimate
 
 **Working, on real data:**
 
-- Citywide vacant-parcel index (22,183 lots) with zoning district,
-  neighborhood, tract, public ownership, and site hazard flags.
-- Zoning rules for 7 of 41 base districts, covering 88.1% of vacant parcels.
+- Citywide vacant-parcel index (22,233 lots) with zoning district,
+  neighborhood, tract, public ownership, and site hazard flags. Every lot also
+  has a per-parcel evidence record: each value with its geography, date,
+  source, provenance and what still has to be confirmed.
+- Zoning rules for 7 of 41 base districts, covering 87.9% of vacant parcels.
   Each rule cites its section and quotes the code verbatim.
-- HUD FY2026 Pittsburgh income limits; 2024 ACS tract median income and renter
-  cost burden (about 22,100 lots matched).
-- FEMA flood, PWSA combined-sewershed, steep-slope, landslide-prone and
-  undermined-area screens.
-- Scoring, SMAA, ranking flip, work backwards, grounded AI explanations, memo.
+- Affordability: HUD FY2026 Pittsburgh income limits; 2024 ACS tract median
+  income, renter cost burden and renter income bins (about 22,100 lots
+  matched). The local affordability gap interpolates the share of nearby
+  renters below each option's required income.
+- Finance model: separate rental and ownership scenarios with line-item uses,
+  land from qualified recent vacant-land sales where available, HUD cost
+  limits as references, PHFA contingency and operating guidance, current
+  property and transfer tax rates, Freddie Mac mortgage rates and PWSA fees.
+- Carbon for every parcel and housing type: DOE 2021 IECC climate-zone 5A
+  heat-pump prototype electricity, a published A1–A3 materials benchmark,
+  BTS LATCH household driving annualized with NHTS, and the NREL Cambium 2024
+  grid pathway. It is labelled a partial scenario, not a complete whole-life
+  total.
+- Sewer: PWSA combined-sewershed screen plus ALCOSAN Clean Water Plan modeled
+  typical-year outfall overflow (14,948 direct matches, a labelled regional
+  fallback for the rest), shown apart from each option's added wastewater
+  design flow.
+- FEMA flood, steep-slope, landslide-prone and undermined-area screens.
+- Scoring, SMAA, ranking flip, work backwards, grounded AI explanations,
+  (i) method popovers, memo.
 
-**Placeholder or missing (labelled in the app):**
+**Estimates and gaps (labelled in the app):**
 
-- 14 assumptions or fallbacks remain, including construction and operating
-  cost, embodied and operational carbon, grid decarbonization, household VMT
-  and sewer stress. Transit access is joined for 15,553 parcels, with a
-  fallback for unmatched block groups. The app hatches placeholder-dependent
-  values.
-- EPA Smart Location transit access is a 2021 snapshot, not current route-level
-  commute time. Current PRT GTFS, HUD CHAS and ResStock remain unconnected.
+- No numerical placeholders remain. The 14 former stand-ins are now sourced
+  models, local donor estimates (lots with no tract, block-group or legal
+  dimension match borrow a median from matched Pittsburgh neighbors), or
+  declared budget scenarios. Hazard cost reserves are budget stress tests, not
+  remediation estimates. Each carries its range and provenance.
+- EPA Smart Location transit access (15,553 lots) is a 2021 snapshot, not
+  current route-level commute time. Current PRT GTFS, HUD CHAS and ResStock
+  remain unconnected.
+- Overflow data is a 2018 historical model: context, not current overflow or
+  spare sewer capacity.
 - Zoning overlays (Riverfront, IPOD, historic) and 34 smaller base districts
   have no rules. Those lots show "Needs planner review".
 
@@ -156,6 +182,7 @@ All are public. Full registry, licenses and verification dates:
 |---|---|
 | Allegheny County Property Assessments | WPRDC (CKAN API) |
 | Parcel Centroids with Geographic Identifiers | WPRDC |
+| Allegheny County Property Sale Transactions (qualified vacant-land sales) | WPRDC |
 | Allegheny County Parcel Boundaries | Allegheny County GIS (ArcGIS REST) |
 | City-Owned Properties | City of Pittsburgh via WPRDC |
 | Pittsburgh Zoning Districts | City of Pittsburgh via WPRDC |
@@ -164,13 +191,24 @@ All are public. Full registry, licenses and verification dates:
 | 25% or Greater Slope, Landslide Prone Areas, Undermined Areas | City of Pittsburgh via WPRDC |
 | Street Centerlines | City of Pittsburgh via WPRDC |
 | PWSA Combined Sewersheds | PWSA via WPRDC |
+| ALCOSAN Clean Water Plan Section 4 modeled overflow tables (2018) | ALCOSAN (PDF report) |
+| PWSA water and sewer rates | PWSA |
 | FEMA National Flood Hazard Layer (Pennsylvania) | FEMA via PASDA |
 | HUD FY2026 Income Limits (Pittsburgh HMFA) | HUD User |
 | HUD 2024 Total Development Cost limits | HUD |
-| 2024 ACS 5-Year Detailed Tables (B19013, B25070) | U.S. Census Bureau summary files |
+| 2024 ACS 5-Year Detailed Tables (B19013, B25070, B25118) | U.S. Census Bureau summary files |
+| PHFA Core Application and Operating Budget Instructions | PHFA |
+| 2026 Pittsburgh property tax rates; city and county realty transfer tax | City of Pittsburgh, Allegheny County |
+| Primary Mortgage Market Survey | Freddie Mac |
 | EPA Smart Location Database 3.0 transit access | U.S. EPA (ArcGIS REST) |
-| EPA passenger-vehicle emissions factor | U.S. EPA |
-| EPA eGRID2023 | U.S. EPA |
+| EPA passenger-vehicle emissions factor (GHG Emission Factors Hub) | U.S. EPA |
+| EPA eGRID2023 (historical reference) | U.S. EPA |
+| Residential Prototype Building Models, 2021 IECC Climate Zone 5A | U.S. DOE / PNNL |
+| Climate zone by county (PNNL-33270) | PNNL |
+| Embodied carbon benchmarks of U.S. single-family homes (2024) | Published study |
+| Cambium 2024 annual grid emissions | NREL |
+| LATCH 2017 household travel (tract) | U.S. DOT, Bureau of Transportation Statistics |
+| 2017 National Household Travel Survey, Table 30 | FHWA |
 | Terrain Tiles (for the 3D city only; never in a metric) | AWS Open Data |
 
 ## AI tool disclosure
@@ -201,7 +239,8 @@ AI never sets a weight, changes a metric, or ranks options. With
 - **Python runtime (deployed):** FastAPI, pydantic, PyYAML, numpy, anthropic
   (Claude API SDK).
 - **Python pipeline (local only):** pandas, GeoPandas, shapely, pyogrio,
-  requests, Pillow.
+  requests, Pillow, Beautiful Soup; Poppler `pdftotext` for the ALCOSAN
+  report.
 - **Python dev:** pytest, ruff, uvicorn, httpx. Managed with uv.
 - **Local document compile:** Laya, PyTorch (CPU).
 - **Web:** Vite, React 19, TypeScript (strict), three.js, oxlint; Fredoka and
@@ -256,6 +295,19 @@ uv run python -m pipeline.enrich_context
 uv run python -m pipeline.docs
 ```
 
+To refresh the carbon and sewer-overflow models from their sources:
+
+```bash
+uv run python -m pipeline.carbon_prototypes --refresh --download-doe
+uv run python -m pipeline.carbon_geography --refresh
+uv run python -m pipeline.overflow_context --refresh
+uv run python -m pipeline.build_environment --refresh-metadata
+uv run python -m pipeline.docs
+```
+
+Without the download flags these rebuild from the checked-in extracts in
+`data/models/`. See [docs/ENVIRONMENT_ESTIMATES.md](docs/ENVIRONMENT_ESTIMATES.md).
+
 The 2024 ACS table-based summary files need no API key. Raw GIS downloads are
 cached in `data/raw/`; remove a source's cached file to fetch its latest version.
 Derived facts and coverage counts are checked in. The flood and sewer screens
@@ -297,6 +349,12 @@ as not checked by a planner. Use the dedicated Title Nine pipeline and
 - [Sources](docs/SOURCES.md): dataset registry, generated from config
 - [AI disclosure](docs/AI_DISCLOSURE.md): AI used to build it and inside it
 - [Backend](docs/BACKEND.md): API principles and security posture
+- [Environmental estimates](docs/ENVIRONMENT_ESTIMATES.md): carbon and
+  overflow models, their scope and how to refresh them
+- [Evidence pipeline](docs/EVIDENCE_PIPELINE.md): the per-parcel evidence
+  record, sales index and finance model
+- [Estimate status](docs/PLACEHOLDER_PIPELINE.md): what replaced each former
+  placeholder and what still needs better evidence
 
 ## Next steps and continuation
 
@@ -304,12 +362,15 @@ as not checked by a planner. Use the dedicated Title Nine pipeline and
    districts with the most vacant lots: R1D, R2, H, R1A, RM. Then turn on
    `require_human_review`. Extend rules to overlays and the remaining districts
    (LNC, UI, NDI and the Riverfront districts first).
-2. Replace the remaining cost and carbon placeholders with verified local
-   evidence; evaluate CHAS for income-tier detail.
+2. Tighten the estimates that replaced the placeholders: design-specific
+   material quantities and later life-cycle stages, Pittsburgh-weather energy
+   models, a validated 2010-to-2024 tract crosswalk for travel, and project
+   bids, lender terms and operating budgets in place of declared finance
+   scenarios. Evaluate CHAS for income-tier detail.
 3. EPA Smart Location Database transit access is joined at block-group level
    (2021 vintage); refresh it with a newer PRT travel-time matrix if current
-   route-level access is needed. Combined-sewershed boundaries are loaded, but
-   sewer stress still needs capacity or overflow observations.
+   route-level access is needed. Replace the 2018 ALCOSAN overflow model with
+   current overflow data and get written sewer capacity from PWSA and ALCOSAN.
 4. Make scenarios editable (tenure, affordability mix, parking) and add the
    advocates + referee explanation mode.
 
@@ -339,6 +400,9 @@ frontend and 3D city
   streets and neighborhood names; the drag-and-drop lot sandbox with live plan
   analysis and reviewed setbacks drawn as the buildable area; the intro screen;
   tuck-away panels, a phone layout and touch controls.
+- The (i) buttons: `data/config/methods.yaml` gives every criterion a method,
+  and each score, lot fact and zoning answer opens that method with the live
+  inputs, sources and caveats behind it on the current lot.
 - Zoning and costs: captured Title Nine text, extracted rules for the R-family,
   H and P districts, and sourced the construction cost, soft cost and grid
   emissions assumptions.
@@ -364,6 +428,13 @@ evidence and data pipeline
   Smart Location Database transit access to every vacant lot, replacing
   placeholders with sourced values
   ([docs/PLACEHOLDER_PIPELINE.md](docs/PLACEHOLDER_PIPELINE.md)).
+- Replaced the last 14 placeholders across every parcel: the per-parcel
+  evidence record and qualified land-sales index
+  ([docs/EVIDENCE_PIPELINE.md](docs/EVIDENCE_PIPELINE.md)); the rental and
+  ownership finance model (`core/finance_model.py`); sourced carbon from DOE
+  prototypes, a materials benchmark, LATCH travel and Cambium grid pathways;
+  and ALCOSAN modeled overflow context
+  ([docs/ENVIRONMENT_ESTIMATES.md](docs/ENVIRONMENT_ESTIMATES.md)).
 
 **Devin Myers** ([@Devin-M5706](https://github.com/Devin-M5706)): backend and zoning engine
 
