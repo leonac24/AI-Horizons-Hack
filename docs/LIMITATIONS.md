@@ -24,12 +24,17 @@ _Auto-generated for config `ccee62af18d1`._
 
 ## What it gets wrong, or can't know
 
-- **Zoning is not yet reviewed.** eCode360, which hosts Title Nine, blocks
-  scripted access, and we do not write rules from memory. Until a person
-  extracts and reviews a district's rules, every lot there shows
-  "Needs planner review". Only base districts are joined. Overlays (Riverfront,
-  IPOD, historic districts) are not joined, and neither are planned-unit
-  developments or specially planned districts.
+- **No zoning rule has been checked by a planner.** eCode360, which hosts Title
+  Nine, blocks scripted access, so the code text was saved through a browser and
+  the rules were extracted from it by AI; we do not write rules from memory.
+  Every rule's quote is verified word for word against that saved text, and every
+  answer one produces is labelled "AI-extracted … not checked by a planner".
+  But none of the 171 extracted rules has been confirmed by a person yet, so the
+  approval path on 88.1% of vacant lots — including every option excluded as
+  prohibited — rests on an unchecked extraction. Lots in the 34 base districts
+  with no rules show "Needs planner review". Only base districts are joined.
+  Overlays (Riverfront, IPOD, historic districts) are not joined, and neither are
+  planned-unit developments or specially planned districts.
 - **Most cost and carbon numbers remain assumptions or placeholders.** HUD FY2026
   Pittsburgh area median family income is published, and 2024 ACS tract income
   and renter burden estimates are joined where available. Construction cost,
