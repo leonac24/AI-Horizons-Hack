@@ -1,0 +1,33 @@
+graph TD
+  subgraph offline["OFFLINE PIPELINE (Python + GeoPandas, never deployed)"]
+    SRC["WPRDC parcels, ACS,<br/>FEMA, PWSA, EPA SLD"] -->|"adapters + enrich_context"| IDX[("parcels.json<br/>22,183 vacant lots")]
+    T9["Saved Title Nine text<br/>(eCode360 blocks scripts)"] -->|"extract.py to Anthropic"| FACTS["30 zoning facts"]
+    FACTS -->|"build_rules expands"| RULES[("rules_review.yaml<br/>171 rules")]
+    REV["REVIEW.md checkboxes"] -.->|"human gate"| RULES
+  end
+
+  subgraph engine["SHARED ENGINE core/ (pipeline, server and tests all import it)"]
+    CFG[("data/config/<br/>12 YAML files")] -->|"pydantic, fails loudly"| ENG["engine.py<br/>every metric carries<br/>observed / modeled /<br/>assumption / placeholder"]
+    ZON["zoning.py<br/>base district = use<br/>subdistrict = size"] --> ENG
+  end
+
+  IDX --> ENG
+  RULES --> ZON
+
+  subgraph runtime["RUNTIME"]
+    API["server/app.py<br/>FastAPI via api/index.py"] --> LLM["explain, ask, draft, lot_search<br/>number allowlist or template"]
+    API --> WEB["web/ React + three.js"]
+    LLM --> WEB
+    WEB --> SCORE["SMAA + ranking<br/>runs in the browser"]
+    W["Your weights"] --> SCORE
+  end
+
+  ENG --> API
+  W -. "weights NEVER reach the evidence layer" .-x ENG
+
+  classDef ev fill:#e8f0e4,stroke:#5c7a52,color:#1e2b1a
+  classDef val fill:#efe2f5,stroke:#7a5c8a,color:#2b1a2e
+  classDef gate fill:#fdf1d8,stroke:#a8842c,color:#3a2e12
+  class SRC,IDX,T9,FACTS,RULES,CFG,ENG,ZON,API ev
+  class W,SCORE val
+  class REV,LLM gate

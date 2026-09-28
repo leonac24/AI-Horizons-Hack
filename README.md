@@ -84,6 +84,116 @@ never enter a metric. An option that fails a verified zoning requirement is
 excluded from the ranking, not scored low, and is still shown with its
 citation.
 
+## Architecture
+
+![Lotline architecture](diagrams/lotline-architecture.png)
+
+Source: [`diagrams/lotline-architecture.mmd`](diagrams/lotline-architecture.mmd)
+(also rendered as SVG, and as an `.excalidraw` scene you can open at
+excalidraw.com).
+
+Three layers, separated on purpose.
+
+**Offline pipeline** (`pipeline/`, Python + GeoPandas, never deployed). Adapters
+pull WPRDC parcels, assessments, city-owned property, zoning and three hazard
+layers; `enrich_context.py` joins ACS tract income, FEMA flood zones, PWSA
+combined sewersheds and EPA Smart Location transit access. The result is
+`data/processed/parcels.json` — 22,183 vacant lots — plus a compact
+`parcels.geojson` for the map. Zoning is a separate track: `extract.py` sends
+saved Title Nine text to Claude, `build_rules.py` expands 30 reviewed facts into
+171 district rules, and the build drops any rule whose quote is not found word
+for word in the saved text.
+
+**Shared engine** (`core/`). The pipeline, the server and the tests all import
+the same code, so there is one definition of what a metric means. `config.py`
+validates twelve YAML files with pydantic at startup and fails loudly.
+`engine.py` computes each metric with a low/high band and a provenance label.
+`zoning.py` resolves a map code into its two halves — the base district decides
+*what may be built*, the subdistrict suffix decides *how big* — because that is
+how Title Nine is written.
+
+**Runtime.** `server/app.py` is a FastAPI app served as a single Vercel Python
+function through `api/index.py`. Four modules talk to Claude, and each one
+validates the reply before it reaches a user. The browser gets React plus a
+three.js lot view, and runs SMAA and the weight sliders locally.
+
+### What happens when you click a lot
+
+1. The map sends the parcel id to `/api/analysis/{id}`.
+2. `core/engine.py` builds every metric for that lot, each carrying a range, a
+   provenance label and the source ids behind it.
+3. `core/zoning.py` checks each housing type against the rules in force and
+   marks prohibited uses as **excluded**, not merely low-scoring.
+4. The response goes to the browser, which computes the ranking, the SMAA
+   robustness bars and the ranking-flip sentence **locally**.
+5. Moving a weight slider recomputes step 4 only. It never re-asks the server,
+   because weights are not allowed to touch the evidence.
+
+## Design tradeoffs
+
+The decisions we would have to defend, and what each one costs.
+
+**Evidence and values are separate layers.** Weights live in the browser and
+never reach `core/engine.py`. The cost is real: rankings cannot be precomputed
+server-side, and SMAA has to be fast enough to run on every slider drag. The
+benefit is that it is structurally impossible for someone's preferences to
+contaminate a measurement — not a policy we follow, a path that does not exist.
+
+**Provenance floors at the weakest input.** `weakest()` means a metric built
+from three observed values and one placeholder is labelled `placeholder`. This
+makes the app look *worse* than it is: most scored criteria read placeholder
+even where real data does most of the work. We kept it because the alternative —
+labelling a metric by its best input — is how a tool starts overclaiming.
+
+**Config over literals.** No Pittsburgh fact, typology, district code, colour or
+number is written in code; everything iterates over `data/config/`. The cost is
+indirection, and a test (`test_no_hardcoding`) that swaps in fake typologies to
+prove it. The benefit is that the Pittsburgh content is reviewable in one place,
+and extending to another municipality is a data job rather than a rewrite.
+
+**AI-extracted zoning rules are in force without a planner's sign-off.**
+`require_human_review: false`. 171 rules are live; **none has been checked by a
+person**, so the approval path on 87.9% of vacant lots rests on an unchecked
+extraction. We took that trade because the alternative is 0% coverage, and
+because every quote is verified verbatim against the saved code text and every
+answer is labelled "not checked by a planner". Flipping the flag to `true`
+restores the gate and zeroes the coverage. The honest framing is that this is a
+working, tested, human-in-the-loop *mechanism* that has not yet been *used*.
+
+**Rules are keyed by fact, not by district.** Title Nine sets use by base
+district and size by subdistrict, so 30 facts fan out to 171 rules and roughly
+30 extractions cover all 54 zoning map codes. The cost is a two-part lookup and
+a schema most people would not guess. The benefit is that a use rule is
+transcribed once rather than five times, and a reviewer checks 30 things
+instead of 171.
+
+**A bad LLM reply is discarded whole, not patched.** If any sentence cites an
+unknown metric id or uses a number absent from the input, the server throws away
+the entire response and shows a deterministic template. Redacting sentence by
+sentence would preserve more text, but it puts visibly chewed-up prose on
+screen and invites the model to smuggle claims past a partial filter.
+
+**Proximity is not capacity.** We know each lot's combined sewershed and FEMA
+flood zone, and we deliberately do *not* feed either into a scored metric. Being
+inside a sewershed is not evidence of spare sewer capacity. They appear as site
+facts with that caveat attached, and `city.yaml` says so in a comment so the
+next person does not "fix" it.
+
+**Site context is tested at one point.** Slope, landslide, undermining, flood
+and sewershed are point-in-polygon tests against a parcel centroid. Part of a
+lot can cross a boundary without its tested point doing so. Polygon-overlap
+shares would be more accurate and much slower to compute citywide.
+
+**The parcel index is a static file, not a live query.** No database at runtime;
+the server reads a precomputed JSON index. This makes a parcel click fast and
+the deployment tiny, at the cost of a rebuild step and a config hash that drifts
+from the shipped artifacts whenever config changes without one.
+
+**A 3D lot view instead of a 2D map.** The simulator shows what a housing type
+would actually put on the lot, which a choropleth cannot. We gave up the zoom,
+pan and basemap conventions people already know, and every piece of scenery had
+to be labelled decorative so nobody reads meaning into it.
+
 ## What works and what is still an estimate
 
 **Working, on real data:**
