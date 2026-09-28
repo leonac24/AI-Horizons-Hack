@@ -56,7 +56,7 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
             Pick a lot<HelpTip id="pick_lot" />
             <TuckButton open={open} onToggle={onToggle} label="the lot finder" />
           </div>
-          {open && <p>Every vacant lot in the City of Pittsburgh is on the map. Click one, search an address or parcel ID, or start from a suggested lot.</p>}
+          {open && <p>Located vacant lots are on the map. Search also finds parcel records without reliable map coordinates.</p>}
         </div>
         {open && (
         <>
@@ -126,14 +126,15 @@ export function CityPanel({ config, features, visibleCount, filters, setFilters,
                     <span className="lc-zone" style={{ background: districtColor(config, c.zoning) }}>{c.zoning ?? '—'}</span>
                   </span>
                   <span className="muted small">
-                    {c.address || c.id} · {Math.round(c.lot_area_sf ?? 0).toLocaleString()} sf{c.public ? ' · public' : ''}
+                    {c.address || c.id} · {c.lot_area_sf == null ? 'area unknown' : `${Math.round(c.lot_area_sf).toLocaleString()} sf`}{c.public ? ' · public' : ''}
+                    {(c.lon === null || c.lat === null) && ' · location unconfirmed'}
                   </span>
                   {haz.length > 0 && <span className="haz-pill">{haz.join(' · ')}</span>}
                 </button>
               )
             })}
           </div>
-          <div className="cp-foot hatched small">Suggested lots are spread across neighborhoods, zoning and site conditions — not recommendations. The city model is stylized; lot positions are real.</div>
+          <div className="cp-foot hatched small">Suggested lots are spread across neighborhoods, zoning and site conditions — not recommendations. The city model is stylized; mapped lot positions come from county records.</div>
         </>
         )}
       </aside>

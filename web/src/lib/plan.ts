@@ -83,6 +83,17 @@ export function buildPool(config: Config, analysis: Analysis, plan: PlanResult |
     zoning: plan.zoning, households: plan.households, carbon: plan.carbon, eligible: plan.eligible,
     reason: plan.ineligible_reason, fits: true, isPlan: true, zoningByType: plan.zoning_by_typology, notes: plan.notes,
   }
+  // When the placed canvas plan exactly matches a catalog scenario, keep one
+  // ranked row and mark it as the user's plan instead of counting it twice.
+  const matching = analysis.scenarios.find((scenario) => {
+    const entries = Object.entries(plan.by_typology)
+    return entries.length === 1 && entries[0][0] === scenario.typology_id && entries[0][1] === scenario.buildings
+  })
+  if (matching) {
+    const duplicate = pure.find((option) => option.id === matching.typology_id)
+    if (duplicate) own.placements = duplicate.placements
+    return [...pure.filter((option) => option.id !== matching.typology_id), own]
+  }
   return [...pure, own]
 }
 

@@ -1,0 +1,166 @@
+{
+  "sources": [
+    {
+      "source_id": "alcosan_cwp_section4_2018",
+      "publisher": "Allegheny County Sanitary Authority (ALCOSAN)",
+      "title": "ALCOSAN Clean Water Plan, Section 4: Hydrologic and Hydraulic Characterization",
+      "url": "https://www.alcosan.org/docs/default-source/clean-water-plan-documents/cwp-section-4.pdf?sfvrsn=6d0d892a_2",
+      "report_vintage": "2018 (PDF creation and modification metadata: 2018-03-29)",
+      "file_sha256": "2ff5deb31d9606b5445c8e18ce7780bad25f382d6654543b57ae2247f4e678ab",
+      "retrieved": "2026-09-27",
+      "tables": [
+        "4-4",
+        "4-5",
+        "4-8",
+        "4-9",
+        "4-12",
+        "4-13",
+        "4-14",
+        "4-15",
+        "4-18",
+        "4-19",
+        "4-22",
+        "4-23",
+        "4-26",
+        "4-27"
+      ],
+      "table_records": 349,
+      "modeled_records": 339,
+      "closed_records": 8,
+      "pending_unmodeled_records": 2,
+      "model_scenario": "Existing-condition typical-year hydrologic and hydraulic model simulation",
+      "model_period": "A refined calendar-year 2003 rainfall dataset calibrated to produce annual statistics equivalent to a 60-year historical precipitation record; not observed overflow data from a single calendar year.",
+      "units": {
+        "frequency_activations_per_year": "activations per typical year",
+        "duration_hours_per_year": "hours per typical year",
+        "volume_million_gallons_per_year": "million gallons per typical year"
+      },
+      "printed_section_pages": "4-36 through 4-117 (per-outfall CSO tables)",
+      "license": "Public agency report; retain attribution to ALCOSAN."
+    },
+    {
+      "source_id": "pwsa_combined_sewersheds",
+      "publisher": "Pittsburgh Water and Sewer Authority via Western Pennsylvania Regional Data Center",
+      "title": "Combined Sewershed",
+      "url": "https://data.wprdc.org/dataset/combined-sewershed",
+      "resource_id": "138d6b65-1630-4905-9421-de90cd9d59e5",
+      "field": "CSO_SHED (parcel records store joined values in combined_sewershed_ids)",
+      "vintage": "July 2018 resource; checked-in project source manifest verified 2026-09-26",
+      "license": "Creative Commons Attribution",
+      "geography": "Mapped combined sewershed polygons in the City of Pittsburgh."
+    }
+  ],
+  "join_method": {
+    "steps": [
+      "Read each combined_sewershed_ids value as a slash-delimited list of outfall tokens.",
+      "Match each token to one unique ALCOSAN table outfall_id exactly, case-insensitively.",
+      "Honor only exact report_aliases explicitly stated in a CWP table or footnote (for example C-03A-OF).",
+      "If and only if no exact ID exists, append the single documented terminal marker \"-OF\" and require one unique table ID match. This accounts for the PWSA base label (for example A-42) versus report outfall marker (A-42-OF).",
+      "A slash-composite is a direct match only when every token resolves uniquely, including an explicitly printed report alias; never fuzzy match, infer topology, use distance, or use nearest outfall."
+    ],
+    "unmatched_handling": "Return disclosed matched-system regional typical-year fallback and list unmatched sewershed labels; do not assign a nearby outfall."
+  },
+  "coverage_snapshot": {
+    "parcel_source": "original repository data/processed/parcels.json inspected 2026-09-27; 22,233 parcel records; parcel_context.jsonl contains id/transit/geometry fields only and is not the sewershed join source.",
+    "parcel_records_total": 22233,
+    "parcel_records_with_combined_sewershed": 19447,
+    "distinct_combined_sewershed_labels": 153,
+    "distinct_labels_with_complete_exact_or_terminal_of_match": 86,
+    "parcel_match_rate_of_parcel_rows_with_a_sewershed": 0.7686532627,
+    "parcel_match_rate_of_all_parcel_rows": 0.672333918,
+    "coverage_note": "Runtime coverage measured on active data/processed/parcels.json (build_overflow_inputs): direct matched context for 14,948 of 22,233 parcels; 7,285 receive the disclosed regional fallback. The 86 complete-match labels are unique labels, not a count of parcels. Recalculate when parcel data or the model registry changes.",
+    "parcel_records_with_direct_runtime_match": 14948,
+    "parcel_records_with_regional_fallback": 7285
+  },
+  "normalization_boundary": "Only slash tokenization, case-insensitive exact ID / explicit report-alias match, or adding a terminal -OF marker when that exact candidate exists are allowed. No punctuation stripping, number changes, fuzzy aliases, or spatial proximity joins.",
+  "output_artifact": "data/models/alcosan_overflows.json",
+  "normalization_examples": [
+    {
+      "cso_shed_label": "A-42",
+      "matched_report_outfall_id": "A-42-OF",
+      "rule": "append exact terminal -OF; unique table ID"
+    },
+    {
+      "cso_shed_label": "A-58/OF009E001",
+      "matched_report_outfall_ids": [
+        "A-58-OF",
+        "OF009E001"
+      ],
+      "rule": "slash split; first token gets terminal -OF addition; second is exact ID"
+    },
+    {
+      "cso_shed_label": "C-03A-OF",
+      "matched_report_outfall_id": "C-04-02-OF2",
+      "rule": "exact report_aliases value stated in Table 4-4 footnote"
+    }
+  ],
+  "row_provenance": {
+    "model_registry_fields": [
+      "source_table",
+      "source_pdf_page",
+      "source_section_page",
+      "source_ids",
+      "model_vintage",
+      "model_scenario",
+      "model_period"
+    ],
+    "volume_semantics": "Each row is ALCOSAN modeled annual CSO overflow volume at the named outfall. Parcel-level direct values sum unique matched outfall rows; they are not parcel wastewater flow or added-flow contribution.",
+    "spot_checks_manually_verified_against_pdf": [
+      {
+        "outfall_id": "A-42-OF",
+        "source_table": "4-22",
+        "source_pdf_page": 102,
+        "printed_section_page": "4-102",
+        "frequency_activations_per_year": 66,
+        "duration_hours_per_year": 1085,
+        "volume_million_gallons_per_year": 777,
+        "check": "High-volume row; confirms comma-formatted 1,085-hour cell and 777 MG/year volume are separate columns."
+      },
+      {
+        "outfall_id": "A-20Z-OF",
+        "source_table": "4-12",
+        "source_pdf_page": 65,
+        "printed_section_page": "4-65",
+        "frequency_activations_per_year": 0,
+        "duration_hours_per_year": 0,
+        "volume_million_gallons_per_year": 0,
+        "check": "Explicit modeled zero row; kept as zero rather than missing."
+      },
+      {
+        "outfall_id": "OF009E001",
+        "source_table": "4-13",
+        "source_pdf_page": 69,
+        "printed_section_page": "4-69",
+        "frequency_activations_per_year": 66,
+        "duration_hours_per_year": 657,
+        "volume_million_gallons_per_year": 99.5,
+        "check": "PWSA municipal outfall row; confirms frequency, duration, and volume column assignment."
+      },
+      {
+        "outfall_id": "A1_MCD0002-3",
+        "source_table": "4-5",
+        "source_pdf_page": 39,
+        "printed_section_page": "4-39",
+        "frequency_activations_per_year": 15,
+        "duration_hours_per_year": 23,
+        "volume_million_gallons_per_year": 0.209,
+        "check": "Wrapped A1_MCD0002-3(1) row is present in the municipal table; it was restored to the registry so its modeled volume is available to exact-label matches."
+      }
+    ]
+  },
+  "extraction": {
+    "refresh_command": "python -m pipeline.overflow_context --refresh --pdf /path/to/cwp-section-4.pdf",
+    "download_command": "python -m pipeline.overflow_context --refresh",
+    "extractor": "Poppler pdftotext -raw; standard-library parser in pipeline/overflow_context.py",
+    "runtime_policy": "Parcel API/runtime reads only checked-in data/models/alcosan_overflows.json; no PDF, network, or parser dependency is required at runtime.",
+    "identity_policy": "The checked-in row identity, table, note-reference, and verified-alias fields are the stable parsing keys. On explicit refresh, every registered row is located in the pinned source tables and annual frequency, duration, volume, model status, and physical/printed page are re-extracted. Missing or duplicate row matches fail closed.",
+    "integrity_policy": "Refresh verifies the pinned source PDF SHA-256 and refuses a different document until its source vintage and metadata are reviewed.",
+    "verified_refresh": {
+      "source_pdf_sha256": "2ff5deb31d9606b5445c8e18ce7780bad25f382d6654543b57ae2247f4e678ab",
+      "outfall_records_rebuilt": 349,
+      "modeled_records_rebuilt": 339,
+      "metrics_changed_from_snapshot": 0,
+      "corrected_page_reference": "C-04-02-OF2 is printed on PDF page 36 / report section page 4-36."
+    }
+  }
+}

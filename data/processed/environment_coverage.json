@@ -1,0 +1,928 @@
+{
+  "config_hash": "0b5630e45ee1",
+  "runtime_evidence_hash": "82ad2fe0cdaafcee34ab786fc9946d9bfa4357812bfe600644211917966617e6",
+  "record_count": 22233,
+  "typologies_modeled": [
+    "detached",
+    "adu_pair",
+    "two_unit",
+    "rowhouse",
+    "small_multi",
+    "midrise"
+  ],
+  "model_artifacts": {
+    "data/models/alcosan_overflows/source_manifest.json": "8f4f0dd5ff02fa7d1653578b7dc5c2a7fd49db51b89003f61f73b9baa2186a5f",
+    "data/models/alcosan_overflows.json": "079458405fffc873257888737f09be9a019255d0e08287ee66956cabe6846055",
+    "data/models/carbon_geography.json": "8f75fc5a13a464a53fe8ce9a0cf24e956497355993414a46bd71f51bb54d6af1",
+    "data/models/carbon_prototypes/doe_energy_outputs.json": "3343d8d3a243beba2096151409ae87fd4352af6fd32f7b989b79aeca99286a65",
+    "data/models/carbon_prototypes/sources.json": "ffd2325b44b959703863efac0cc3dbcdd674f72f49c87b17b6191f044577b98b",
+    "data/models/carbon_prototypes.json": "6cca5da622fd0c6120a05e6e584fd62b5baa7f6b71f3681b32a8fc00e6bff2a6",
+    "data/models/context_fallbacks.json": "4afd02dac9a1fb9888f50259fc63b6d49504e527ea30a6704a4bd6504c9e1a71",
+    "data/models/planning_estimates.json": "13e67205b4aeb4f89a3fe9ff3ac0e51a4a7da7576fad09e65e12ac94aced61d4"
+  },
+  "coverage": {
+    "acs_renter_income_bins": {
+      "geographic_estimate": 22233
+    },
+    "county_assessment_zero_fields": {
+      "direct_parcel_fact": 26
+    },
+    "county_sales": {
+      "direct_parcel_fact": 83
+    },
+    "embodied_kgco2e_psf": {
+      "modeled_prototype_lca": 22233
+    },
+    "grid_decarbonization_per_yr": {
+      "derived_scenario_summary": 22233
+    },
+    "grid_kgco2e_by_year": {
+      "regional_scenario": 22233
+    },
+    "grid_kgco2e_per_kwh": {
+      "regional_scenario": 22233
+    },
+    "kgco2e_per_vmt": {
+      "cited_scenario_input": 22233
+    },
+    "occupants_per_home": {
+      "declared_scenario": 22233
+    },
+    "operational_kwh_psf_yr": {
+      "doe_energyplus_prototype_output": 22233
+    },
+    "sewer_overflow_context": {
+      "regional_modeled_fallback": 7285,
+      "direct_sewershed_outfall_match": 14948
+    },
+    "sewer_stress_index": {
+      "regional_modeled_fallback": 7285,
+      "direct_sewershed_outfall_match": 14948
+    },
+    "vmt_per_household_yr": {
+      "geographic_estimate": 22233
+    },
+    "wastewater_gpd_per_person": {
+      "cited_design_reference": 22233
+    }
+  },
+  "examples": {
+    "embodied_kgco2e_psf:modeled_prototype_lca": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 7.43,
+        "low": 3.62,
+        "high": 11.24,
+        "unit": "kgCO2e/sf",
+        "provenance": "modeled",
+        "evidence_tier": "modeled_prototype_lca",
+        "interval_type": "reported_study_range",
+        "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+        "source_ids": [
+          "jungclaus_2024_sf_embodied_a1a3"
+        ],
+        "source_urls": [
+          "https://doi.org/10.1016/j.scs.2024.105975",
+          "https://www.sciencedirect.com/science/article/pii/S2210670724007996",
+          "https://doi.org/10.6084/m9.figshare.24451948.v1"
+        ],
+        "model_id": "us_doe_sfh_embodied_ec_intensity_a1_a3_2024",
+        "source_range_kgco2e_m2": {
+          "low": 39,
+          "high": 121,
+          "unit": "kgCO2e/m2"
+        },
+        "reported_stage_boundary": "A1-A3 product-stage embodied GHG; gross ECI, without applying separately reported theoretical maximum biogenic storage",
+        "physical_scope": "DOE single-family prototype quantity takeoff: structure, enclosure, and foundation material classes",
+        "center_basis": "Arithmetic midpoint of the published 39\u2013121 kgCO2e/m2 all-model ECI range (80 kgCO2e/m2 converted to 7.43 kgCO2e/sf); declared planning center, not a reported sample mean.",
+        "proxy_adjustment": {
+          "low_factor": 1.0,
+          "high_factor": 1.0,
+          "provenance": "none",
+          "limitations": "Detached house maps to the DOE single-family detached form."
+        },
+        "as_of": "2024-12-15",
+        "limitations": "Upfront materials (A1-A3 proxy), not complete whole-building or whole-life carbon. The source covers DOE detached single-family models and structure/enclosure/foundation material classes; interiors/fit-out, MEP, appliances and sitework are not established as included. A4-A5 transport/construction, replacements/use and end-of-life are outside A1-A3. Source min/max spans study climate, foundation, and LCA-tool cases, not a confidence interval. Typology differences beyond the DOE detached archetype use declared proxy factors."
+      }
+    },
+    "operational_kwh_psf_yr:doe_energyplus_prototype_output": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 8.07,
+        "low": 7.1,
+        "high": 8.48,
+        "unit": "kWh/sf/yr",
+        "provenance": "modeled",
+        "evidence_tier": "doe_energyplus_prototype_output",
+        "interval_type": "foundation_variant_range",
+        "geography": "IECC 2021 climate zone 5A; DOE uses Buffalo Niagara International Airport TMY3; Allegheny County is also CZ5A but Buffalo weather is not Pittsburgh local weather",
+        "source_ids": [
+          "doe_iecc2021_residential_cz5a_outputs",
+          "pnnl_33270_allegheny_5a",
+          "doe_pa_residential_code_status_2026"
+        ],
+        "source_urls": [
+          "https://www.energycodes.gov/prototype-building-models",
+          "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip",
+          "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+          "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates",
+          "https://www.energycodes.gov/status/states/pennsylvania"
+        ],
+        "model_id": "doe_iecc2021_residential_cz5a_heat_pump",
+        "prototype_proxy": "sf_detached",
+        "scenario": "All-electric heat-pump scenario. Uses only DOE hp-tagged output tables; all non-electric fuel columns in selected annual end-use outputs are zero.",
+        "end_uses": "Electricity:Facility annual meter for all modeled end uses, normalized by Net Conditioned Building Area.",
+        "foundation_variants": [
+          {
+            "foundation": "crawlspace",
+            "model_id": "US+SF+CZ5A+hp+crawlspace+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20161.62,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.48160363
+          },
+          {
+            "foundation": "heatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+heatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 25331.05,
+            "conditioned_area_sf": 3565.64,
+            "value_kwh_sf_yr": 7.1042085
+          },
+          {
+            "foundation": "slab",
+            "model_id": "US+SF+CZ5A+hp+slab+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 19708.85,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.29113205
+          },
+          {
+            "foundation": "unheatedbsmt",
+            "model_id": "US+SF+CZ5A+hp+unheatedbsmt+IECC_2021",
+            "electricity_facility_meter_kwh_yr": 20012.46,
+            "conditioned_area_sf": 2377.1,
+            "value_kwh_sf_yr": 8.41885491
+          }
+        ],
+        "center_basis": "Arithmetic mean of the four DOE HP foundation variant EUIs for the selected prototype; no building-form savings are assumed.",
+        "proxy_adjustment": {
+          "low_factor": 1.0,
+          "high_factor": 1.0,
+          "provenance": "none",
+          "limitations": "Detached house maps to the DOE single-family detached form."
+        },
+        "as_of": "2024-12-22",
+        "limitations": "Simulated 2021 IECC prototype electricity in Buffalo TMY3 weather, not a Pittsburgh meter or prediction. Assumes all-electric heat-pump systems; selected output tables have zero non-electric fuel use. Foundation low/high span four foundation variants only and are not a statistical interval. Building form, floor area, occupancy, schedules, appliance behavior and local weather may differ. DOE uses one single-family detached and one multifamily low-rise base form; other forms are explicit proxies."
+      }
+    },
+    "vmt_per_household_yr:geographic_estimate": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 13901.56,
+        "low": 13597.64,
+        "high": 14241.37,
+        "unit": "miles/household/yr",
+        "provenance": "modeled",
+        "evidence_tier": "geographic_estimate",
+        "interval_type": "NHTS_MOE_endpoint_annualization_scenario",
+        "geography": {
+          "type": "tract",
+          "geoid": "42003020300",
+          "vintage": "2010 LATCH tract code; exact-code proxy only",
+          "parcel_tract_vintage": "2024 ACS tract geography",
+          "join_method": "exact 11-digit GEOID string equality; no Census tract relationship-file crosswalk"
+        },
+        "source_ids": [
+          "bts_latch_2017",
+          "fhwa_nhts_2017_annualization"
+        ],
+        "source_snapshot_ids": [
+          "76e7553f6f8ce4682f6c0648fc11139e2c8a32e3c9329af1d1856707e66a933a"
+        ],
+        "as_of": "2017 LATCH and 2017 NHTS; retrieved 2026-09-27",
+        "model_id": "latch_2017_annualized_tract_proxy_v1",
+        "model_version": "2026-09-27",
+        "weekday_value_miles_per_household_day": 39.64,
+        "annualization": {
+          "weekdays_per_year": 261,
+          "weekend_days_per_year": 104,
+          "weekend_to_weekday_ratio": 0.862453532,
+          "ratio_scenario_bounds": {
+            "high": 0.94488189,
+            "low": 0.788732394
+          },
+          "equivalent_days_per_year": {
+            "central": 350.695167,
+            "high": 359.267717,
+            "low": 343.028169
+          },
+          "method": "weekday daily household estimate * (261 + 104 * national NHTS weekend/weekday VMT ratio)"
+        },
+        "source_flags": {
+          "flag_acs_lt_moe": "1",
+          "flag_gpqtr": "0",
+          "flag_incomplete_acs": "0",
+          "flag_manhattan_trt": "0"
+        },
+        "fallback_level": null,
+        "limitations": [
+          "Exact tract-code equality does not verify that a 2010 LATCH tract and 2024 ACS tract share boundaries; no Census relationship crosswalk was applied.",
+          "LATCH is a 2017 modeled average household weekday travel estimate, not parcel-specific observed travel or a current household measurement.",
+          "The annualization ratio transfers a national driver-level NHTS weekday/weekend ratio to tract-level household VMT; the measures and geographies do not match exactly.",
+          "The low/high range propagates the published NHTS MOE endpoints for the weekday/weekend ratio only; it does not quantify LATCH model error or tract sampling uncertainty.",
+          "Source flag_acs_lt_moe=1: an ACS explanatory-variable estimate had a margin of error larger than its estimate; this flag is retained and is not a travel confidence interval."
+        ],
+        "confirmation_needed": "Replace with a household travel survey or project-specific transportation analysis when available."
+      }
+    },
+    "grid_kgco2e_per_kwh:regional_scenario": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 0.4031924,
+        "low": 0.40105998,
+        "high": 0.40691299,
+        "unit": "kgCO2e/kWh",
+        "provenance": "modeled",
+        "evidence_tier": "regional_scenario",
+        "interval_type": "Cambium_8_scenario_spread",
+        "geography": {
+          "type": "Cambium GEA region",
+          "id": "PJM_East",
+          "county_fips": "42003",
+          "county": "Allegheny",
+          "state": "PA",
+          "state_name": "Pennsylvania",
+          "reeds_balancing_area": "p115",
+          "mapping_source": "Cambium 2024 County Mapping sheet; county to ReEDS balancing area to GEA region",
+          "parcel_join_method": "county inferred from first five digits of parcel tract GEOID"
+        },
+        "source_ids": [
+          "nrel_cambium_2024"
+        ],
+        "source_snapshot_ids": [
+          "80e930a78640d423ace34517eb8101a07a38b9a5c1d899e3ed33f0f63f9a63eb"
+        ],
+        "as_of": "Cambium 2024 scenarios; 2025 first projection year",
+        "model_id": "cambium_2024_PJM_East_aer_load_co2e_midcase",
+        "model_version": "2026-09-27",
+        "reference_year": 2025,
+        "rate_basis": "AER load (not AER generation), per MWh of end-use demand; average distribution losses are included, so do not apply a second line-loss gross-up.",
+        "distribution_loss_adjustment_included": true,
+        "limitations": [
+          "Cambium scenarios are modeled futures, not forecasts; the eight-scenario envelope is scenario spread, not a confidence interval.",
+          "Source points are every five years and each pathway is linearly interpolated for intervening years.",
+          "AER load CO2e includes direct and precombustion CO2, CH4, and N2O on an end-use-demand basis with average distribution losses; do not apply a second loss adjustment.",
+          "County-to-GEA assignment follows the Cambium 2024 county/ReEDS balancing area crosswalk and does not verify the parcel's electric utility or meter service territory.",
+          "Cambium source data stop at 2050. Carbon calculations extending later hold the 2050 scenario endpoint; alternative 2050 scenario endpoints are exposed as the terminal sensitivity range, not as a post-2050 forecast."
+        ],
+        "historical_reference": {
+          "value": 0.41551510490798,
+          "unit": "kgCO2e/kWh",
+          "source_id": "epa_egrid_2023_reference",
+          "geography": "RFC West (RFCW) eGRID subregion",
+          "as_of": "2023 generation and emissions; Revision 2 released 2025-06-12",
+          "limitations": "Historical eGRID reference only; it is not the same geography or end-use-rate boundary as Cambium PJM_East and is not a projection."
+        }
+      }
+    },
+    "grid_decarbonization_per_yr:derived_scenario_summary": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 0.029003789,
+        "low": 0.018855829,
+        "high": 0.038458125,
+        "unit": "share/year",
+        "provenance": "modeled",
+        "evidence_tier": "derived_scenario_summary",
+        "interval_type": "Cambium_8_scenario_CAGR_range",
+        "geography": {
+          "type": "Cambium GEA region",
+          "id": "PJM_East",
+          "county_fips": "42003",
+          "county": "Allegheny",
+          "state": "PA",
+          "state_name": "Pennsylvania",
+          "reeds_balancing_area": "p115",
+          "mapping_source": "Cambium 2024 County Mapping sheet; county to ReEDS balancing area to GEA region",
+          "parcel_join_method": "county inferred from first five digits of parcel tract GEOID"
+        },
+        "source_ids": [
+          "nrel_cambium_2024"
+        ],
+        "source_snapshot_ids": [
+          "80e930a78640d423ace34517eb8101a07a38b9a5c1d899e3ed33f0f63f9a63eb"
+        ],
+        "as_of": "Cambium 2024, 2025\u20132050 endpoints",
+        "model_id": "cambium_2024_PJM_East_endpoint_cagr_summary",
+        "method": "1 - (2050 / 2025 rate) ** (1 / 25); central is Mid-case; low/high span scenario-specific endpoint CAGR",
+        "limitations": [
+          "Descriptive compound annual decline derived from 2025 and 2050 modeled endpoints; it hides non-monotonic year-to-year paths.",
+          "The annual grid trajectory is the authoritative input; this summary should not replace the supplied path.",
+          "Scenario spread is not a statistical confidence interval."
+        ]
+      }
+    },
+    "kgco2e_per_vmt:cited_scenario_input": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 0.393,
+        "low": 0.393,
+        "high": 0.393,
+        "unit": "kgCO2e/mile",
+        "provenance": "assumption",
+        "evidence_tier": "cited_scenario_input",
+        "interval_type": "scenario_range",
+        "geography": "regional or typology scenario; not parcel observation",
+        "source_ids": [
+          "epa_ghg_factors"
+        ],
+        "as_of": null,
+        "limitations": "EPA's greenhouse-gas equivalencies calculation uses 0.393 kg CO2e per vehicle-mile for an average U.S. gasoline passenger vehicle (2022 fleet and fuel-economy baseline). National tailpipe proxy, not Pittsburgh observed emissions or a vehicle-specific estimate. Future fleet changes and upstream fuel/vehicle emissions are omitted."
+      }
+    },
+    "wastewater_gpd_per_person:cited_design_reference": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 100,
+        "low": 100,
+        "high": 100,
+        "unit": "gallons/person/day",
+        "provenance": "assumption",
+        "evidence_tier": "cited_design_reference",
+        "interval_type": "point_reference",
+        "geography": "planning-level reference for a proposed residential scenario",
+        "source_ids": [
+          "pa_dep_domestic_wastewater_manual"
+        ],
+        "as_of": null,
+        "limitations": "PA DEP Domestic Wastewater Facilities Manual \u00a724.1 p.22: new sewer systems use at least 100 gpd/person for average daily design flow unless rigorously justified; includes normal infiltration. This is a design reference, not measured household discharge.",
+        "confirmation_needed": "Confirm applicable design-flow basis with PA DEP/PWSA/ALCOSAN for the project"
+      }
+    },
+    "occupants_per_home:declared_scenario": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 2,
+        "low": 1,
+        "high": 4,
+        "unit": "persons/home",
+        "provenance": "assumption",
+        "evidence_tier": "declared_scenario",
+        "interval_type": "scenario_range",
+        "geography": "housing scenario",
+        "source_ids": [],
+        "model_id": "declared_occupancy_scenario",
+        "as_of": null,
+        "limitations": "Declared planning range of 1\u20134 occupants per home, centered at 2; not a household count or prediction.",
+        "confirmation_needed": "Replace with the proposal's documented occupancy/program assumptions"
+      }
+    },
+    "grid_kgco2e_by_year:regional_scenario": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": [
+          0.4031924,
+          0.38713973,
+          0.37108706,
+          0.35503439,
+          0.33898172,
+          0.32292905,
+          0.310771048,
+          0.298613046,
+          0.286455044,
+          0.274297042,
+          0.26213904,
+          0.260118788,
+          0.258098536,
+          0.256078284,
+          0.254058032,
+          0.25203778,
+          0.24309833,
+          0.23415888,
+          0.22521943,
+          0.21627998,
+          0.20734053,
+          0.204507406,
+          0.201674282,
+          0.198841158,
+          0.196008034,
+          0.19317491
+        ],
+        "low": [
+          0.40105998,
+          0.362470992,
+          0.319729154,
+          0.276987316,
+          0.234245478,
+          0.19150364,
+          0.185454168,
+          0.179404696,
+          0.173355224,
+          0.167305752,
+          0.16125628,
+          0.169305458,
+          0.177354636,
+          0.185403814,
+          0.193452992,
+          0.20150217,
+          0.199755016,
+          0.198007862,
+          0.196260708,
+          0.194513554,
+          0.1927664,
+          0.184616246,
+          0.176466092,
+          0.168315938,
+          0.160165784,
+          0.15201563
+        ],
+        "high": [
+          0.40691299,
+          0.392409824,
+          0.380959598,
+          0.369529836,
+          0.359019788,
+          0.34850974,
+          0.33906403,
+          0.32961832,
+          0.32017261,
+          0.3107269,
+          0.30128119,
+          0.294148034,
+          0.287014878,
+          0.279881722,
+          0.272748566,
+          0.26561541,
+          0.26626355,
+          0.26691169,
+          0.26755983,
+          0.26820797,
+          0.27068689,
+          0.266735398,
+          0.262783906,
+          0.258832414,
+          0.254880922,
+          0.25092943
+        ],
+        "years": [
+          2025,
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035,
+          2036,
+          2037,
+          2038,
+          2039,
+          2040,
+          2041,
+          2042,
+          2043,
+          2044,
+          2045,
+          2046,
+          2047,
+          2048,
+          2049,
+          2050
+        ],
+        "unit": "kgCO2e/kWh",
+        "provenance": "modeled",
+        "evidence_tier": "regional_scenario",
+        "interval_type": "Cambium_8_scenario_spread_by_year",
+        "geography": {
+          "type": "Cambium GEA region",
+          "id": "PJM_East",
+          "county_fips": "42003",
+          "county": "Allegheny",
+          "state": "PA",
+          "state_name": "Pennsylvania",
+          "reeds_balancing_area": "p115",
+          "mapping_source": "Cambium 2024 County Mapping sheet; county to ReEDS balancing area to GEA region",
+          "parcel_join_method": "county inferred from first five digits of parcel tract GEOID"
+        },
+        "source_ids": [
+          "nrel_cambium_2024"
+        ],
+        "source_snapshot_ids": [
+          "80e930a78640d423ace34517eb8101a07a38b9a5c1d899e3ed33f0f63f9a63eb"
+        ],
+        "as_of": "Cambium 2024 scenarios; 2025\u20132050",
+        "model_id": "cambium_2024_PJM_East_annual_aer_load_co2e",
+        "model_version": "2026-09-27",
+        "rate_basis": "AER load (not AER generation), per MWh of end-use demand; average distribution losses are included, so do not apply a second line-loss gross-up.",
+        "distribution_loss_adjustment_included": true,
+        "source_years": [
+          2025,
+          2030,
+          2035,
+          2040,
+          2045,
+          2050
+        ],
+        "scenario_names": [
+          "High Demand Growth",
+          "High Natural Gas Prices",
+          "High Renewable Energy Costs",
+          "High Renewable Energy Costs with Low Natural Gas Prices",
+          "Low Natural Gas Prices",
+          "Low Renewable Energy Costs",
+          "Low Renewable Energy Costs with High Natural Gas Prices",
+          "Mid-case"
+        ],
+        "interpolation": "linear within each Cambium five-year interval",
+        "extrapolation": {
+          "method": "terminal_year_hold",
+          "terminal_year": 2050,
+          "value": 0.19317491,
+          "low": 0.15201563,
+          "high": 0.25092943,
+          "alternative_scenario_terminal_values": {
+            "High Demand Growth": 0.23644593,
+            "High Natural Gas Prices": 0.21154513,
+            "High Renewable Energy Costs": 0.24591589,
+            "High Renewable Energy Costs with Low Natural Gas Prices": 0.25092943,
+            "Low Natural Gas Prices": 0.22577772,
+            "Low Renewable Energy Costs": 0.20517267,
+            "Low Renewable Energy Costs with High Natural Gas Prices": 0.15201563,
+            "Mid-case": 0.19317491
+          },
+          "limitation": "Holding a 2050 modeled endpoint constant after 2050 is a transparent sensitivity convention, not a forecast. The listed scenario terminal values show alternative model pathways through 2050 only."
+        },
+        "limitations": [
+          "Cambium scenarios are modeled futures, not forecasts; the eight-scenario envelope is scenario spread, not a confidence interval.",
+          "Source points are every five years and each pathway is linearly interpolated for intervening years.",
+          "AER load CO2e includes direct and precombustion CO2, CH4, and N2O on an end-use-demand basis with average distribution losses; do not apply a second loss adjustment.",
+          "County-to-GEA assignment follows the Cambium 2024 county/ReEDS balancing area crosswalk and does not verify the parcel's electric utility or meter service territory.",
+          "Cambium source data stop at 2050. Carbon calculations extending later hold the 2050 scenario endpoint; alternative 2050 scenario endpoints are exposed as the terminal sensitivity range, not as a post-2050 forecast."
+        ]
+      }
+    },
+    "sewer_overflow_context:regional_modeled_fallback": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 26.21501628613569,
+        "low": 0.0,
+        "high": 777.0,
+        "unit": "million gallons/year",
+        "provenance": "modeled",
+        "evidence_tier": "regional_modeled_fallback",
+        "interval_type": "regional_reference_spread",
+        "measure_definition": "unweighted regional mean of ALCOSAN modeled typical-year annual overflow volume per outfall",
+        "geography": "ALCOSAN modeled CSO outfalls in the ingested Clean Water Plan service-area tables",
+        "source_ids": [
+          "alcosan_cwp_section4_2018"
+        ],
+        "source_urls": [
+          "https://www.alcosan.org/docs/default-source/clean-water-plan-documents/cwp-section-4.pdf?sfvrsn=6d0d892a_2"
+        ],
+        "as_of": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_vintage": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_scenario": "Existing-condition typical-year hydrologic and hydraulic model simulation",
+        "model_period": "A refined calendar-year 2003 rainfall dataset calibrated to produce annual statistics equivalent to a 60-year historical precipitation record; not observed overflow data from a single calendar year.",
+        "annual_frequency_activations_per_year_by_outfall": [],
+        "annual_duration_hours_per_year_by_outfall": [],
+        "annual_volume_million_gallons_by_outfall": [],
+        "resolved_sewershed_labels": [],
+        "unmatched_sewershed_tokens": [],
+        "regional_fallback_method": {
+          "statistic": "unweighted arithmetic mean across modeled outfall records",
+          "outfall_count": 339,
+          "reference_mean_million_gallons_per_year": 26.21501628613569,
+          "reference_min_million_gallons_per_year": 0.0,
+          "reference_max_million_gallons_per_year": 777.0,
+          "range_is_confidence_interval": false
+        },
+        "limitations": "Regional fallback used because no mapped PWSA CSO_SHED label was available for the parcel. The value is the unweighted mean of published modeled outfall annual volumes in the ingested ALCOSAN Clean Water Plan tables; low/high are the descriptive minimum and maximum outfall values, not a confidence interval. The volume is an outfall model result, not parcel wastewater flow or added-flow contribution. This is not parcel-specific overflow exposure, a current observation, or a sewer-capacity finding. No nearest-outfall or distance join is used.",
+        "confirmation_needed": "Verify current utility service, outfall linkage, and available capacity with PWSA/ALCOSAN."
+      }
+    },
+    "sewer_stress_index:regional_modeled_fallback": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "value": 1.0,
+        "low": 0.0,
+        "high": 29.639500945529882,
+        "unit": "ratio to equal-weight mean modeled CSO outfall volume",
+        "provenance": "modeled",
+        "evidence_tier": "regional_modeled_fallback",
+        "interval_type": "regional_reference_spread",
+        "geography": "ALCOSAN modeled CSO outfalls in the ingested Clean Water Plan service-area tables",
+        "source_ids": [
+          "alcosan_cwp_section4_2018"
+        ],
+        "source_urls": [
+          "https://www.alcosan.org/docs/default-source/clean-water-plan-documents/cwp-section-4.pdf?sfvrsn=6d0d892a_2"
+        ],
+        "as_of": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_vintage": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_scenario": "Existing-condition typical-year hydrologic and hydraulic model simulation",
+        "model_period": "A refined calendar-year 2003 rainfall dataset calibrated to produce annual statistics equivalent to a 60-year historical precipitation record; not observed overflow data from a single calendar year.",
+        "normalization": {
+          "formula": "arithmetic mean of matched outfall typical-year annual volumes / equal-weight mean annual volume across all modeled outfalls in ingested CWP tables",
+          "reference_outfall_count": 339,
+          "reference_mean_million_gallons_per_year": 26.21501628613569,
+          "reference_scope": "modeled outfall rows in the ingested ALCOSAN Clean Water Plan per-outfall CSO tables; not a city or parcel-weighted mean"
+        },
+        "limitations": "Regional fallback index equals 1 by definition because no complete direct outfall match exists; low/high show the model outfall range relative to the system mean and are not a confidence interval or parcel estimate."
+      }
+    },
+    "acs_renter_income_bins:geographic_estimate": {
+      "parcel_id": "0009G00180000000",
+      "envelope": {
+        "as_of": "2020-2024 ACS 5-year; 2024 geography",
+        "confirmation_needed": null,
+        "evidence_tier": "geographic_estimate",
+        "geography": {
+          "geoid": "42003020300",
+          "type": "tract"
+        },
+        "high": null,
+        "interval_type": "ACS 90% margins of error per estimate",
+        "limitations": [
+          "Tract household distribution is area context, not parcel residents.",
+          "Open-ended income bins cannot support within-bin interpolation."
+        ],
+        "low": null,
+        "model_id": null,
+        "model_version": null,
+        "provenance": "modeled",
+        "sample_size": 1354,
+        "source_ids": [
+          "acs_2024_b25118"
+        ],
+        "source_snapshot_ids": [
+          "64cd9a281e2a41ca9ff3dafd278cf53354d99a2b3b7900292773faa40c97257a"
+        ],
+        "unit": "renter households by annual household income bin",
+        "value": {
+          "bins": [
+            {
+              "households": 81,
+              "label": "less than $5,000",
+              "lower_usd": 0,
+              "moe_90": 118,
+              "upper_usd": 5000
+            },
+            {
+              "households": 0,
+              "label": "$5,000 to $9,999",
+              "lower_usd": 5000,
+              "moe_90": 12,
+              "upper_usd": 10000
+            },
+            {
+              "households": 10,
+              "label": "$10,000 to $14,999",
+              "lower_usd": 10000,
+              "moe_90": 16,
+              "upper_usd": 15000
+            },
+            {
+              "households": 6,
+              "label": "$15,000 to $19,999",
+              "lower_usd": 15000,
+              "moe_90": 11,
+              "upper_usd": 20000
+            },
+            {
+              "households": 0,
+              "label": "$20,000 to $24,999",
+              "lower_usd": 20000,
+              "moe_90": 12,
+              "upper_usd": 25000
+            },
+            {
+              "households": 39,
+              "label": "$25,000 to $34,999",
+              "lower_usd": 25000,
+              "moe_90": 35,
+              "upper_usd": 35000
+            },
+            {
+              "households": 31,
+              "label": "$35,000 to $49,999",
+              "lower_usd": 35000,
+              "moe_90": 28,
+              "upper_usd": 50000
+            },
+            {
+              "households": 218,
+              "label": "$50,000 to $74,999",
+              "lower_usd": 50000,
+              "moe_90": 93,
+              "upper_usd": 75000
+            },
+            {
+              "households": 154,
+              "label": "$75,000 to $99,999",
+              "lower_usd": 75000,
+              "moe_90": 99,
+              "upper_usd": 100000
+            },
+            {
+              "households": 436,
+              "label": "$100,000 to $149,999",
+              "lower_usd": 100000,
+              "moe_90": 153,
+              "upper_usd": 150000
+            },
+            {
+              "households": 379,
+              "label": "$150,000 or more",
+              "lower_usd": 150000,
+              "moe_90": 149,
+              "upper_usd": null
+            }
+          ],
+          "total_moe_90": 222,
+          "total_renter_households": 1354
+        }
+      }
+    },
+    "sewer_overflow_context:direct_sewershed_outfall_match": {
+      "parcel_id": "0009N00133000000",
+      "envelope": {
+        "value": 7.61,
+        "low": 7.61,
+        "high": 7.61,
+        "unit": "million gallons/year",
+        "provenance": "modeled",
+        "evidence_tier": "direct_sewershed_outfall_match",
+        "interval_type": "point_estimate",
+        "measure_definition": "sum of the ALCOSAN modeled typical-year annual overflow volumes for unique exact-matched outfalls",
+        "geography": "PWSA combined sewershed label(s) A-12; matched outfall(s) A-12-OF (parcel join method: point inside county parcel polygon)",
+        "source_ids": [
+          "alcosan_cwp_section4_2018",
+          "pwsa_combined_sewersheds"
+        ],
+        "source_urls": [
+          "https://www.alcosan.org/docs/default-source/clean-water-plan-documents/cwp-section-4.pdf?sfvrsn=6d0d892a_2",
+          "https://data.wprdc.org/dataset/combined-sewershed"
+        ],
+        "as_of": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_vintage": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_scenario": "Existing-condition typical-year hydrologic and hydraulic model simulation",
+        "model_period": "A refined calendar-year 2003 rainfall dataset calibrated to produce annual statistics equivalent to a 60-year historical precipitation record; not observed overflow data from a single calendar year.",
+        "annual_frequency_activations_per_year_by_outfall": [
+          {
+            "outfall_id": "A-12-OF",
+            "value": 22.0
+          }
+        ],
+        "annual_duration_hours_per_year_by_outfall": [
+          {
+            "outfall_id": "A-12-OF",
+            "value": 45.0
+          }
+        ],
+        "annual_volume_million_gallons_by_outfall": [
+          {
+            "outfall_id": "A-12-OF",
+            "value": 7.61,
+            "unit": "million gallons/year",
+            "planning_basin": "Main Rivers",
+            "source_table": "4-12",
+            "source_pdf_page": 64,
+            "provenance": "modeled",
+            "source_ids": [
+              "alcosan_cwp_section4_2018",
+              "pwsa_combined_sewersheds"
+            ]
+          }
+        ],
+        "resolved_sewershed_labels": [
+          {
+            "label": "A-12",
+            "outfalls": [
+              "A-12-OF"
+            ]
+          }
+        ],
+        "unmatched_sewershed_tokens": [],
+        "regional_fallback_method": null,
+        "limitations": "ALCOSAN existing-condition typical-year modeled outfall estimates are historical context, not measured present-day overflow or parcel-specific discharge. The volume is modeled annual overflow at named outfall(s), not parcel wastewater flow or added-flow contribution. The 2018 PWSA CSO_SHED label is joined only to explicitly matched outfall IDs; no nearest-outfall or distance join is used. This does not establish sewer service, pipe condition, or available capacity.",
+        "confirmation_needed": "Verify current utility service, outfall linkage, and available capacity with PWSA/ALCOSAN."
+      }
+    },
+    "sewer_stress_index:direct_sewershed_outfall_match": {
+      "parcel_id": "0009N00133000000",
+      "envelope": {
+        "value": 0.2902916373172232,
+        "low": 0.2902916373172232,
+        "high": 0.2902916373172232,
+        "unit": "ratio to equal-weight mean modeled CSO outfall volume",
+        "provenance": "modeled",
+        "evidence_tier": "direct_sewershed_outfall_match",
+        "interval_type": "matched_outfall_spread",
+        "geography": "PWSA combined sewershed label(s) A-12; matched outfall(s) A-12-OF (parcel join method: point inside county parcel polygon)",
+        "source_ids": [
+          "alcosan_cwp_section4_2018",
+          "pwsa_combined_sewersheds"
+        ],
+        "source_urls": [
+          "https://www.alcosan.org/docs/default-source/clean-water-plan-documents/cwp-section-4.pdf?sfvrsn=6d0d892a_2",
+          "https://data.wprdc.org/dataset/combined-sewershed"
+        ],
+        "as_of": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_vintage": "2018 (PDF creation and modification metadata: 2018-03-29)",
+        "model_scenario": "Existing-condition typical-year hydrologic and hydraulic model simulation",
+        "model_period": "A refined calendar-year 2003 rainfall dataset calibrated to produce annual statistics equivalent to a 60-year historical precipitation record; not observed overflow data from a single calendar year.",
+        "normalization": {
+          "formula": "arithmetic mean of matched outfall typical-year annual volumes / equal-weight mean annual volume across all modeled outfalls in ingested CWP tables",
+          "reference_outfall_count": 339,
+          "reference_mean_million_gallons_per_year": 26.21501628613569,
+          "reference_scope": "modeled outfall rows in the ingested ALCOSAN Clean Water Plan per-outfall CSO tables; not a city or parcel-weighted mean"
+        },
+        "limitations": "Contextual model ratio only; it is not measured sewer stress, system capacity, pipe condition, or a parcel-specific impact. The reference is an equal-weight mean outfall volume across the ingested ALCOSAN report tables, not a city or parcel-weighted average."
+      }
+    },
+    "county_assessment_zero_fields:direct_parcel_fact": {
+      "parcel_id": "0011A00173000000",
+      "envelope": {
+        "as_of": "current county assessment extract",
+        "confirmation_needed": "Confirm the parcel area/value with County assessment records.",
+        "evidence_tier": "direct_parcel_fact",
+        "geography": {
+          "pin": "0011A00173000000",
+          "type": "parcel"
+        },
+        "high": null,
+        "interval_type": null,
+        "limitations": [
+          "Zero lot area is unusable as physical area and is emitted as null.",
+          "Zero FAIRMARKETLAND is a county assessment value, not an acquisition price; emitted as null."
+        ],
+        "low": null,
+        "model_id": null,
+        "model_version": null,
+        "provenance": "observed",
+        "sample_size": null,
+        "source_ids": [
+          "wprdc_assessments"
+        ],
+        "source_snapshot_ids": [
+          "c8515a379835491825834c81fd1981d057629739555e9e26d455e32afe339646"
+        ],
+        "unit": "county-reported assessment field values",
+        "value": {
+          "land_value_usd": 0,
+          "lot_area_sf": 0
+        }
+      }
+    },
+    "county_sales:direct_parcel_fact": {
+      "parcel_id": "0011D00046000000",
+      "envelope": {
+        "as_of": "2020-07-15",
+        "confirmation_needed": "Verify deed and current acquisition terms before use.",
+        "evidence_tier": "direct_parcel_fact",
+        "geography": {
+          "pin": "0011D00046000000",
+          "type": "parcel"
+        },
+        "high": null,
+        "interval_type": null,
+        "limitations": [
+          "Historic transfer consideration, not a current asking or purchase price.",
+          "Current assessment vacancy class does not establish vacancy on sale date."
+        ],
+        "low": null,
+        "model_id": null,
+        "model_version": null,
+        "provenance": "observed",
+        "sample_size": 1,
+        "source_ids": [
+          "allegheny_property_sales"
+        ],
+        "source_snapshot_ids": [
+          "99f4c38632c79492ed961c2e952a18a2be68702c2467e76f6faa83db67e373c3"
+        ],
+        "unit": "USD per recorded parcel sale",
+        "value": [
+          {
+            "arm_length": true,
+            "context_as_of": "current parcel record; not sale-date condition or zoning",
+            "geography": "parcel",
+            "lat": 40.441105,
+            "lon": -79.967428,
+            "neighborhood": "West Oakland",
+            "parcel_area_sqft": 1696.0,
+            "parcel_id": "0011D00046000000",
+            "sale_date": "2020-07-15",
+            "sale_price": 600.0,
+            "snapshot_id": "99f4c38632c79492ed961c2e952a18a2be68702c2467e76f6faa83db67e373c3",
+            "source_id": "allegheny_property_sales",
+            "vacant": true,
+            "zoning": "R1A-H"
+          }
+        ]
+      }
+    }
+  },
+  "limitations": "Coverage includes explicitly disclosed geographic and typology proxy estimates; it is not observation coverage or sewer capacity."
+}

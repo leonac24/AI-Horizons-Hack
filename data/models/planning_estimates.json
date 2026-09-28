@@ -1,0 +1,393 @@
+{
+  "model_id": "lotline:declared-planning-budget:v1",
+  "as_of": "2026-09-27",
+  "annual_capital_cost_share": {
+    "value": 0.07426986503734787,
+    "low": 0.06014358244076781,
+    "high": 0.08939817774793037
+  },
+  "operating_cost_per_unit_month": {
+    "value": 1079.2332933333332,
+    "low": 761.7581866666667,
+    "high": 1580.0241066666665,
+    "by_typology": {
+      "detached": {
+        "value": 1474.5785,
+        "low": 1039.0132666666668,
+        "high": 2118.6000666666664
+      },
+      "adu_pair": {
+        "value": 1327.4471872916665,
+        "low": 936.7688166666667,
+        "high": 1916.4349041666665
+      },
+      "two_unit": {
+        "value": 1363.2272120833336,
+        "low": 961.9979666666667,
+        "high": 1965.2333916666666
+      },
+      "rowhouse": {
+        "value": 1339.4808279166668,
+        "low": 945.5326266666667,
+        "high": 1932.5682816666663
+      },
+      "small_multi": {
+        "value": 1079.2332933333332,
+        "low": 761.7581866666667,
+        "high": 1580.0241066666665
+      },
+      "midrise": {
+        "value": 1124.8006791666667,
+        "low": 793.3610166666667,
+        "high": 1638.5822916666664
+      }
+    }
+  },
+  "risk_reserves": {
+    "steep_slope_cost_share": {
+      "value": 0.1,
+      "low": 0,
+      "high": 0.2,
+      "reserve_blocks": 2
+    },
+    "landslide_cost_share": {
+      "value": 0.15000000000000002,
+      "low": 0,
+      "high": 0.30000000000000004,
+      "reserve_blocks": 3
+    },
+    "undermined_cost_share": {
+      "value": 0.05,
+      "low": 0,
+      "high": 0.1,
+      "reserve_blocks": 1
+    }
+  },
+  "inputs": {
+    "rental_debt_share": {
+      "value": 0.7,
+      "low": 0.7,
+      "high": 0.7,
+      "unit": "share of uses",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Declared illustrative sources-and-uses split; no project loan commitment is evidenced."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "rental_equity_share": {
+      "value": 0.3,
+      "low": 0.3,
+      "high": 0.3,
+      "unit": "share of uses",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Declared illustrative sources-and-uses split; no equity commitment is evidenced."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "rental_subsidy_share": {
+      "value": 0,
+      "low": 0,
+      "high": 0,
+      "unit": "share of uses",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Base scenario assumes no subsidy award. This does not mean the project is ineligible or that assistance is unavailable."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "rental_debt_rate": {
+      "value": 0.075,
+      "low": 0.065,
+      "high": 0.085,
+      "unit": "annual rate",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Illustrative multifamily debt-rate range; Freddie Mac PMMS single-family rates are not substituted for a multifamily loan quote."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "rental_debt_term_years": {
+      "value": 30,
+      "low": 25,
+      "high": 35,
+      "unit": "years",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Illustrative amortization term; actual loan amortization and maturity are lender-specific."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "rental_equity_return_rate": {
+      "value": 0.05,
+      "low": 0.03,
+      "high": 0.07,
+      "unit": "annual rate",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Illustrative annual equity cash return; no investor term sheet is available."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "insurance_per_unit_month": {
+      "value": 125,
+      "low": 75,
+      "high": 200,
+      "unit": "USD/unit/month",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Illustrative multifamily insurance allowance; PHFA requires project insurance quotes and buffers them in underwriting."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "utilities_per_unit_month": {
+      "value": 159.4,
+      "low": 115.29,
+      "high": 250,
+      "unit": "USD/unit/month",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "pwsa_rates_2026"
+      ],
+      "source_snapshot_ids": [
+        "2026-03-08"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Illustrative owner-paid utility scenario. PWSA publishes a $159.40 single-family sample bill at 3,000 gallons and one ERU; range endpoints are Lotline stress assumptions, not observed multifamily bills."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "maintenance_per_unit_month": {
+      "value": 150,
+      "low": 100,
+      "high": 250,
+      "unit": "USD/unit/month",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Illustrative operations and maintenance allowance, not a local cost observation."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "management_per_unit_month": {
+      "value": 100,
+      "low": 75,
+      "high": 150,
+      "unit": "USD/unit/month",
+      "provenance": "assumption",
+      "evidence_tier": "declared_scenario",
+      "interval_type": "scenario_range",
+      "geography": "Pittsburgh planning scenario",
+      "source_ids": [
+        "lotline_finance_scenario_defaults"
+      ],
+      "source_snapshot_ids": [
+        "2026-09-27"
+      ],
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "as_of": "2026-09-27",
+      "limitations": [
+        "Illustrative management allowance, not a management quote or PHFA cost observation."
+      ],
+      "confirmation_needed": "Replace with project-specific quotes and approved sources-and-uses."
+    },
+    "reserves_per_unit_month": {
+      "value": 41.666666666666664,
+      "low": 41.666666666666664,
+      "high": 41.666666666666664,
+      "unit": "USD/unit/month",
+      "provenance": "assumption",
+      "evidence_tier": "program_minimum_reference",
+      "interval_type": "reference_scenario",
+      "geography": "PHFA general/family multifamily program",
+      "source_ids": [
+        "phfa_operating_budget_2025"
+      ],
+      "source_snapshot_ids": [
+        "2025"
+      ],
+      "as_of": "2026-09-27",
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "limitations": [
+        "PHFA instructions state $500/unit/year for general or family proposals; program-specific reserve reference, not a universal actual operating cost."
+      ],
+      "confirmation_needed": "Verify required reserve for the selected funding program."
+    },
+    "property_tax_mills": {
+      "value": 26.557,
+      "low": 26.557,
+      "high": 26.557,
+      "unit": "mills",
+      "provenance": "observed",
+      "evidence_tier": "published_2026_tax_rates",
+      "interval_type": "fixed_published_rate",
+      "geography": "City of Pittsburgh + Pittsburgh School District + Allegheny County",
+      "source_ids": [
+        "pittsburgh_tax_rates_2026"
+      ],
+      "source_snapshot_ids": [
+        "2026"
+      ],
+      "as_of": "2026-09-27",
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "limitations": [
+        "26.557 mills = 9.670 City + 10.457 School + 6.430 County. Post-build taxable assessment, abatements, and exemptions are not known."
+      ],
+      "confirmation_needed": "Confirm effective millage and post-build assessed value for the parcel."
+    },
+    "rental_dscr": {
+      "value": 1.15,
+      "low": 1.15,
+      "high": 1.15,
+      "unit": "ratio",
+      "provenance": "assumption",
+      "evidence_tier": "published_underwriting_reference",
+      "interval_type": "reference_scenario",
+      "geography": "PHFA multifamily underwriting",
+      "source_ids": [
+        "phfa_operating_budget_2025"
+      ],
+      "source_snapshot_ids": [
+        "2025"
+      ],
+      "as_of": "2026-09-27",
+      "model_id": null,
+      "model_version": null,
+      "sample_size": null,
+      "limitations": [
+        "PHFA operating instructions describe 115% DSCR for its primary debt-service calculation; not a universal lender term."
+      ],
+      "confirmation_needed": "Use the selected lender's debt coverage requirement."
+    }
+  },
+  "source_ids": [
+    "lotline_finance_scenario_defaults",
+    "lotline_risk_reserves",
+    "phfa_operating_budget_2025",
+    "pwsa_rates_2026",
+    "pittsburgh_tax_rates_2026"
+  ],
+  "limitations": [
+    "Capital recovery is 70% amortizing debt plus 30% equity return using the declared finance scenario, not an observed loan quote.",
+    "Operating fallback adds line-item budget allowances and 2026 millage applied to prototype development cost; excludes land, abatements and parcel-specific assessed value. The full finance model takes precedence.",
+    "Additional hazard reserve blocks are deliberately selected budget stress scenarios. A map flag is not evidence that intervention is required; zero is included in each range. No claim is made that the reserve can fund safe remediation.",
+    "PHFA's cited 5% contingency is a reference scale, not authority for the selected extra risk multipliers."
+  ]
+}

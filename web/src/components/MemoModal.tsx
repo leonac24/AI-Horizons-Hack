@@ -22,7 +22,7 @@ export function MemoModal({ config, analysis, ranking, profileLabel, onClose }: 
           </div>
         </div>
         <p>
-          {p.neighborhood} · zoning {p.zoning ?? '—'} · {Math.round(p.lot_area_sf ?? 0).toLocaleString()} sf · lot {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft · parcel {p.id} · printed{' '}
+          {p.neighborhood} · zoning {p.zoning ?? '—'} · {p.lot_area_sf == null ? 'area and dimensions unknown' : `${Math.round(p.lot_area_sf).toLocaleString()} sf · lot ${Math.round(analysis.lot_shape.frontage_ft)} × ${Math.round(analysis.lot_shape.depth_ft)} ft`} · parcel {p.id} · printed{' '}
           {new Date().toLocaleDateString()}
         </p>
         <p className="memo-disclaimer">{config.app.disclaimer}</p>

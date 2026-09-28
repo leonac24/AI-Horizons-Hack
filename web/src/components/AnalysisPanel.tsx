@@ -150,10 +150,13 @@ function CompareTab(p: Props) {
           <div className="h-lot">{par.address || par.id}</div>
           <div className="muted small lot-meta">
             <span>
-              {par.neighborhood} · zoning district <strong>{par.zoning ?? '—'}</strong> · {Math.round(par.lot_area_sf ?? 0).toLocaleString()} sf · parcel {par.id}
+              {par.neighborhood} · zoning district <strong>{par.zoning ?? '—'}</strong> · {par.lot_area_sf == null ? 'area unknown' : `${Math.round(par.lot_area_sf).toLocaleString()} sf`} · parcel {par.id}
             </span>
             {par.public && <span className="pub-badge">publicly held</span>}
           </div>
+          {(par.lon === null || par.lat === null) && (
+            <div className="hatched note-box small">This parcel has no reliable map position. {par.lot_area_sf == null ? 'Its area and form fit are also unconfirmed.' : 'The lot drawing uses its recorded area and estimated shape.'} Geographic zoning and hazard screens need a PIN-matched boundary or a confirmed location.</div>
+          )}
           <div className="dim small">
             Confirm this lot against{' '}
             {config.city.zoning_links.map((id, index) => {
@@ -243,12 +246,14 @@ function CompareTab(p: Props) {
           ))}
           {ranking.ranked.length === 0 && (
             <div className="warn small">
-              No housing type fits this lot on its own. At {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft,
-              every one of the {config.typologies.length} forms screened here needs more frontage, depth or lot area than this parcel has.
-              Parcels this small are usually built on together with a neighboring lot; combining parcels is not modeled here.
+              {par.lot_area_sf == null
+                ? 'No housing type can be screened for fit until the lot area and dimensions are confirmed.'
+                : <>No housing type fits this lot on its own. At {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft,
+                  every one of the {config.typologies.length} forms screened here needs more frontage, depth or lot area than this parcel has.
+                  Parcels this small are usually built on together with a neighboring lot; combining parcels is not modeled here.</>}
             </div>
           )}
-          {ranking.notFitting.length > 0 && <div className="dim small">Doesn’t fit this lot: {ranking.notFitting.map((o) => o.label).join(', ')}</div>}
+          {ranking.notFitting.length > 0 && <div className="dim small">{par.lot_area_sf == null ? 'Fit unknown' : 'Doesn’t fit this lot'}: {ranking.notFitting.map((o) => o.label).join(', ')}</div>}
           {ranking.excluded.length > 0 && (
             <div className="warn small">
               Not ranked (hard requirement): {ranking.excluded.map((o) => `${o.label} — ${o.reason}${o.zoning?.human_reviewed ? '' : ' (AI-extracted rule, not checked by a planner)'}`).join('; ')}
@@ -346,7 +351,7 @@ function CompareTab(p: Props) {
               <ProvTag p={analysis.lot_shape.provenance} />
             </div>
             <strong>
-              {Math.round(analysis.lot_shape.frontage_ft)} × {Math.round(analysis.lot_shape.depth_ft)} ft
+              {par.lot_area_sf == null ? 'Unknown' : `${Math.round(analysis.lot_shape.frontage_ft)} × ${Math.round(analysis.lot_shape.depth_ft)} ft`}
             </strong>
             <div className="dim small">{analysis.lot_shape.note}</div>
           </div>
@@ -470,11 +475,11 @@ function Carbon({ pool, year, setYear, config }: Props) {
       <div className="row-between">
         <div className="h-tab">
           Carbon per household over time<HelpTip id="carbon_over_time" />
-          <InfoTip id="carbon.series" sourceIds={carbonInputs?.sourceIds} dependsOn={[...(carbonInputs?.dependsOn ?? []), 'analysis_years']} provenance={prov} />
+          <InfoTip id="carbon.series" metric={carbonInputs} sourceIds={carbonInputs?.sourceIds} dependsOn={[...(carbonInputs?.dependsOn ?? []), 'analysis_years']} provenance={prov} />
         </div>
         <ProvTag p={prov} />
       </div>
-      <p className="muted small">Building materials at year 0, then home energy (PA grid, decarbonizing) and travel each year. Tonnes CO₂e.</p>
+      <p className="muted small">Prototype building materials at year 0, then modeled home electricity and household driving. The regional grid follows a named scenario. Tonnes CO₂e; a partial estimate.</p>
       <div className="carbon-grid">
         <div>
           <svg viewBox="0 0 360 200" className={`chart prov-${prov}`}>
@@ -706,6 +711,17 @@ function UnknownsTab({ config }: Pick<Props, 'config'>) {
         </button>}
       <div className="h-card">Coverage of connected data</div>
       <p className="muted small">Counts describe indexed vacant lots, not every property in Pittsburgh.</p>
+      {u.evidence_record_count !== undefined && u.evidence_record_count > 0 && (
+        <>
+          <div className="small unk-row">Parcel evidence records: {u.evidence_record_count.toLocaleString()} of {u.vacant_parcels.toLocaleString()}</div>
+          {Object.entries(u.evidence_coverage ?? {}).map(([field, counts]) => (
+            <div className="small unk-row" key={field}>
+              {field.replaceAll('_', ' ')}: {Object.entries(counts).map(([tier, count]) =>
+                `${count.toLocaleString()} ${tier.replaceAll('_', ' ')}`).join(' · ')}
+            </div>
+          ))}
+        </>
+      )}
       {([
         ['acs_income_values', '2024 ACS tract median income'],
         ['acs_renter_burden_values', '2024 ACS tract renter cost burden'],
@@ -716,7 +732,8 @@ function UnknownsTab({ config }: Pick<Props, 'config'>) {
         <div key={key} className="small unk-row">{label}: {(u.pipeline?.counts?.[key] ?? 0).toLocaleString()} of {u.vacant_parcels.toLocaleString()}</div>
       ))}
       <p className="muted small">ACS gaps include special-use tracts. FEMA is a point screen that can miss a hazard on another part of a lot. A missing sewershed match does not establish sewer type or available capacity.</p>
-      <div className="h-card">Placeholder numbers ({u.placeholder_assumptions.length})</div>
+      <div className="h-card">Configured fallback numbers ({u.placeholder_assumptions.length})</div>
+      <p className="muted small">These remain in configuration. A parcel result may use stronger evidence; its own badge and source details show what was actually used.</p>
       {u.placeholder_assumptions.map((a) => (
         <div key={a.id} className="small unk-row">
           <code>{a.id}</code> <span className="dim">({a.unit})</span> — {a.rationale}

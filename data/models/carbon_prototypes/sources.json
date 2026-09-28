@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "scope_note": "These source records support modeled housing scenario inputs. They do not identify a parcel-specific building design, meter, construction inventory, carbon footprint, or code-compliance result.",
+  "sources": [
+    {
+      "id": "doe_iecc2021_residential_cz5a_outputs",
+      "title": "Residential Prototype Building Models 2021 IECC - Climate Zone 5A",
+      "publisher": "U.S. Department of Energy, Building Energy Codes Program; models developed by PNNL",
+      "vintage": "2021 IECC; output tables generated 2024-06-27; DOE download page lists the dataset as published 2024-12-22",
+      "geography": "IECC 5A weather prototype uses Buffalo Niagara International Airport, NY TMY3; climate-zone representative only",
+      "urls": [
+        "https://www.energycodes.gov/prototype-building-models",
+        "https://www.energycodes.gov/sites/default/files/2025-01/resstd_CZ5A_IECC_2021.zip"
+      ],
+      "retrieved_at": "2026-09-27",
+      "sha256": "c9577e3954ad2a51e5b20955069308a7c6e6b95495c18483f8be825c9d1664cf",
+      "measurement_extract": "For `US+SF/MF+CZ5A+hp+{foundation}+IECC_2021.table.htm`, use Electricity:Facility annual meter divided by Net Conditioned Building Area. Checked annual end-use fuel table: all non-electric energy carriers equal 0.",
+      "relevant_details": "DOE explains two residential base prototypes (single-family detached and multifamily low-rise), four heating systems, four foundations; each ZIP includes EnergyPlus IDFs and corresponding HTML output tables. HP-only outputs are used here without converting a gas-fired result.",
+      "limitations": "EnergyPlus prototypes are modeled reference buildings, not measured homes. Heat-pump all-electric scenario is an explicit scenario choice, not a claim that all local construction is all-electric. Buffalo weather, schedules, size, equipment, end uses and DOE model assumptions differ from Pittsburgh buildings. Foundation min/max is scenario sensitivity, not a statistical confidence interval.",
+      "publication_date": "2024-12-22"
+    },
+    {
+      "id": "pnnl_33270_allegheny_5a",
+      "title": "Guide to Determining Climate Zone by County: Building America and IECC 2021 Updates",
+      "publisher": "Pacific Northwest National Laboratory",
+      "vintage": "2022; PNNL-33270",
+      "geography": "Allegheny County, Pennsylvania, is IECC 2021 climate zone 5A",
+      "urls": [
+        "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-33270.pdf",
+        "https://www.pnnl.gov/publications/guide-determining-climate-zone-county-building-america-and-iecc-2021-updates"
+      ],
+      "source_extract": "Publisher-indexed table row: PA | Allegheny | Cold | 5 | A.",
+      "limitations": "The county climate-zone designation does not make Buffalo TMY3 local Pittsburgh weather data."
+    },
+    {
+      "id": "doe_pa_residential_code_status_2026",
+      "title": "Pennsylvania State Energy Code Status",
+      "publisher": "U.S. Department of Energy, Building Energy Codes Program",
+      "as_of": "2026-09-27",
+      "source_extract": "DOE state profile lists Pennsylvania current residential code as 2021 IECC, effective 2026-01-01, with state amendments.",
+      "urls": [
+        "https://www.energycodes.gov/status/states/pennsylvania"
+      ],
+      "limitations": "Local/state amendments apply; this prototype output is not a compliance determination."
+    },
+    {
+      "id": "jungclaus_2024_sf_embodied_a1a3",
+      "title": "Embodied carbon benchmarks of single-family residential buildings in the United States",
+      "authors": "Matt A. Jungclaus, Nicholas Grant, Martín Torres, Jay H. Arehart, Wil V. Srubar III",
+      "publication": "Sustainable Cities and Society 117 (2024), article 105975; published 2024-12-15",
+      "doi": "10.1016/j.scs.2024.105975",
+      "urls": [
+        "https://doi.org/10.1016/j.scs.2024.105975",
+        "https://www.sciencedirect.com/science/article/pii/S2210670724007996"
+      ],
+      "data_url": "https://doi.org/10.6084/m9.figshare.24451948.v1",
+      "geography": "Theoretical US DOE single-family detached prototype; 16 IECC climate zones and four foundation types; not Pittsburgh-specific.",
+      "scope": "Reported ECI uses A1-A3 product-stage LCA factors applied to modeled DOE single-family material quantities for structure, enclosure and foundation. This is not a complete all-systems whole-building, A1-A5 or whole-life inventory.",
+      "source_extract": "Abstract, reported results: “average ECIs ranged from 39 to 121 kgCO₂e/m².”",
+      "evidence_locations": [
+        {
+          "section": "Abstract, reported results",
+          "extract": "The paper reports average ECI values ranging from 39 to 121 kgCO2e/m2 across the prototype/tool cases."
+        },
+        {
+          "section": "Methods: DOE single-family prototype model; material use intensity; life-cycle assessment",
+          "extract": "The study makes material quantity takeoffs for structure, enclosure and foundation, then applies product-stage A1-A3 factors from three LCA tools. It computes biogenic storage separately."
+        }
+      ],
+      "use_in_lotline": "Treat 39–121 kgCO2e/m2 as a published cross-model/tool range; convert to kgCO2e/sf. Center is the arithmetic midpoint, an explicit planning assumption, not a reported sample mean.",
+      "biogenic_carbon": "Use gross reported ECI; do not subtract the paper’s separately analyzed theoretical-maximum biogenic storage or assume that storage persists through end of life.",
+      "limitations": "The source benchmark covers detached single-family models only. Stated physical scope is structure, enclosure and foundation material classes; it does not establish that interior fit-out, MEP, appliances or site work are included. A1-A3 excludes installation-stage transport and construction (A4-A5), use/replacement and end-of-life stages. Multifamily/ADU/duplex/rowhouse values below are explicit typology proxies; wider proxy factors are scenario assumptions, not paper-reported intervals. Source range spans climate/foundation/modeling choices and is not a confidence interval.",
+      "publication_date": "2024-12-15",
+      "reported_result": {
+        "eci_range_kgco2e_m2": [
+          39,
+          121
+        ],
+        "range_semantics": "Published full study range across modeled DOE single-family prototypes, foundation/climate cases and the three LCA tools; not a statistical confidence interval.",
+        "scope": "A1-A3 product-stage, gross ECI for structure, enclosure and foundation material quantities."
+      }
+    },
+    {
+      "id": "srubar_2023_sf_embodied_dataset",
+      "title": "Material Use Intensity and Embodied Carbon Intensity of Single-Family Residential Buildings in the United States",
+      "publisher": "Figshare dataset",
+      "vintage": "2023 version 1",
+      "doi": "10.6084/m9.figshare.24451948.v1",
+      "url": "https://doi.org/10.6084/m9.figshare.24451948.v1",
+      "role": "Linked study data repository, provided for reproducibility; this implementation uses the published paper range rather than downloading individual rows."
+    }
+  ]
+}

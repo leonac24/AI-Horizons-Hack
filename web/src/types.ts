@@ -16,6 +16,9 @@ export interface Metric {
   note?: string | null
   /** Assumption ids (keys into Config.assumptions) this number was computed from. */
   dependsOn?: string[]
+  /** Source, geography, model and interval metadata for this result. */
+  evidence?: Record<string, unknown> | null
+  unavailable?: boolean
 }
 
 export interface SiteFact {
@@ -129,6 +132,7 @@ export interface Config {
   }
   city: {
     name: string
+    parcels: { id_pattern: string; id_min_chars: number; id_max_chars: number }
     map: { center: [number, number]; zoom: number; basemap_style: string }
     scene: {
       origin: [number, number]
@@ -163,8 +167,8 @@ export interface ParcelSummary {
   zoning: string | null
   lot_area_sf: number | null
   public: boolean
-  lon: number
-  lat: number
+  lon: number | null
+  lat: number | null
 }
 
 export interface ZoningCheck {
@@ -247,6 +251,7 @@ export interface Analysis {
   rankable_typology_ids: string[]
   excluded_typology_ids: string[]
   config_hash: string
+  evidence_manifest_hash?: string | null
   site_context: Metric[]
   site_facts: SiteFact[]
   scenarios: Scenario[]
@@ -310,6 +315,9 @@ export interface Unknowns {
   share_covered_by_human_reviewed_rules: number
   require_human_review: boolean
   pipeline?: { counts?: Record<string, number>; context?: Record<string, unknown> } | null
+  evidence_manifest_hash?: string
+  evidence_record_count?: number
+  evidence_coverage?: Record<string, Record<string, number>>
 }
 
 export interface EvidenceLeads {

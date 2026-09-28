@@ -66,10 +66,19 @@ def _combine(mid: str, parts: list[tuple[int, Metric]]) -> Metric:
         sourceIds=sorted({s for _, m in parts for s in m.sourceIds}),
         note=first.note if len(parts) == 1 else "Combined across the building types in this plan.",
         dependsOn=sorted({k for _, m in parts for k in m.dependsOn}),
+        evidence=first.evidence if len(parts) == 1 else {
+            "evidence_tier": "combined_plan_scenario",
+            "interval_type": "combined_component_ranges",
+            "geography": "same parcel; component scenario geographies shown below",
+            "components": [{"homes": homes, "envelope": metric.evidence}
+                           for homes, metric in parts],
+        },
+        unavailable=all(m.unavailable for _, m in parts),
     )
 
 
-def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> PlanResult:
+def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement],
+                 sale_candidates: list[dict] | None = None) -> PlanResult:
     typs = {t.id: t for t in cfg.typologies}
     counts: dict[str, int] = {}
     for p in placements:
@@ -86,7 +95,8 @@ def analyze_plan(cfg: Config, parcel: dict, placements: list[Placement]) -> Plan
     rules = load_rules(cfg)
 
     # Evidence per building type, pinned to the homes the plan gives it.
-    a = analyze(cfg, parcel, Samples(cfg), homes_override=homes)
+    a = analyze(cfg, parcel, Samples(cfg), homes_override=homes,
+                sale_candidates=sale_candidates)
     by_id = {s.typology_id: s for s in a.scenarios}
 
     metrics = {mid: _combine(mid, [(homes[tid], by_id[tid].metrics[mid]) for tid in homes])

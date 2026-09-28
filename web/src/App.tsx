@@ -95,7 +95,7 @@ export default function App() {
         setSuggested(sug)
         const first = c.stakeholders.profiles[0]
         const shared = readShare({
-          lots: new Set(fc.features.map((f) => f.properties.id)),
+          parcelId: { pattern: c.city.parcels.id_pattern, minChars: c.city.parcels.id_min_chars, maxChars: c.city.parcels.id_max_chars },
           criteria: new Set(c.criteria.map((x) => x.id)),
           typologies: new Set(c.typologies.map((t) => t.id)),
           profiles: new Set(c.stakeholders.profiles.map((p) => p.id)),
@@ -278,7 +278,9 @@ export default function App() {
   }, [query])
   const pinLots = useMemo(() => {
     const src = aiSearch ? aiSearch.result.results : hits.length ? hits : suggested.filter((s) => visibleIds.has(s.id))
-    return src.map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, public: s.public, neighborhood: s.neighborhood, zoning: s.zoning, area: s.lot_area_sf ?? 0 }))
+    return src.filter((s): s is ParcelSummary & { lon: number; lat: number } =>
+      s.lon !== null && s.lat !== null)
+      .map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, public: s.public, neighborhood: s.neighborhood, zoning: s.zoning, area: s.lot_area_sf ?? 0 }))
   }, [aiSearch, hits, suggested, visibleIds])
   useEffect(() => engine.current?.setPins(pinLots), [pinLots, config, features])
 
@@ -322,7 +324,8 @@ export default function App() {
           return
         }
         setAiSearch({ query: q, result: r })
-        engine.current?.frameLots(r.results)
+        engine.current?.frameLots(r.results.filter((s): s is ParcelSummary & { lon: number; lat: number } =>
+          s.lon !== null && s.lat !== null))
       })
       .catch((e: Error) => setAiError(e.message))
       .finally(() => setAiLoading(false))

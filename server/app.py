@@ -18,6 +18,12 @@ from pydantic import BaseModel, Field
 
 from core.config import ROOT, get_config
 from core.engine import Analysis, analyze, work_backwards
+from core.environment_evidence import (
+    analysis_artifact_paths,
+    artifact_digest,
+    parcel_environment_inputs,
+)
+from core.environment_model import environment_defaults_from_config
 from core.next_steps import Step, StepKind
 from core.next_steps import build as build_next_steps
 from core.plan import Placement, PlanResult, analyze_plan
@@ -38,6 +44,8 @@ app = FastAPI(
 )
 PARCELS_FILE = ROOT / "data" / "processed" / "parcels.json"
 PARCEL_CONTEXT_FILE = ROOT / "data" / "processed" / "parcel_context.jsonl"
+PARCEL_EVIDENCE_FILE = ROOT / "data" / "processed" / "parcel_evidence.jsonl"
+VALID_SALES_FILE = ROOT / "data" / "processed" / "valid_parcel_sales.jsonl"
 LAYA_EVIDENCE_FILE = ROOT / "dev" / "laya" / "compiled" / "laya_evidence.json"
 
 # Load the config once, right now, when Python first imports this file - not
@@ -136,8 +144,12 @@ def _conditional(request: Request, response: Response, payload: object) -> bool:
 
 
 # --- data ------------------------------------------------------------------------
-@lru_cache(maxsize=1)
 def _index() -> dict:
+    return _index_cached(_evidence_hash())
+
+
+@lru_cache(maxsize=2)
+def _index_cached(evidence_hash: str) -> dict:
     if not PARCELS_FILE.exists():
         log.warning("no parcel index at %s — serving an empty index", PARCELS_FILE)
         return {"parcels": {}, "suggested": []}
@@ -149,7 +161,46 @@ def _index() -> dict:
             parcel = payload["parcels"].get(parcel_id)
             if parcel is not None:
                 parcel.update(row)
+    if PARCEL_EVIDENCE_FILE.exists():
+        seen: set[str] = set()
+        for line in PARCEL_EVIDENCE_FILE.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            parcel_id = row["id"]
+            if parcel_id in seen:
+                raise ValueError(f"duplicate parcel evidence PIN: {parcel_id}")
+            seen.add(parcel_id)
+            parcel = payload["parcels"].setdefault(parcel_id, {"id": parcel_id})
+            parcel.update(row.get("parcel") or {})
+            parcel["evidence"] = row.get("evidence") or {}
+        payload["evidence_record_count"] = len(seen)
+        payload["evidence_manifest_hash"] = evidence_hash
     return payload
+
+
+def _evidence_hash() -> str:
+    """Hash the artifact actually served; changing only data invalidates analysis."""
+    paths = analysis_artifact_paths()
+    if not any(path.exists() for path in paths):
+        return "none"
+    version = tuple((str(path.relative_to(ROOT)), path.stat().st_mtime_ns, path.stat().st_size)
+                    for path in paths if path.exists())
+    return _evidence_hash_for_version(version)
+
+
+@lru_cache(maxsize=8)
+def _evidence_hash_for_version(version: tuple[tuple[str, int, int], ...]) -> str:
+    return artifact_digest(analysis_artifact_paths())
+
+
+@lru_cache(maxsize=2)
+def _sales_index(evidence_hash: str) -> list[dict]:
+    """Normalized qualifying sales are loaded once, then passed only to models."""
+    if not VALID_SALES_FILE.exists():
+        return []
+    return [json.loads(line) for line in VALID_SALES_FILE.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
 
 
 def _parcel(parcel_id: str) -> dict:
@@ -168,12 +219,14 @@ def _laya_evidence() -> dict | None:
 
 
 @lru_cache(maxsize=_API.analysis_cache_entries)
-def _analysis_cached(parcel_id: str, config_hash: str) -> Analysis:
-    return analyze(get_config(), _parcel(parcel_id))
+def _analysis_cached(parcel_id: str, config_hash: str, evidence_hash: str) -> Analysis:
+    result = analyze(get_config(), _parcel(parcel_id), sale_candidates=_sales_index(evidence_hash))
+    result.evidence_manifest_hash = evidence_hash
+    return result
 
 
 def _analysis(parcel_id: str) -> Analysis:
-    return _analysis_cached(parcel_id, get_config().hash)
+    return _analysis_cached(parcel_id, get_config().hash, _evidence_hash())
 
 
 # What a parcel id in a URL is allowed to look like. The rules come from
@@ -194,7 +247,11 @@ ParcelId = Field(**_PID)
 def health() -> dict:
     cfg = get_config()
     provider = get_provider()
-    return {"ok": True, "config_hash": cfg.hash, "parcels": len(_index()["parcels"]),
+    index = _index()
+    return {"ok": True, "config_hash": cfg.hash, "evidence_manifest_hash": _evidence_hash(),
+            "parcel_index_config_hash": index.get("config_hash"),
+            "parcel_index_config_matches": index.get("config_hash") == cfg.hash,
+            "parcels": len(index["parcels"]),
             "llm": provider.name, "llm_note": getattr(provider, "reason", None)}
 
 
@@ -292,7 +349,8 @@ def plan_route(req: PlanRequest, parcel_id: str = PARCEL_ID) -> PlanResult:
     if any(p.typology_id not in known for p in req.placements):
         raise HTTPException(400, "unknown typology")
     try:
-        return analyze_plan(cfg, _parcel(parcel_id), req.placements)
+        return analyze_plan(cfg, _parcel(parcel_id), req.placements,
+                            sale_candidates=_sales_index(_evidence_hash()))
     except ValueError as e:
         raise HTTPException(422, str(e)) from e
 
@@ -372,7 +430,8 @@ def work_backwards_route(parcel_id: str = PARCEL_ID,
     cfg = get_config()
     if typology not in {t.id for t in cfg.typologies}:
         raise HTTPException(400, "unknown typology")
-    return work_backwards(cfg, _parcel(parcel_id), typology, units, target_ami_pct)
+    return work_backwards(cfg, _parcel(parcel_id), typology, units, target_ami_pct,
+                          sale_candidates=_sales_index(_evidence_hash()))
 
 
 @api.get("/unknowns", summary="Placeholders, unverified sources and unreviewed districts")
@@ -391,6 +450,7 @@ def unknowns() -> dict:
     covered = sum(n for d, n in by_district.items() if base(d) in covered_b)
     human = sum(n for d, n in by_district.items() if base(d) in human_b)
     report_path = ROOT / "data" / "processed" / "pipeline_report.json"
+    evidence_coverage = _environment_coverage(cfg.hash, _evidence_hash())
     return {
         "placeholder_assumptions": [
             {"id": k, "unit": a.unit, "rationale": a.rationale, "source": a.source}
@@ -404,7 +464,32 @@ def unknowns() -> dict:
         "share_covered_by_human_reviewed_rules": round(human / total, 4),
         "require_human_review": cfg.zoning.require_human_review,
         "pipeline": json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None,
+        "evidence_manifest_hash": _evidence_hash(),
+        "evidence_record_count": _index().get("evidence_record_count", 0),
+        "evidence_coverage": evidence_coverage,
     }
+
+
+@lru_cache(maxsize=2)
+def _environment_coverage(config_hash: str, evidence_hash: str) -> dict:
+    path = ROOT / "data" / "processed" / "environment_coverage.json"
+    if path.exists():
+        report = json.loads(path.read_text(encoding="utf-8"))
+        if report.get("config_hash") == config_hash and report.get("runtime_evidence_hash") == evidence_hash:
+            return report["coverage"]
+    # Source refreshes can precede the offline audit. Recompute once per actual
+    # data/config hash rather than serve stale counts or rescan every request.
+    cfg = get_config()
+    defaults = environment_defaults_from_config(cfg, cfg.typologies[0].id)
+    counts: dict[str, Counter[str]] = {}
+    for parcel in _index()["parcels"].values():
+        envelopes = {**defaults, **parcel_environment_inputs(parcel, cfg.typologies[0].id)}
+        for field, envelope in envelopes.items():
+            if not isinstance(envelope, dict):
+                continue
+            tier = str(envelope.get("evidence_tier") or "unknown") if envelope.get("value") is not None else "unavailable"
+            counts.setdefault(field, Counter())[tier] += 1
+    return {field: dict(tiers) for field, tiers in sorted(counts.items())}
 
 
 @api.get("/evidence", summary="Locally compiled document leads; not verified findings")

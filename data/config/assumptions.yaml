@@ -71,150 +71,175 @@ assumptions:
 
   soft_cost_share:
     label: Soft costs (design, fees, financing)
-    value: 0.75
-    low: 0.4
-    high: 0.75
+    value: 0.25
+    low: 0.15
+    high: 0.40
     unit: share of hard cost
     provenance: assumption
+    source: null
+    rationale: >-
+      Declared 15–40% planning allowance for design, permits, insurance, and
+      project financing, centered at 25%. It is separate from site work, land,
+      and contingency. HUD TDC is only a benchmark and is never subtracted
+      from HCC to estimate this share. Replace with a project budget.
+
+  hud_tdc_multiplier:
+    label: HUD total development cost limit divided by HCC limit
+    value: 1.75
+    low: 1.60
+    high: 1.75
+    unit: TDC/HCC ratio
+    provenance: observed
     source: hud_tdc_2024
     rationale: >-
-      HUD's 2024 Total Development Cost limit for Pittsburgh is 1.75 x HCC for
-      non-elevator buildings and 1.60 x for elevator buildings; the difference
-      is everything beyond construction (design, fees, financing, site,
-      contingency — and land, which Lotline also adds separately from the
-      assessment). The TDC ratio is therefore an upper bound; the low end (0.4)
-      is a judgment for projects with lower soft costs.
+      Published HUD 2024 Pittsburgh limits use TDC/HCC multipliers of 1.75 for
+      non-elevator forms and 1.60 for elevator forms. This is retained only as
+      a separate public-housing cap benchmark, never as a soft-cost share or
+      project sources-and-uses line.
     by_typology:
-      detached: { value: 0.75, low: 0.4, high: 0.75 }
-      adu_pair: { value: 0.75, low: 0.4, high: 0.75 }
-      two_unit: { value: 0.75, low: 0.4, high: 0.75 }
-      rowhouse: { value: 0.75, low: 0.4, high: 0.75 }
-      small_multi: { value: 0.75, low: 0.4, high: 0.75 }
-      midrise: { value: 0.6, low: 0.4, high: 0.6 }
+      detached: { value: 1.75, low: 1.75, high: 1.75 }
+      adu_pair: { value: 1.75, low: 1.75, high: 1.75 }
+      two_unit: { value: 1.75, low: 1.75, high: 1.75 }
+      rowhouse: { value: 1.75, low: 1.75, high: 1.75 }
+      small_multi: { value: 1.75, low: 1.75, high: 1.75 }
+      midrise: { value: 1.60, low: 1.60, high: 1.60 }
 
   steep_slope_cost_share:
-    label: Steep-slope site allowance
-    value: 0.12
-    low: 0.05
-    high: 0.30
+    label: Slope budget reserve scenario
+    value: 0.1
+    low: 0
+    high: 0.2
     unit: share of hard cost
-    provenance: placeholder
-    source: null
-    rationale: Extra foundation, retaining and grading cost on 25%+ slopes. Site-specific; needs geotechnical input.
+    provenance: assumption
+    source: lotline_risk_reserves
+    rationale: >-
+      Declared slope budget reserve: two 5% contingency-reference blocks, with zero to four blocks as a stress range. PHFA supplies only the 5% reference scale; Lotline selects the multipliers. Not an engineering estimate or proof that retaining/foundation work is required.
 
   landslide_cost_share:
-    label: Landslide stabilization allowance
-    value: 0.10
-    low: 0.03
-    high: 0.35
+    label: Landslide budget reserve scenario
+    value: 0.15
+    low: 0
+    high: 0.3
     unit: share of hard cost
-    provenance: placeholder
-    source: null
-    rationale: Added stabilization cost in landslide-prone areas. Highly site-specific.
+    provenance: assumption
+    source: lotline_risk_reserves
+    rationale: >-
+      Declared landslide budget reserve: three 5% contingency-reference blocks, with zero to six blocks as a stress range. PHFA supplies only the 5% reference scale; Lotline selects the multipliers. Not a stabilization-cost estimate or evidence of a safe design.
 
   undermined_cost_share:
-    label: Mine-subsidence allowance
+    label: Mine-risk budget reserve scenario
     value: 0.05
-    low: 0.0
-    high: 0.20
+    low: 0
+    high: 0.1
     unit: share of hard cost
-    provenance: placeholder
-    source: null
-    rationale: Mine-subsidence investigation / mitigation allowance.
+    provenance: assumption
+    source: lotline_risk_reserves
+    rationale: >-
+      Declared mine-risk budget reserve: one 5% contingency-reference block, with zero to two blocks as a stress range. PHFA supplies only the 5% reference scale; Lotline selects the multipliers. Not a grouting-cost estimate or evidence that a mine void is present.
 
   # --- Cost to occupants ------------------------------------------------------
   annual_capital_cost_share:
     label: Yearly capital cost rate
-    value: 0.075
-    low: 0.06
-    high: 0.09
+    value: 0.074269865
+    low: 0.060143582
+    high: 0.089398178
     unit: share of development cost per year
-    provenance: placeholder
-    source: null
-    rationale: Debt service plus required return, expressed per year. Drives the rent needed to cover cost.
+    provenance: assumption
+    source: lotline_finance_scenario_defaults
+    rationale: >-
+      Fallback computed as 70% amortizing debt plus 30% equity return from the declared finance scenario. The full parcel financing model takes precedence; no lender commitment is implied.
 
   operating_cost_per_unit_month:
     label: Operating cost per home
-    value: 450
-    low: 350
-    high: 600
+    value: 1079.2333
+    low: 761.75819
+    high: 1580.0241
     unit: USD/unit/month
-    provenance: placeholder
-    source: null
-    rationale: Taxes, insurance, maintenance, management, reserves.
+    provenance: assumption
+    source: lotline_finance_scenario_defaults
+    rationale: >-
+      Fallback sums the configured insurance, utilities, maintenance, management and PHFA reserve budget, plus 2026 millage applied to prototype development cost. Assessed value, exemptions and land are not predicted; the full parcel finance model takes precedence.
+    by_typology:
+      detached: { value: 1474.5785, low: 1039.0133, high: 2118.6001 }
+      adu_pair: { value: 1327.4472, low: 936.76882, high: 1916.4349 }
+      two_unit: { value: 1363.2272, low: 961.99797, high: 1965.2334 }
+      rowhouse: { value: 1339.4808, low: 945.53263, high: 1932.5683 }
+      small_multi: { value: 1079.2333, low: 761.75819, high: 1580.0241 }
+      midrise: { value: 1124.8007, low: 793.36102, high: 1638.5823 }
 
   # --- Carbon -----------------------------------------------------------------
   embodied_kgco2e_psf:
-    label: Embodied carbon per sq ft
-    value: 45
-    low: 30
-    high: 65
+    label: A1–A3 structure materials per sq ft
+    value: 7.43
+    low: 1.81
+    high: 22.48
     unit: kgCO2e/sf
-    provenance: placeholder
-    source: null
-    rationale: Upfront (A1–A5) embodied carbon of new residential construction.
+    provenance: modeled
+    source: jungclaus_2024_sf_embodied_a1a3
+    rationale: >-
+      Published gross single-family structure, enclosure and foundation benchmark; midpoint is a declared central proxy. Wider declared form ranges are used for non-native typologies. Excludes interiors, MEP, appliances, site works, A4–A5, replacements and end-of-life. No biogenic credit. This is a partial materials estimate, not whole-building carbon.
     by_typology:
-      detached: { value: 40, low: 28, high: 58 }
-      adu_pair: { value: 40, low: 28, high: 58 }
-      two_unit: { value: 40, low: 28, high: 58 }
-      rowhouse: { value: 38, low: 27, high: 55 }
-      small_multi: { value: 45, low: 32, high: 65 }
-      midrise: { value: 55, low: 40, high: 80 }
+      detached: { value: 7.43, low: 3.62, high: 11.24 }
+      adu_pair: { value: 7.43, low: 2.72, high: 16.86 }
+      two_unit: { value: 7.43, low: 2.72, high: 16.86 }
+      rowhouse: { value: 7.43, low: 2.72, high: 16.86 }
+      small_multi: { value: 7.43, low: 1.81, high: 22.48 }
+      midrise: { value: 7.43, low: 1.81, high: 22.48 }
 
   operational_kwh_psf_yr:
-    label: Home energy use per sq ft
-    value: 9
-    low: 6
-    high: 13
+    label: Prototype home electricity per sq ft
+    value: 8.95
+    low: 8.12
+    high: 9.3
     unit: kWh/sf/yr
-    provenance: placeholder
-    source: nrel_resstock
-    rationale: All-electric new construction site energy. Attached forms share walls and use less per sf.
+    provenance: modeled
+    source: doe_iecc2021_residential_cz5a_outputs
+    rationale: >-
+      DOE 2021 IECC climate-zone-5A all-electric heat-pump prototype facility electricity divided by conditioned floor area. Foundation outputs supply the native range; non-native forms have declared sensitivity factors. Buffalo representative weather is a Pittsburgh climate-zone proxy, not a parcel energy audit.
     by_typology:
-      detached: { value: 10.5, low: 7.5, high: 14 }
-      adu_pair: { value: 10, low: 7, high: 13.5 }
-      two_unit: { value: 9, low: 6.5, high: 12.5 }
-      rowhouse: { value: 8.5, low: 6, high: 12 }
-      small_multi: { value: 7.5, low: 5.5, high: 10.5 }
-      midrise: { value: 7, low: 5, high: 10 }
+      detached: { value: 8.07, low: 7.1, high: 8.48 }
+      adu_pair: { value: 8.07, low: 5.33, high: 12.72 }
+      two_unit: { value: 8.07, low: 5.33, high: 12.72 }
+      rowhouse: { value: 8.07, low: 5.33, high: 12.72 }
+      small_multi: { value: 8.95, low: 8.12, high: 9.3 }
+      midrise: { value: 8.95, low: 6.09, high: 13.95 }
 
   grid_kgco2e_per_kwh:
-    label: Grid carbon intensity
+    label: Historical grid output intensity
     value: 0.416
-    low: 0.294
-    high: 0.434
+    low: 0.416
+    high: 0.416
     unit: kgCO2e/kWh
     provenance: assumption
     source: epa_egrid
     rationale: >-
-      eGRID2023 (rev 2) total output CO2e rate for the RFC West subregion, which
-      serves western Pennsylvania: 916.1 lb/MWh = 0.416 kg/kWh. High adds RFCW's
-      4.2% grid gross loss (0.434). Low is the Pennsylvania statewide rate,
-      647.9 lb/MWh (0.294), for a household on a cleaner PA mix.
+      Historical eGRID2023 revision 2 RFCW output-rate reference: 916.1 lb/MWh,
+      rounded to 0.416 kgCO2e/kWh. Statewide Pennsylvania output is a different
+      geography, and transmission losses are not added to this output-rate
+      boundary. Runtime uses the named Cambium annual end-use trajectory; this
+      reference is a scalar fallback.
 
   grid_decarbonization_per_yr:
-    label: Yearly grid decarbonization
-    value: 0.02
-    low: 0.0
-    high: 0.04
-    unit: share per year
-    provenance: placeholder
-    source: null
-    rationale: Annual decline in grid carbon intensity over the analysis period.
+    label: Grid scenario endpoint decline
+    value: 0.029003789
+    low: 0.018855829
+    high: 0.038458125
+    unit: share/year
+    provenance: modeled
+    source: nrel_cambium_2024
+    rationale: >-
+      Compound annual decline from Cambium 2024 Mid-case 2025/2050 endpoints; range spans eight model scenarios. This is a descriptive summary only. The application calculates from the annual interpolated grid trajectory, with the 2050 endpoint held after 2050 and disclosed.
 
   vmt_per_household_yr:
-    label: Miles driven per household
-    value: 12000
-    low: 8000
-    high: 16000
-    unit: miles/yr
-    provenance: placeholder
-    source: null
+    label: Modeled household vehicle miles
+    value: 11579.95
+    low: 11326.79
+    high: 11863.02
+    unit: miles/household/yr
+    provenance: modeled
+    source: bts_latch_2017
     rationale: >-
-      No defensible household VMT observation is connected. EPA Smart Location
-      transit accessibility is not VMT; this stand-in is not scaled by transit
-      access and should be removed from ranking claims until a matching regional
-      travel model is integrated.
+      Allegheny County household-weighted BTS LATCH 2017 modeled weekday household VMT annualized using the national NHTS 2017 weekend/weekday driver ratio. Runtime uses exact 2010 tract-code proxies when available, otherwise this county fallback. Range covers ratio sensitivity only, not model confidence or household variation.
 
   kgco2e_per_vmt:
     label: Carbon per mile driven
@@ -226,24 +251,21 @@ assumptions:
     source: epa_ghg_factors
     rationale: >-
       EPA's greenhouse-gas equivalencies calculation uses 0.393 kg CO2e per
-      vehicle-mile for an average U.S. passenger vehicle (2022 fleet and fuel
-      economy baseline). This is a national tailpipe proxy, not Pittsburgh
-      household VMT or a vehicle-specific estimate.
+      vehicle-mile for an average U.S. gasoline passenger vehicle (2022 fleet
+      and fuel-economy baseline). National tailpipe proxy, not Pittsburgh
+      observed emissions or a vehicle-specific estimate. Future fleet changes
+      and upstream fuel/vehicle emissions are omitted.
 
   lot_depth_to_frontage_ratio:
     label: Lot depth-to-width ratio
-    value: 3.0
-    low: 2.0
-    high: 4.5
+    value: 3.63636364
+    low: 0.755028664
+    high: 5.6189748
     unit: depth / frontage
-    provenance: placeholder
-    source: null
+    provenance: modeled
+    source: lotline_context_estimates
     rationale: >-
-      Only used to draw a lot whose legal description gives no usable dimensions
-      and whose parcel polygon is unavailable or unusable. When a PIN-matched
-      county polygon is available, the pipeline derives approximate axes from
-      its minimum rotated rectangle instead. This fallback remains a placeholder;
-      geometry-derived axes are modeled estimates, not legal frontage.
+      Median depth/frontage ratio among matched legal-description dimensions in the vacant-parcel cohort; donor variation is a drawing and form-fit scenario, not legal frontage.
 
   site_area_per_building_footprint:
     label: Lot area needed per footprint
@@ -278,56 +300,49 @@ assumptions:
 
   # --- Context fallbacks (used only where a parcel/tract join is unavailable) -
   tract_median_household_income:
-    label: Nearby household income (stand-in)
-    value: 60000
-    low: 40000
-    high: 85000
+    label: Nearby household income (local donor estimate)
+    value: 65247
+    low: 32114.5
+    high: 103869
     unit: USD/yr
-    provenance: placeholder
-    source: acs_5yr
+    provenance: modeled
+    source: lotline_context_estimates
     rationale: >-
-      Fallback only when the 2024 ACS B19013 tract estimate is missing or
-      suppressed. The parcel pipeline joins the tract value and published MOE
-      for available records; this citywide stand-in is not an observed tract value.
+      Median of distinct matched Pittsburgh tract medians; donor 10th–90th percentiles are a geographic scenario range, not a citywide household median or confidence interval.
 
   tract_renter_cost_burden_share:
-    label: Renters cost-burdened (stand-in)
-    value: 0.45
-    low: 0.35
-    high: 0.55
+    label: Renters cost-burdened (local donor estimate)
+    value: 0.46635
+    low: 0.28038
+    high: 0.72981
     unit: share of renter households
-    provenance: placeholder
-    source: acs_5yr
+    provenance: modeled
+    source: lotline_context_estimates
     rationale: >-
-      Fallback only when the 2024 ACS B25070 tract estimate is unavailable. The
-      parcel pipeline computes renter gross-rent cost burden by tract and keeps
-      the numerator/denominator and an approximate uncertainty envelope.
+      Median of distinct matched Pittsburgh tract renter-burden shares; donor 10th–90th percentiles describe spatial variability, not the unmatched tract's confidence interval.
 
   jobs_access_index:
     label: Transit access to jobs
-    value: 1.0
-    low: 0.6
-    high: 1.4
+    value: 0.516604787
+    low: 0.301871812
+    high: 0.697803928
     unit: index (regional max = 1)
-    provenance: placeholder
-    source: epa_smart_location
+    provenance: modeled
+    source: lotline_context_estimates
     rationale: >-
-      Fallback only where EPA Smart Location Database D5DRI is unavailable for
-      the parcel's block group. D5DRI is a 0–1 relative transit-job-access score
-      normalized to the highest block group in the Pittsburgh CBSA; it is not a
-      city-average ratio.
+      Median of distinct matched local block-group EPA SLD D5DRI scores; donor range is a geographic proxy for unmatched parcels, not current route-level access.
 
   sewer_stress_index:
-    label: Combined-sewer stress
-    value: 1.0
-    low: 0.8
-    high: 1.2
-    unit: index (city average = 1)
-    provenance: placeholder
-    source: alcosan_cso
-    rationale: Combined-sewer overflow pressure at the lot's sewershed. Stand-in until ALCOSAN/PWSA data is joined.
+    label: Historical modeled overflow pressure
+    value: 1
+    low: 0
+    high: 29.63950095
+    unit: ratio to equal-weight mean modeled CSO outfall volume
+    provenance: modeled
+    source: alcosan_cwp_section4_2018
+    rationale: >-
+      Historical ALCOSAN 2018 Clean Water Plan existing-condition typical-year modeled annual outfall overflow, divided by the equal-weight mean across 339 modeled outfalls. Exact PWSA labels are resolved at runtime. Unmatched parcels use the regional mean and descriptive outfall range. This is outfall context, not parcel discharge, available capacity or a current observation.
 
-  # --- Scoring conventions ----------------------------------------------------
   zoning_status_score:
     label: Score per zoning path
     value: 1.0

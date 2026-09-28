@@ -19,8 +19,8 @@
 criteria:
   - id: demand_fit
     metric_id: demand.units_serving_need
-    label: Serves local housing need
-    question: How many new homes land at the income levels this area is short on?
+    label: Homes affordable to nearby cost-burdened renters
+    question: How many proposed homes might be affordable to cost-burdened renters, under the stated tract-level independence assumption?
     direction: higher_is_better
     group: equity
     default_weight: 1
@@ -51,16 +51,16 @@ criteria:
   #     actually supports.
   - id: local_affordability_gap
     metric_id: affordability_gap.share_above_local_rents
-    label: Share priced above nearby renter incomes
-    question: What share of these homes would cost more than renters nearby can currently pay?
+    label: Nearby renters below required income
+    question: What share of nearby renter households have income below the scenario's required income?
     direction: lower_is_better
     group: equity
     default_weight: 1
 
   - id: infrastructure
     metric_id: infrastructure.load_index
-    label: Strain on stressed infrastructure
-    question: How much load does this add at a site with slope, landslide, or sewer constraints?
+    label: Added wastewater or infrastructure screen
+    question: What added design flow is estimated, or what provisional load screen applies when flow data are missing?
     direction: lower_is_better
     group: feasibility
     default_weight: 1
@@ -69,8 +69,8 @@ criteria:
   # engine templates the metric label off it. A literal here would go stale.
   - id: carbon
     metric_id: carbon.per_household_horizon
-    label: Carbon per household
-    question: Tonnes CO2e per household over the analysis horizon — building materials, energy, and travel.
+    label: Carbon scenario per household
+    question: Tonnes CO2e per household over the analysis horizon for the disclosed components and assumptions.
     direction: lower_is_better
     group: climate
     default_weight: 1

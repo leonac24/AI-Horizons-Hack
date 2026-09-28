@@ -1,0 +1,122 @@
+schema_version: 1
+sources:
+  bts_latch_2017:
+    publisher: Bureau of Transportation Statistics, U.S. Department of Transportation
+    title: Local Area Transportation Characteristics by Household 2017
+    url: https://catalog.data.gov/dataset/local-area-transportation-characteristics-by-household-2017
+    download_url: https://data.transportation.gov/api/v3/views/va72-z8hz/export.csv?accessType=DOWNLOAD
+    vintage: 2017
+    geography: Census tract (2010 tract vintage)
+    measures: modeled average weekday household VMT, vehicle trips, person trips,
+      person miles
+    license: U.S. Government public data; verify individual catalog terms at snapshot
+      time
+    ingestion: pipeline.carbon_geography
+    annualization: 261 weekdays + 104 weekends times NHTS 2017 national driver-mile
+      weekend/weekday ratio; transfer to household travel disclosed. No validated
+      2010/2024 boundary crosswalk.
+    status: connected_tract_code_proxy_and_weighted_geographic_fallbacks
+  doe_pnnl_iecc_2021:
+    publisher: U.S. Department of Energy, Building Energy Codes Program; Pacific Northwest
+      National Laboratory
+    title: Residential Prototype Building Models, 2021 IECC
+    url: https://www.energycodes.gov/prototype-building-models
+    vintage: 2021 IECC, outputs generated 2024-06-27; dataset published 2024-12-22
+    geography: Climate zone 5A proxy for Pittsburgh; verify the code basis before
+      use
+    measures: Simulated site energy by prototype, HVAC/fuel, and foundation
+    license: Public agency model files; retain source notices and package checksum
+    status: connected_all_electric_heat_pump_cz5a_outputs
+    limitation: Detached and low-rise multifamily outputs; other Lotline forms use
+      explicit proxy ranges. Buffalo representative weather is a climate-zone proxy.
+    ingestion: pipeline.carbon_prototypes
+  epa_egrid_2023:
+    publisher: U.S. Environmental Protection Agency
+    title: eGRID 2023, revision 2
+    url: https://www.epa.gov/egrid/summary-data
+    vintage: 2023 emissions, revision released 2025-06-12
+    geography: eGRID subregion; RFC West (RFCW) and Pennsylvania statewide values
+      are context/scenario choices
+    measures: Average output emission rates and generation/emissions attributes
+    license: U.S. Government public data; retain source notices and package checksum
+    status: historical_reference_only_cambium_path_used_for_calculation
+    limitation: Historical average rate is an anchor, not an hourly marginal rate
+      or forecast.
+  nrel_cambium:
+    publisher: National Renewable Energy Laboratory
+    title: Cambium long-term electricity-sector scenarios
+    url: https://data.nlr.gov/submissions/289
+    vintage: Cambium 2024, Mid-case AER-load CO2e, 2025–2050; eight-scenario spread
+    geography: Official Allegheny 42003 → ReEDS p115 → PJM_East GEA mapping
+    measures: Annual average emissions trajectories; marginal series only for consequential
+      change analyses
+    license: Check selected submission terms and attribution requirements
+    ingestion: pipeline.carbon_geography
+    status: connected_official_county_crosswalk_and_annual_path
+    limitation: Model scenario, not forecast; five-year points interpolated annually.
+      2050 endpoint held constant beyond source horizon and explicitly disclosed.
+      End-use rate already includes distribution losses.
+  material_quantity_prototype:
+    publisher: Lotline declared scenario, with DOE whole-building LCA guidance
+    title: Typology material-quantity schedule × declared life-cycle factors
+    url: https://www.energy.gov/sites/default/files/2024-02/bto-abc-embodied-carbon-022624.pdf
+    vintage: Scenario version must be recorded with quantity and factor snapshots
+    geography: Prototype typology, not parcel
+    measures: kgCO2e by material and life-cycle stage
+    license: Factors require EPD/LCI source-specific rights; do not use EC3 API data
+      without suitable terms
+    ingestion: pipeline.environment_inputs.embodied_carbon_from_schedule
+    status: calculation_adapter_ready_no_quantities_or_factors_ingested
+    limitation: No design-specific bill of quantities; report A1-A3 and A4-A5 boundaries
+      separately when present.
+  pa_dep_design_flow:
+    publisher: Pennsylvania Department of Environmental Protection
+    title: Domestic Wastewater Facilities Manual
+    url: https://greenport.pa.gov/elibrary/PDFProvider.ashx?PromptToSave=False&Size=789525&ViewerMode=2&action=PDFStream&docID=9232038&docName=DOMESTIC+WASTEWATER+FACILITIES+MANUAL&nativeExt=pdf&overlay=0&revision=0
+    vintage: Manual revision/cover date requires verification at use
+    geography: Proposed project, by declared occupancy / use assumptions
+    measures: §24.1 p.22 average daily design flow reference of at least 100 gpd/person
+      unless rigorously justified; includes normal infiltration
+    license: Public agency guidance; cite revision and table/section used
+    status: cited_reference_configured_for_scenario_model
+    limitation: The 100 gpd/person design reference is not measured household discharge,
+      parcel flow, or sewer capacity. Avoid §73.17 as it excludes community sewerage
+      systems.
+  pwsa_sewershed:
+    publisher: Pittsburgh Water and Sewer Authority / Western Pennsylvania Regional
+      Data Center
+    title: Combined sewershed mapping
+    url: https://data.wprdc.org/dataset/combined-sewershed
+    vintage: 2018 published boundary snapshot
+    geography: Mapped sewershed overlay
+    measures: Spatial context only
+    license: Verify at snapshot time
+    status: connected_exact_report_outfall_id_or_printed_alias_join
+    limitation: Exact mapped label matching gives historical modeled outfall context,
+      not sewer service, current capacity or parcel contribution.
+  alcosan_historical_overflow:
+    publisher: Allegheny County Sanitary Authority
+    title: Clean Water Plan, Section 4 overflow context
+    url: https://www.alcosan.org/docs/default-source/clean-water-plan-documents/cwp-section-4.pdf?sfvrsn=6d0d892a_2
+    vintage: 2018 report, existing-condition typical-year model with refined 2003
+      representative rainfall
+    geography: Matched named outfalls; unmatched parcels use disclosed regional outfall
+      mean
+    measures: Modeled typical-year annual volume, event frequency and duration, with
+      table/page references
+    license: Public agency report
+    status: connected_349_outfall_rows_339_numeric_models
+    limitation: Historical model, not observations. Regional fallback is a descriptive
+      outfall proxy, not parcel overflow exposure or capacity.
+    ingestion: pipeline.overflow_context
+  jungclaus_2024_sf_embodied_a1a3:
+    publisher: Jungclaus et al., Sustainable Cities and Society
+    title: U.S. single-family embodied-carbon benchmark
+    url: https://doi.org/10.1016/j.scs.2024.105975
+    vintage: 2024
+    geography: U.S. DOE single-family prototype; declared form transfer
+    measures: Gross A1–A3 structure/enclosure/foundation intensity, 39–121 kgCO2e/m²
+    ingestion: pipeline.carbon_prototypes
+    status: connected_partial_materials_benchmark
+    limitation: Midpoint is a declared scenario, not an observed mean. Excludes interiors,
+      MEP, appliances, site works, A4–A5 and later stages; no biogenic credit.

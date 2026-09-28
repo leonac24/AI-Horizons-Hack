@@ -5548,6 +5548,7 @@
 {"geometry_depth_ft":71.8,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":12.2,"id":"0023M00252000000"}
 {"geometry_depth_ft":113.6,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":20.4,"id":"0023M00277000000"}
 {"geometry_depth_ft":112.7,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":24.5,"id":"0023M00278000000"}
+{"geometry_depth_ft":57.7,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":28.9,"id":"0023M00298000000"}
 {"id":"0023N00170000000","transit_access_index":0.459808065,"transit_jobs_accessible":178955.0}
 {"id":"0023N00173000000","transit_access_index":0.459808065,"transit_jobs_accessible":178955.0}
 {"id":"0023N00201000000","transit_access_index":0.459808065,"transit_jobs_accessible":178955.0}
@@ -6722,6 +6723,7 @@
 {"id":"0029L00031000000","transit_access_index":0.73138658,"transit_jobs_accessible":284652.0}
 {"geometry_depth_ft":754.3,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":427.0,"id":"0029L00076000000"}
 {"geometry_depth_ft":828.7,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":116.2,"id":"0029L00086000000"}
+{"geometry_depth_ft":29.8,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":13.3,"id":"0029M00012000100"}
 {"geometry_depth_ft":192.3,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":96.7,"id":"0029M00047000A00","transit_access_index":0.556595023,"transit_jobs_accessible":216624.0}
 {"geometry_depth_ft":60.4,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":13.6,"id":"0029M00074000000","transit_access_index":0.556595023,"transit_jobs_accessible":216624.0}
 {"id":"0029M00184000000","transit_access_index":0.653302329,"transit_jobs_accessible":254262.0}
@@ -9657,6 +9659,7 @@
 {"geometry_depth_ft":667.6,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":355.1,"id":"0050C00380000000"}
 {"id":"0050D00030000000","transit_access_index":0.4658436,"transit_jobs_accessible":181304.0}
 {"geometry_depth_ft":101.7,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":15.8,"id":"0050D00115000000"}
+{"geometry_depth_ft":22.2,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":15.3,"id":"0050E00112000000"}
 {"geometry_depth_ft":69.5,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":30.2,"id":"0050E00115000000"}
 {"geometry_depth_ft":116.7,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":28.3,"id":"0050E00132000000"}
 {"geometry_depth_ft":118.1,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":27.5,"id":"0050E00133000000"}
@@ -10896,6 +10899,7 @@
 {"geometry_depth_ft":502.1,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":24.5,"id":"0057S00030000000"}
 {"geometry_depth_ft":1269.1,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":439.2,"id":"0057S00050000000"}
 {"id":"0058G00129000000","transit_access_index":0.428003957,"transit_jobs_accessible":166577.0}
+{"geometry_depth_ft":724.9,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":530.3,"id":"0058P00100000000"}
 {"id":"0059A00027000000","transit_access_index":0.344778324,"transit_jobs_accessible":134186.0}
 {"id":"0059A00031000000","transit_access_index":0.344778324,"transit_jobs_accessible":134186.0}
 {"id":"0059A00146000000","transit_access_index":0.344778324,"transit_jobs_accessible":134186.0}
@@ -11779,6 +11783,7 @@
 {"id":"0072P00152000000","transit_access_index":0.453366564,"transit_jobs_accessible":176448.0}
 {"id":"0072P00154000000","transit_access_index":0.453366564,"transit_jobs_accessible":176448.0}
 {"id":"0072R00001000000","transit_access_index":0.453366564,"transit_jobs_accessible":176448.0}
+{"geometry_depth_ft":164.0,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":140.2,"id":"0072R00002000000"}
 {"id":"0072R00003000000","transit_access_index":0.453366564,"transit_jobs_accessible":176448.0}
 {"id":"0075B00048000000","transit_access_index":0.569467748,"transit_jobs_accessible":221634.0}
 {"id":"0075B00083000000","transit_access_index":0.569467748,"transit_jobs_accessible":221634.0}
@@ -17073,3 +17078,4 @@
 {"id":"0243C00350000000","transit_access_index":0.276493788,"transit_jobs_accessible":107610.0}
 {"id":"0243G00156000000","transit_access_index":0.276493788,"transit_jobs_accessible":107610.0}
 {"geometry_depth_ft":304.2,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":80.3,"id":"0243G00200000000","transit_access_index":0.276493788,"transit_jobs_accessible":107610.0}
+{"geometry_depth_ft":15.1,"geometry_dimensions_method":"minimum rotated rectangle; EPSG:2272 feet","geometry_frontage_ft":15.0,"id":"8000T00101000000"}

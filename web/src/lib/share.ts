@@ -32,12 +32,14 @@ const round = (n: number) => Math.round(n * 100) / 100
 const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n)
 
 /** The scenario in the current URL, or null if there is none or it does not check out. */
-export function readShare(known: { lots: Set<string>; criteria: Set<string>; typologies: Set<string>; profiles: Set<string>; maxBuildings: number }): Shared | null {
+export function readShare(known: { parcelId: { pattern: string; minChars: number; maxChars: number }; criteria: Set<string>; typologies: Set<string>; profiles: Set<string>; maxBuildings: number }): Shared | null {
   const m = location.hash.match(new RegExp(`^#${KEY}=([A-Za-z0-9_-]{1,20000})$`))
   if (!m) return null
   try {
     const raw = JSON.parse(fromB64Url(m[1]))
-    if (raw?.v !== 1 || typeof raw.l !== 'string' || !known.lots.has(raw.l)) return null
+    if (raw?.v !== 1 || typeof raw.l !== 'string' ||
+        raw.l.length < known.parcelId.minChars || raw.l.length > known.parcelId.maxChars ||
+        !new RegExp(known.parcelId.pattern).test(raw.l)) return null
     const weights = Object.fromEntries(
       Object.entries(raw.w ?? {}).filter(([k, v]) => known.criteria.has(k) && finite(v) && v >= 0 && v <= 1e6),
     ) as Record<string, number>
