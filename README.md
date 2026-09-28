@@ -6,7 +6,7 @@ Housing Typology, Equity & Climate Matchmaker.**
 
 | | |
 |---|---|
-| **Demo video (3–5 min)** | https://www.youtube.com/watch?v=zWiRUNKKWFk |
+| **Demo video** | https://www.youtube.com/watch?v=zWiRUNKKWFk |
 | **Live app** | https://lotline-pgh.vercel.app |
 | **Repository** | https://github.com/leonac24/LotLine |
 
@@ -387,8 +387,6 @@ can maintain the data without touching code.
 Three people built Lotline during the build window. Who did what below is read
 from the commit history (`git log --no-merges`); everyone also reviewed and
 merged each other's work.
-
-_TODO: team name, affiliations, and Devin's full name._
 
 **Leona Chen** ([@leonac24](https://github.com/leonac24)): project lead,
 frontend and 3D city
