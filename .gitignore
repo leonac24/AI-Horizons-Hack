@@ -29,5 +29,3 @@ web/dist/
 
 # local agent worktrees
 .claude/worktrees/
-
-web/package-lock.json
