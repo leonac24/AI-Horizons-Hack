@@ -153,7 +153,9 @@ dimensional_facts:
   quotes:
   - Site Development StandardVery-Low Density SubdistrictMinimum Lot Size6,000 s.f.
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VL.setbacks.low_rise
   section: 903.03.A
   file: 903-03_development-subdistricts.txt
@@ -176,7 +178,9 @@ dimensional_facts:
   confidence: 0.9
   reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
     (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VL.setbacks.r1a
   section: 903.03.A
   file: 903-03_development-subdistricts.txt
@@ -195,6 +199,9 @@ dimensional_facts:
   - 10 ft. on the other sideR1A Subdistrict5 ft.
   confidence: 0.9
   reviewer_note: Split from dim.VL.setbacks.low_rise, which had applied R1D/R2/R3's 10 ft other-side yard to R1A as well.
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VL.setbacks.rm
   section: 903.03.A
   file: 903-03_development-subdistricts.txt
@@ -212,7 +219,9 @@ dimensional_facts:
   confidence: 0.85
   reviewer_note: 'RM values in Very-Low Density: front 30, rear 30, exterior side 30, interior side 30 ft. Quote shows the
     first; check the rest in the table.'
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VL.height.low_rise
   section: 903.03.A
   file: 903-03_development-subdistricts.txt
@@ -229,7 +238,9 @@ dimensional_facts:
   quotes:
   - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VL.height.rm
   section: 903.03.A
   file: 903-03_development-subdistricts.txt
@@ -243,7 +254,9 @@ dimensional_facts:
   quotes:
   - RM Subdistrict40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.L.min_lot
   section: 903.03.B
   file: 903-03_development-subdistricts.txt
@@ -260,7 +273,9 @@ dimensional_facts:
   quotes:
   - Site Development StandardLow Density SubdistrictMinimum Lot Size3,000 s.f.
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.L.setbacks.low_rise
   section: 903.03.B
   file: 903-03_development-subdistricts.txt
@@ -282,7 +297,9 @@ dimensional_facts:
   confidence: 0.9
   reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
     (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.L.setbacks.rm
   section: 903.03.B
   file: 903-03_development-subdistricts.txt
@@ -300,7 +317,9 @@ dimensional_facts:
   confidence: 0.85
   reviewer_note: 'RM values in Low Density: front 25, rear 25, exterior side 30, interior side 25 ft. Quote shows the first;
     check the rest in the table.'
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.L.height.low_rise
   section: 903.03.B
   file: 903-03_development-subdistricts.txt
@@ -317,7 +336,9 @@ dimensional_facts:
   quotes:
   - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.L.height.rm
   section: 903.03.B
   file: 903-03_development-subdistricts.txt
@@ -331,7 +352,9 @@ dimensional_facts:
   quotes:
   - RM Subdistrict40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.M.min_lot
   section: 903.03.C
   file: 903-03_development-subdistricts.txt
@@ -348,7 +371,9 @@ dimensional_facts:
   quotes:
   - Site Development StandardModerate Density SubdistrictMinimum Lot Size2,400 s.f.
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.M.setbacks.low_rise
   section: 903.03.C
   file: 903-03_development-subdistricts.txt
@@ -370,7 +395,9 @@ dimensional_facts:
   confidence: 0.9
   reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
     (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.M.setbacks.rm
   section: 903.03.C
   file: 903-03_development-subdistricts.txt
@@ -388,7 +415,9 @@ dimensional_facts:
   confidence: 0.85
   reviewer_note: 'RM values in Moderate Density: front 25, rear 25, exterior side 25, interior side 10 ft. Quote shows the
     first; check the rest in the table.'
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.M.height.low_rise
   section: 903.03.C
   file: 903-03_development-subdistricts.txt
@@ -405,7 +434,9 @@ dimensional_facts:
   quotes:
   - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.M.height.rm
   section: 903.03.C
   file: 903-03_development-subdistricts.txt
@@ -419,7 +450,9 @@ dimensional_facts:
   quotes:
   - RM Subdistrict55 ft. (not to exceed 4 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.H.min_lot
   section: 903.03.D
   file: 903-03_development-subdistricts.txt
@@ -436,7 +469,9 @@ dimensional_facts:
   quotes:
   - Site Development StandardHigh Density SubdistrictMinimum Lot Size1,200 s.f.
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.H.setbacks.low_rise
   section: 903.03.D
   file: 903-03_development-subdistricts.txt
@@ -458,7 +493,9 @@ dimensional_facts:
   confidence: 0.9
   reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
     (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.H.setbacks.rm
   section: 903.03.D
   file: 903-03_development-subdistricts.txt
@@ -476,7 +513,9 @@ dimensional_facts:
   confidence: 0.85
   reviewer_note: 'RM values in High Density: front 25, rear 25, exterior side 25, interior side 10 ft. Quote shows the first;
     check the rest in the table.'
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.H.height.low_rise
   section: 903.03.D
   file: 903-03_development-subdistricts.txt
@@ -493,7 +532,9 @@ dimensional_facts:
   quotes:
   - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.H.height.rm
   section: 903.03.D
   file: 903-03_development-subdistricts.txt
@@ -507,7 +548,9 @@ dimensional_facts:
   quotes:
   - RM Subdistrict85 ft. (not to exceed 9 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VH.setbacks.low_rise
   section: 903.03.E
   file: 903-03_development-subdistricts.txt
@@ -529,7 +572,9 @@ dimensional_facts:
   confidence: 0.9
   reviewer_note: Interior side yard for R1A is 5 ft in every subdistrict; "attached" homes have zero on the party-wall side
     (903.03.x.2(c)). Contextual setbacks (925.06) may allow less.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VH.setbacks.rm
   section: 903.03.E
   file: 903-03_development-subdistricts.txt
@@ -547,7 +592,9 @@ dimensional_facts:
   confidence: 0.85
   reviewer_note: 'RM values in Very-High Density: front 25, rear 25, exterior side 25, interior side 10 ft. Quote shows the
     first; check the rest in the table.'
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VH.height.low_rise
   section: 903.03.E
   file: 903-03_development-subdistricts.txt
@@ -564,7 +611,9 @@ dimensional_facts:
   quotes:
   - Maximum Height R1D, R1A, R2 & R3 Subdistricts40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.VH.height.rm
   section: 903.03.E
   file: 903-03_development-subdistricts.txt
@@ -577,7 +626,9 @@ dimensional_facts:
   quotes:
   - RM Subdistrict180 ft.
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.P
   section: 905.01.C
   file: 905-01_P-parks.txt
@@ -597,7 +648,9 @@ dimensional_facts:
   - Minimum Front Setback30 ft.Minimum Rear Setback20 ft.
   - Maximum Height40 ft. (not to exceed 3 stories)
   confidence: 0.95
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: dim.H
   section: 905.02.C
   file: 905-02_H-hillside.txt
@@ -619,4 +672,6 @@ dimensional_facts:
   confidence: 0.95
   reviewer_note: 'Also: maximum area of disturbance 50% of lot, Site Plan Review for building permits, and single-unit homes
     must sit on land under 30% slope (911.04.A.69). Those are shown as notes, not checked.'
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'

@@ -93,8 +93,13 @@ def test_reviewed_setbacks_are_reported_not_scored(cfg, facts):
 
 def test_options_are_sized_to_the_buildable_area_once_setbacks_are_reviewed(cfg, strict_cfg, facts):
     rules = expand(facts, ["R2-L"])
-    assert buildable_margins(strict_cfg, rules, "R2-L") == {}  # unreviewed setbacks change nothing when review is required
     d = rules["subdistricts"]["R2-L"]["dimensional"]
+    # Build the unreviewed case rather than assuming facts.yaml supplies one:
+    # every setback fact is ticked in REVIEW.md now, so relying on the live file
+    # to be unreviewed would make this assertion vanish silently.
+    for k in d:
+        d[k] = {**d[k], "reviewed": False}
+    assert buildable_margins(strict_cfg, rules, "R2-L") == {}  # unreviewed setbacks change nothing when review is required
     for k in d:
         d[k] = _reviewed(d[k])
     m = buildable_margins(cfg, rules, "R2-L")

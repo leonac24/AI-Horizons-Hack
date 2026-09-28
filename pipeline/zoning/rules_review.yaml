@@ -106,7 +106,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 0
         code_section: 905.02.C
@@ -114,7 +116,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 0
         code_section: 905.02.C
@@ -122,7 +126,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 0
         code_section: 905.02.C
@@ -130,7 +136,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 0
         code_section: 905.02.C
@@ -138,7 +146,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 905.02.C
@@ -146,7 +156,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 905.02.C
@@ -154,7 +166,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1D:
     uses:
       single_unit_detached:
@@ -430,7 +444,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.P
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 905.01.C
@@ -438,7 +454,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.P
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 20
         code_section: 905.01.C
@@ -446,7 +464,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.P
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 20
         code_section: 905.01.C
@@ -454,7 +474,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.P
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 905.01.C
@@ -462,7 +484,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.P
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 905.01.C
@@ -470,7 +494,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.P
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 905.01.C
@@ -478,7 +504,9 @@ districts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.P
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R3:
     uses:
       single_unit_detached:
@@ -542,7 +570,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -550,7 +580,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -558,7 +590,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -566,7 +600,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.D
@@ -574,7 +610,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.D
@@ -582,7 +620,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.D
@@ -590,7 +630,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   RM-M:
     dimensional:
       min_lot_area_sf:
@@ -600,7 +642,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 25
         code_section: 903.03.C
@@ -608,7 +652,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.M.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 25
         code_section: 903.03.C
@@ -616,7 +662,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.M.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 25
         code_section: 903.03.C
@@ -624,7 +672,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.M.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 10
         code_section: 903.03.C
@@ -632,7 +682,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.M.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 55
         code_section: 903.03.C
@@ -640,7 +692,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 4
         code_section: 903.03.C
@@ -648,7 +702,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1D-L:
     dimensional:
       min_lot_area_sf:
@@ -658,7 +714,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -666,7 +724,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -674,7 +734,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -682,7 +744,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.B
@@ -690,7 +754,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.B
@@ -698,7 +764,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.B
@@ -706,7 +774,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R2-L:
     dimensional:
       min_lot_area_sf:
@@ -716,7 +786,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -724,7 +796,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -732,7 +806,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -740,7 +816,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.B
@@ -748,7 +826,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.B
@@ -756,7 +836,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.B
@@ -764,7 +846,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1A-VH:
     dimensional:
       front_setback_ft:
@@ -774,7 +858,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 15
         code_section: 903.03.E
@@ -782,7 +868,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 5
         code_section: 903.03.E
@@ -790,7 +878,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.E
@@ -798,7 +888,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.E
@@ -806,7 +898,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VH.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.E
@@ -814,7 +908,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VH.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1D-M:
     dimensional:
       min_lot_area_sf:
@@ -824,7 +920,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -832,7 +930,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -840,7 +940,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -848,7 +950,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.C
@@ -856,7 +960,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.C
@@ -864,7 +970,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.C
@@ -872,7 +980,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R2-H:
     dimensional:
       min_lot_area_sf:
@@ -882,7 +992,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -890,7 +1002,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -898,7 +1012,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -906,7 +1022,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.D
@@ -914,7 +1032,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.D
@@ -922,7 +1042,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.D
@@ -930,7 +1052,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1A-H:
     dimensional:
       min_lot_area_sf:
@@ -940,7 +1064,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -948,7 +1074,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -956,7 +1084,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 15
         code_section: 903.03.D
@@ -964,7 +1094,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.D
@@ -972,7 +1104,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.H.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.D
@@ -980,7 +1114,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.D
@@ -988,7 +1124,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1A-M:
     dimensional:
       min_lot_area_sf:
@@ -998,7 +1136,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1006,7 +1146,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1014,7 +1156,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1022,7 +1166,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.C
@@ -1030,7 +1176,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.C
@@ -1038,7 +1186,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.C
@@ -1046,7 +1196,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1D-VL:
     dimensional:
       min_lot_area_sf:
@@ -1056,7 +1208,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VL.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.A
@@ -1064,7 +1218,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.A
@@ -1072,7 +1228,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.A
@@ -1080,7 +1238,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.A
@@ -1088,7 +1248,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_other_ft:
         value: 10
         code_section: 903.03.A
@@ -1096,7 +1258,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.A
@@ -1104,7 +1268,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VL.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.A
@@ -1112,7 +1278,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VL.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R2-M:
     dimensional:
       min_lot_area_sf:
@@ -1122,7 +1290,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1130,7 +1300,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1138,7 +1310,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1146,7 +1320,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.C
@@ -1154,7 +1330,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.C
@@ -1162,7 +1340,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.C
@@ -1170,7 +1350,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   RM-H:
     dimensional:
       min_lot_area_sf:
@@ -1180,7 +1362,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 25
         code_section: 903.03.D
@@ -1188,7 +1372,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.H.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 25
         code_section: 903.03.D
@@ -1196,7 +1382,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.H.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 25
         code_section: 903.03.D
@@ -1204,7 +1392,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.H.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 10
         code_section: 903.03.D
@@ -1212,7 +1402,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.H.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 85
         code_section: 903.03.D
@@ -1220,7 +1412,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 9
         code_section: 903.03.D
@@ -1228,7 +1422,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.H.height.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R2-VH:
     dimensional:
       front_setback_ft:
@@ -1238,7 +1434,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 15
         code_section: 903.03.E
@@ -1246,7 +1444,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 5
         code_section: 903.03.E
@@ -1254,7 +1454,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.E
@@ -1262,7 +1464,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.E
@@ -1270,7 +1474,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VH.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.E
@@ -1278,7 +1484,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VH.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R3-M:
     dimensional:
       min_lot_area_sf:
@@ -1288,7 +1496,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1296,7 +1506,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1304,7 +1516,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.C
@@ -1312,7 +1526,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.C
@@ -1320,7 +1536,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.M.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.C
@@ -1328,7 +1546,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.C
@@ -1336,7 +1556,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.M.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R1D-VH:
     dimensional:
       front_setback_ft:
@@ -1346,7 +1568,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 15
         code_section: 903.03.E
@@ -1354,7 +1578,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 5
         code_section: 903.03.E
@@ -1362,7 +1588,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.E
@@ -1370,7 +1598,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.E
@@ -1378,7 +1608,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VH.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.E
@@ -1386,7 +1618,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VH.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   R3-L:
     dimensional:
       min_lot_area_sf:
@@ -1396,7 +1630,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -1404,7 +1640,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -1412,7 +1650,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.B
@@ -1420,7 +1660,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 5
         code_section: 903.03.B
@@ -1428,7 +1670,9 @@ subdistricts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: dim.L.setbacks.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.B
@@ -1436,7 +1680,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.B
@@ -1444,7 +1690,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.L.height.low_rise
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   RM-VH:
     dimensional:
       front_setback_ft:
@@ -1454,7 +1702,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 25
         code_section: 903.03.E
@@ -1462,7 +1712,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 25
         code_section: 903.03.E
@@ -1470,7 +1722,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 10
         code_section: 903.03.E
@@ -1478,7 +1732,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VH.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 180
         code_section: 903.03.E
@@ -1486,7 +1742,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VH.height.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
   RM-VL:
     dimensional:
       min_lot_area_sf:
@@ -1496,7 +1754,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VL.min_lot
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       front_setback_ft:
         value: 30
         code_section: 903.03.A
@@ -1504,7 +1764,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       rear_setback_ft:
         value: 30
         code_section: 903.03.A
@@ -1512,7 +1774,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       exterior_side_setback_ft:
         value: 30
         code_section: 903.03.A
@@ -1520,7 +1784,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       interior_side_setback_ft:
         value: 30
         code_section: 903.03.A
@@ -1528,7 +1794,9 @@ subdistricts:
         confidence: 0.85
         extracted_by: claude-code
         fact_id: dim.VL.setbacks.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_height_ft:
         value: 40
         code_section: 903.03.A
@@ -1536,7 +1804,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VL.height.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       max_stories:
         value: 3
         code_section: 903.03.A
@@ -1544,7 +1814,9 @@ subdistricts:
         confidence: 0.95
         extracted_by: claude-code
         fact_id: dim.VL.height.rm
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
 citywide:
   uses:
     single_unit_detached_with_adu:
