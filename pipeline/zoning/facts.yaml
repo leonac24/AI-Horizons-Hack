@@ -37,7 +37,9 @@ use_facts:
   confidence: 0.9
   reviewer_note: The P (Parks) column reads "P" (by right) for a detached house. Surprising for a parks district; confirm
     against the live table.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: use.single_attached
   use_key: single_unit_attached
   section: '911.02'
@@ -55,7 +57,9 @@ use_facts:
     H: S
   confidence: 0.9
   reviewer_note: R1D reads "P/S"; see use.single_attached.r1d_width for how that splits.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: use.single_attached.r1d_width
   use_key: single_unit_attached
   section: 911.04.A.69A
@@ -71,7 +75,9 @@ use_facts:
   confidence: 0.9
   reviewer_note: Applied using lot frontage from the deed legal description (observed for ~71% of lots). Where frontage is
     a placeholder, the lot shows Needs planner review for this use.
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: use.two_unit
   use_key: two_unit
   section: '911.02'
@@ -87,7 +93,9 @@ use_facts:
     P: '-'
     H: '-'
   confidence: 0.9
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: use.multi_unit
   use_key: multi_unit
   section: '911.02'
@@ -105,7 +113,9 @@ use_facts:
     H: '-'
   confidence: 0.9
   reviewer_note: Our "small apartment" (9 homes) and "mid-rise" (32 homes) both map to Multi-Unit (4+).
-  reviewed: false
+  reviewed: true
+  reviewed_by: Devin-M5706
+  reviewed_on: '2026-09-28'
 - id: use.adu
   use_key: single_unit_detached_with_adu
   section: '912.08'

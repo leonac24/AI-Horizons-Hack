@@ -10,27 +10,27 @@ C = conditional use (Council) · - = not permitted (§ 911.01).
 
 ## Uses (§ 911.02 and related)
 
-- [ ] `use.single_detached` — § 911.02 ([code](https://ecode360.com/45476524))  
+- [x] `use.single_detached` — § 911.02 ([code](https://ecode360.com/45476524))  
   **R1D P, R1A P, R2 P, R3 P, RM P, P P, H A**  
   > Single-Unit Detached Residential means the use of a zoning lot for one detached housing unit.  
   _Note: The P (Parks) column reads "P" (by right) for a detached house. Surprising for a parks district; confirm against the live table._
 
-- [ ] `use.single_attached` — § 911.02 ([code](https://ecode360.com/45476524))  
+- [x] `use.single_attached` — § 911.02 ([code](https://ecode360.com/45476524))  
   **R1D P/S, R1A P, R2 P, R3 P, RM P, P -, H S**  
   > Single-Unit Attached Residential means the use of a zoning lot for one dwelling unit that is attached to one or more dwelling units  
   _Note: R1D reads "P/S"; see use.single_attached.r1d_width for how that splits._
 
-- [ ] `use.single_attached.r1d_width` — § 911.04.A.69A ([code](https://ecode360.com/45476524))  
+- [x] `use.single_attached.r1d_width` — § 911.04.A.69A ([code](https://ecode360.com/45476524))  
   **R1D: by right if lot width ≤ 35 ft, else special exception**  
   > For lots with Lot Widths of 35 feet or smaller, Single-Unit Attached Uses shall be permitted by right.  
   > For lots with Lot Widths larger than 35 feet, Single-Unit Attached Uses shall be permitted by the Special Exception Provisions  
   _Note: Applied using lot frontage from the deed legal description (observed for ~71% of lots). Where frontage is a placeholder, the lot shows Needs planner review for this use._
 
-- [ ] `use.two_unit` — § 911.02 ([code](https://ecode360.com/45476524))  
+- [x] `use.two_unit` — § 911.02 ([code](https://ecode360.com/45476524))  
   **R1D -, R1A -, R2 P, R3 P, RM P, P -, H -**  
   > Two-Unit Residential means the use of a zoning lot for two dwelling units that are contained within a single building.  
 
-- [ ] `use.multi_unit` — § 911.02 ([code](https://ecode360.com/45476524))  
+- [x] `use.multi_unit` — § 911.02 ([code](https://ecode360.com/45476524))  
   **R1D -, R1A -, R2 -, R3 -, RM P, P -, H -**  
   > Multi-Unit Residential means the use of a zoning lot for four or more dwelling units that are contained within a single building.  
   _Note: Our "small apartment" (9 homes) and "mid-rise" (32 homes) both map to Multi-Unit (4+)._

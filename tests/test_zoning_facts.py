@@ -38,7 +38,12 @@ def test_family_and_density_fan_out(facts):
     assert rules["subdistricts"]["RM-M"]["dimensional"]["max_stories"]["value"] == 4
     assert rules["districts"]["H"]["uses"]["single_unit_detached"]["status"] == "administrator_exception"
     assert rules["districts"]["H"]["dimensional"]["min_lot_area_sf"]["value"] == 3200  # § 905.02, no suffix
-    assert all(not r["reviewed"] for r in rules["districts"]["R2"]["uses"].values())  # nothing reviewed by default
+    # expand() copies each fact's reviewed flag through; it never invents one.
+    # Asserting "all unreviewed" instead would only hold until someone ticks a
+    # box in REVIEW.md, which is the point of the file.
+    by_use_key = {f["use_key"]: f for f in facts["use_facts"]}
+    for use_key, rule in rules["districts"]["R2"]["uses"].items():
+        assert rule["reviewed"] == bool(by_use_key[use_key].get("reviewed"))
 
 
 def test_family_specific_subdistrict_overrides_generic(cfg, facts):

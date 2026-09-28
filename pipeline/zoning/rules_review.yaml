@@ -54,7 +54,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_detached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_attached:
         status: special_exception
         code_section: '911.02'
@@ -63,7 +65,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_attached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       two_unit:
         status: not_permitted
         code_section: '911.02'
@@ -72,7 +76,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.two_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       multi_unit:
         status: not_permitted
         code_section: '911.02'
@@ -81,7 +87,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.multi_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_detached_with_adu:
         status: not_permitted
         code_section: '912.08'
@@ -156,7 +164,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_detached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_attached:
         status: special_exception
         when_frontage_at_most:
@@ -167,7 +177,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_attached.r1d_width
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       two_unit:
         status: not_permitted
         code_section: '911.02'
@@ -176,7 +188,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.two_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       multi_unit:
         status: not_permitted
         code_section: '911.02'
@@ -185,7 +199,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.multi_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_detached_with_adu:
         status: not_permitted
         code_section: '912.08'
@@ -203,7 +219,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_detached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_attached:
         status: by_right
         code_section: '911.02'
@@ -212,7 +230,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_attached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       two_unit:
         status: by_right
         code_section: '911.02'
@@ -221,7 +241,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.two_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       multi_unit:
         status: by_right
         code_section: '911.02'
@@ -230,7 +252,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.multi_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_detached_with_adu:
         status: not_permitted
         code_section: '912.08'
@@ -248,7 +272,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_detached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_attached:
         status: by_right
         code_section: '911.02'
@@ -257,7 +283,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_attached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       two_unit:
         status: by_right
         code_section: '911.02'
@@ -266,7 +294,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.two_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       multi_unit:
         status: not_permitted
         code_section: '911.02'
@@ -275,7 +305,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.multi_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_detached_with_adu:
         status: not_permitted
         code_section: '912.08'
@@ -293,7 +325,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_detached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_attached:
         status: by_right
         code_section: '911.02'
@@ -302,7 +336,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_attached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       two_unit:
         status: not_permitted
         code_section: '911.02'
@@ -311,7 +347,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.two_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       multi_unit:
         status: not_permitted
         code_section: '911.02'
@@ -320,7 +358,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.multi_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_detached_with_adu:
         status: not_permitted
         code_section: '912.08'
@@ -338,7 +378,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_detached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_attached:
         status: not_permitted
         code_section: '911.02'
@@ -347,7 +389,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_attached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       two_unit:
         status: not_permitted
         code_section: '911.02'
@@ -356,7 +400,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.two_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       multi_unit:
         status: not_permitted
         code_section: '911.02'
@@ -365,7 +411,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.multi_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_detached_with_adu:
         status: not_permitted
         code_section: '912.08'
@@ -440,7 +488,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_detached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_attached:
         status: by_right
         code_section: '911.02'
@@ -449,7 +499,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.single_attached
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       two_unit:
         status: by_right
         code_section: '911.02'
@@ -458,7 +510,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.two_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       multi_unit:
         status: not_permitted
         code_section: '911.02'
@@ -467,7 +521,9 @@ districts:
         confidence: 0.9
         extracted_by: claude-code
         fact_id: use.multi_unit
-        reviewed: false
+        reviewed: true
+        reviewed_by: Devin-M5706
+        reviewed_on: '2026-09-28'
       single_unit_detached_with_adu:
         status: not_permitted
         code_section: '912.08'
